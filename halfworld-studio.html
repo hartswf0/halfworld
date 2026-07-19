@@ -24,7 +24,9 @@
   .glyph i.r{background:var(--red)}
   #brand{font-size:11px;font-weight:700;letter-spacing:.42em;text-transform:uppercase;white-space:nowrap}
   #brand em{font-style:normal;color:var(--dim);font-weight:400}
-  #modes{display:flex;gap:6px;margin-left:auto}
+  #modes{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .grp{display:flex;gap:5px}
+  .sep{width:1px;align-self:stretch;background:var(--faint);margin:6px 3px}
   .chip{
     border:1px solid var(--faint);background:var(--card);cursor:pointer;
     font-size:9px;letter-spacing:.22em;text-transform:uppercase;
@@ -35,6 +37,52 @@
     box-shadow:inset 0 -2px 0 var(--red)}
   .chip.rec.on{color:var(--red);border-color:var(--red);box-shadow:none}
   .chip .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin-right:6px;vertical-align:1px}
+  /* the five rooms read as the dominant nav */
+  .chip.mode{padding:7px 13px}
+  /* tools are lighter, secondary — they act on the stage, they don't navigate */
+  .chip.tool{font-size:8.5px;padding:6px 10px;border-color:transparent;background:transparent}
+  .chip.tool:hover{border-color:var(--faint);background:var(--card)}
+  .chip.tool.on{border-color:var(--ink);background:var(--paper)}
+  /* the port out — one terminal action, red-marked */
+  .chip.out{border-color:var(--red);color:var(--red);letter-spacing:.24em}
+  .chip.out:hover{background:var(--red);color:var(--paper)}
+  .chip.out.on{background:var(--red);color:var(--paper);box-shadow:none}
+  .chip.help{width:28px;text-align:center;padding:7px 0;border-radius:50%;font-weight:700}
+
+  /* ═════ THE TOUR — characters lead you through every operation ═════ */
+  #tour{position:fixed;inset:0;z-index:80;display:none;pointer-events:none}
+  #tour.on{display:block}
+  #tourVeil{position:absolute;inset:0;background:rgba(20,20,20,.44);pointer-events:auto}
+  #tourRing{position:absolute;border:2px solid var(--red);border-radius:4px;
+    box-shadow:0 0 0 3px rgba(224,27,27,.18);pointer-events:none;transition:all .28s cubic-bezier(.2,.7,.2,1);opacity:0}
+  #tourRing.show{opacity:1}
+  #tourCard{position:absolute;width:min(360px,calc(100% - 24px));background:var(--paper);pointer-events:auto;
+    border:1px solid var(--ink);box-shadow:0 12px 40px rgba(20,20,20,.28);
+    padding:16px 16px 14px;
+    transition:left .28s cubic-bezier(.2,.7,.2,1),top .28s cubic-bezier(.2,.7,.2,1)}
+  #tourCard .who{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  #tourCard .face{width:26px;height:26px;border:1px solid var(--ink);border-radius:50%;
+    display:grid;place-items:center;font-size:9px;font-weight:700;letter-spacing:.06em;
+    background:var(--ink);color:var(--paper);flex:none}
+  #tourCard .nm{font-size:9px;letter-spacing:.26em;text-transform:uppercase}
+  #tourCard .nm em{font-style:normal;color:var(--dim);letter-spacing:.2em}
+  #tourCard .step{margin-left:auto;font-size:8.5px;letter-spacing:.2em;color:var(--dim)}
+  #tourCard h4{font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 6px}
+  #tourCard p{font-size:11px;line-height:1.65;color:#2b2b2b}
+  #tourCard p b{color:var(--red);letter-spacing:.02em}
+  #tourCard .kbd{border:1px solid var(--faint);background:var(--card);border-radius:3px;
+    padding:1px 5px;font-size:10px;letter-spacing:.04em}
+  #tourActs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  #tourActs .btn{border:1px solid var(--ink);background:var(--paper);cursor:pointer;
+    font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;padding:7px 11px;font-family:var(--mono)}
+  #tourActs .btn:hover{background:var(--ink);color:var(--paper)}
+  #tourActs .btn.port{border-color:var(--red);color:var(--red)}
+  #tourActs .btn.port:hover{background:var(--red);color:var(--paper)}
+  #tourActs .sp{flex:1}
+  #tourActs .lnk{background:none;border:none;color:var(--dim);cursor:pointer;
+    font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;font-family:var(--mono);padding:7px 4px}
+  #tourActs .lnk:hover{color:var(--red)}
+  html.embed #tour{display:none!important}
 
   #stage{position:fixed;inset:52px 0 96px 0;cursor:crosshair}
   /* embed: OPERATOR hosts the stage and owns the chrome */
@@ -191,15 +239,25 @@
   <div class="glyph"><i></i><i></i><i></i><i></i><i class="r"></i><i></i><i></i><i></i><i></i></div>
   <div id="brand">HALFWORLD <em>&middot; STUDIO v0.3</em></div>
   <div id="modes">
-    <div class="chip" id="styleBtn">SHEET</div>
-    <div class="chip" id="drawBtn">DRAW</div>
-    <div class="chip" id="capBtn">CAPTURE</div>
-    <div class="chip" id="filmBtn">FILM</div>
-    <div class="chip mode on" data-m="stage">Stage</div>
-    <div class="chip mode" data-m="cast">Cast</div>
-    <div class="chip mode" data-m="score">Score</div>
-    <div class="chip mode" data-m="mind">Mind</div>
-    <div class="chip mode" data-m="memory">Memory</div>
+    <!-- WHERE — the five rooms you work in -->
+    <div class="grp" data-grp="rooms">
+      <div class="chip mode on" data-m="stage">Stage</div>
+      <div class="chip mode" data-m="cast">Cast</div>
+      <div class="chip mode" data-m="score">Score</div>
+      <div class="chip mode" data-m="mind">Mind</div>
+      <div class="chip mode" data-m="memory">Memory</div>
+    </div>
+    <span class="sep"></span>
+    <!-- TOOLS — what you do to the stage right now -->
+    <div class="grp" data-grp="tools">
+      <div class="chip tool" id="styleBtn">MESH</div>
+      <div class="chip tool" id="drawBtn">DRAW</div>
+      <div class="chip tool" id="capBtn">CAPTURE</div>
+    </div>
+    <span class="sep"></span>
+    <!-- OUT — the port to the BEFLIX operator -->
+    <div class="chip out" id="filmBtn">EXPORT</div>
+    <div class="chip help" id="tourBtn" title="Tour the studio">?</div>
   </div>
 </div>
 
@@ -223,6 +281,19 @@
 </div>
 
 <div id="cmenu"></div>
+
+<div id="tour" aria-hidden="true">
+  <div id="tourVeil"></div>
+  <div id="tourRing"></div>
+  <div id="tourCard">
+    <div class="who"><div class="face" id="tourFace">H</div>
+      <div class="nm" id="tourName">HERO <em>· host</em></div>
+      <div class="step" id="tourStep">01 / 12</div></div>
+    <h4 id="tourTitle">Welcome</h4>
+    <p id="tourSay">…</p>
+    <div id="tourActs"></div>
+  </div>
+</div>
 
 <div id="filmDlg">
   <div id="filmCard">
@@ -363,7 +434,7 @@ const STYLES={
   MESH:  {outline:true, tones:'post', post:{cell:5,bg:'lines',gain:1.05}},
 };
 const STYLE_ORDER=Object.keys(STYLES);
-let styleName='SHEET', STYLE=STYLES.SHEET;
+let styleName='MESH', STYLE=STYLES.MESH;   // boot in MESH — the exact dot grid BEFLIX reads
 
 const CAST_PRESETS={
   HERO:{hair:'none', glasses:false,beard:false,headS:1.00,build:1.00,h:1.00,
@@ -2802,6 +2873,27 @@ function filmDownload(text,name,mime){
   const blob=new Blob([text],{type:mime||'text/plain'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
 }
+/* ── the PORT and the BUS — one door out to the BEFLIX operator ──────────
+   PORT: shoot the whole score to a 128×96 ink-0–7 dot grid per frame —
+   the exact mesh OPERATOR reads — and hand it back as a scene-pack file.
+   BUS:  a live BroadcastChannel so OPERATOR films this stage in real time. */
+function hwShootPack(fps,maxF){ return filmScenePack(filmShootFrames(fps||8, maxF||480)); }
+function hwDownloadMesh(){
+  const stamp=new Date().toISOString().slice(0,10);
+  const pack=hwShootPack(8,480);
+  filmDownload(JSON.stringify(pack),'halfworld-mesh-'+stamp+'.beflix.json','application/json');
+  toast('MESH EXPORTED · '+pack.scenes.length+' SCENES → OPEN IN BEFLIX OPERATOR');
+  return pack;
+}
+function hwBus(on){
+  broadcasting = (on===undefined)? !broadcasting : !!on;
+  if(broadcasting){ if(!filmBC){ try{ filmBC=new BroadcastChannel('operator-film'); }catch(e){ filmBC=null; } } }
+  else if(filmBC){ try{ filmBC.postMessage({type:'off'}); }catch(e){} }
+  const b=document.getElementById('filmBroadcast');
+  if(b){ b.textContent='Broadcast: '+(broadcasting?'ON':'OFF'); b.classList.toggle('on',broadcasting); }
+  return broadcasting;
+}
+function hwOpenOperator(){ try{ window.open('operator-studio.html','_blank','noopener'); }catch(e){ toast('OPEN operator-studio.html'); } }
 /* wiring */
 (function wireFilm(){
   const dlg=document.getElementById('filmDlg'), btn=document.getElementById('filmBtn');
@@ -2835,17 +2927,10 @@ function filmDownload(text,name,mime){
     toast('FRAME → .bfx');
   };
   document.getElementById('filmBroadcast').onclick=function(){
-    broadcasting=!broadcasting;
-    if(broadcasting){
-      if(!filmBC){ try{ filmBC=new BroadcastChannel('operator-film'); }catch(e){ filmBC=null; } }
-      this.textContent='Broadcast: ON'; this.classList.add('on');
-      toast(filmBC?'BROADCASTING → OPERATOR LENS':'BROADCAST UNAVAILABLE (no BroadcastChannel)');
-    }else{
-      this.textContent='Broadcast: OFF'; this.classList.remove('on');
-      if(filmBC){ try{ filmBC.postMessage({type:'off'}); }catch(e){} }
-      toast('BROADCAST OFF');
-    }
+    const on=hwBus();
+    toast(on?(filmBC?'BUS ON — OPERATOR FILMS THIS STAGE LIVE':'BUS UNAVAILABLE (no BroadcastChannel)'):'BUS OFF');
   };
+  window.HW_openExport=open;   // the tour opens the same door
 })();
 
 /* ── embedding surface ─────────────────────────────────────────────── */
@@ -2937,12 +3022,149 @@ addEventListener('message', async (e)=>{
   if(m.id!=null&&e.source){ try{ e.source.postMessage({__hw:1,__reply:m.id,result},'*'); }catch(_){} }
 });
 
+/* ═══════════ THE TOUR — the cast leads you through every operation ═══════
+   Show, don't tell: each step points at the real control, and the figures on
+   the stage act out what's being explained. The last steps hand you the two
+   doors OUT to the BEFLIX operator — the PORT (a file) and the BUS (a live
+   link) — straight from the tutorial. */
+(function(){
+  const T_KEY='halfworld.tour.v3';
+  const el=id=>document.getElementById(id);
+  const veil=el('tourVeil'), ring=el('tourRing'), card=el('tourCard');
+  const tour=el('tour');
+  let idx=0, active=false;
+
+  function goMode(m){
+    document.querySelectorAll('.chip.mode').forEach(c=>c.classList.toggle('on',c.dataset.m===m));
+    MODE=m; refreshDrawer();
+  }
+  function poseHW(id,p){ if(P.cast[id]){ applyOp({op:'pose',id,pose:p},'tour'); markDirty(); } }
+  function look(id){ if(P.cast[id]){ sel={kind:'char',id}; } }
+
+  const STEPS=[
+    { who:'HERO', title:'This is HALFWORLD',
+      say:'A stage of ink dots on paper. I’m <b>HERO</b> — that’s me, waving. In one minute I’ll show you the whole studio and the door out to the <b>BEFLIX operator</b>.',
+      sel:null, enter(){ setPlaying(false); T=0; goMode('stage'); look('HERO'); poseHW('HERO','wave'); } },
+
+    { who:'HERO', title:'The stage · speak to make',
+      say:'Everything you see is an <b>asset</b> — a grid of dots. Type a word in the line below and it becomes a thing. Try <span class="kbd">tree</span>, then <span class="kbd">hero waves</span>. Words make the world.',
+      sel:'#cmd', enter(){ goMode('stage'); } },
+
+    { who:'BOSS', title:'Five rooms',
+      say:'The studio has five rooms. <b>Stage</b> is the set. <b>Cast</b> is us. <b>Score</b> is time. <b>Mind</b> is the rules. <b>Memory</b> saves it. That’s the whole map.',
+      sel:'.grp[data-grp="rooms"]', enter(){ poseHW('BOSS','pointing'); look('BOSS'); } },
+
+    { who:'JUNE', title:'Cast · the real figures',
+      say:'We’re the real <b>HALFTRACK</b> rig — the same figure code as the reference artifacts. In <b>Cast</b> you pick us, give us a pose, mark us with the pen. Watch — I’ll wave.',
+      sel:'.chip.mode[data-m="cast"]', enter(){ goMode('cast'); look('JUNE'); poseHW('JUNE','wave'); } },
+
+    { who:'HERO', title:'Score · the animation channels',
+      say:'This is the heart. Each <b>row</b> is a channel — one of us doing one thing over a span of time: a pose, a walk, a line. Drag the playhead below to <b>scrub</b>. Every colored bar is a movement you can nudge, trim, or delete.',
+      sel:'.chip.mode[data-m="score"]', enter(){ goMode('score'); setPlaying(false); } },
+
+    { who:'JUNE', title:'Record into the channels',
+      say:'Press <b>REC</b>, then speak a command — it writes a new row at the playhead instead of acting live. That’s how you animate: scrub to a moment, REC, speak. Press <span class="kbd">SPACE</span> anytime to play it back.',
+      sel:'#recBtn', enter(){ goMode('score'); } },
+
+    { who:'HERO', title:'MESH · how the world is drawn',
+      say:'This toggles the render. We boot in <b>MESH</b> — the fine dot grid that <b>is</b> the data the BEFLIX operator reads. Tap it to cycle SHEET · NOLINE · GRID · MESH; the whole scene re-dots.',
+      sel:'#styleBtn', enter(){ if(styleName!=='MESH'){ styleName='MESH'; STYLE=STYLES.MESH; TONES=TONESETS[STYLE.tones]; el('styleBtn').textContent='MESH'; markDirty(); } } },
+
+    { who:'JUNE', title:'DRAW · mark by hand',
+      say:'Turn on <b>DRAW</b> and stroke one of us to mark our face or shirt. Stroke the empty ground and your line is binned into a new dot asset — a thing you drew by hand.',
+      sel:'#drawBtn', enter(){} },
+
+    { who:'BOSS', title:'CAPTURE · become the puppet',
+      say:'Pick one of us, hit <b>CAPTURE</b>, allow the camera — and your body drives that character. Your arms are the figure’s arms. It records straight into the score.',
+      sel:'#capBtn', enter(){ look('HERO'); } },
+
+    { who:'HERO', title:'EXPORT · the door out',
+      say:'Here’s the whole point. <b>EXPORT</b> turns this stage into a 128×96 ink-0–7 dot grid — the <b>exact mesh</b> the BEFLIX operator speaks. Two doors: a <b>PORT</b> (a file) and a live <b>BUS</b>. You can take them right now, from here.',
+      sel:'#filmBtn', enter(){ setPlaying(false); },
+      acts:[
+        {label:'↓ PORT · export mesh', cls:'port', fn(){ hwDownloadMesh(); }},
+        {label:'◉ BUS · live link', fn(ev){ const on=hwBus(); ev.target.textContent=on?'◉ BUS · live · ON':'◉ BUS · live link'; toast(on?'BUS ON — OPERATOR FILMS THIS STAGE LIVE':'BUS OFF'); }},
+        {label:'Open operator ↗', fn(){ hwOpenOperator(); }},
+      ] },
+
+    { who:'BOSS', title:'Read it in the operator',
+      say:'In the <b>BEFLIX operator</b>: drop the exported <b>.beflix.json</b> into <b>IN/OUT › Open project</b> — your halfworld becomes an editable, branchable film. Or pick the <b>HALFWORLD lens</b> and the BUS films this stage live. Same dots, both ways.',
+      sel:'#filmBtn', enter(){}, acts:[
+        {label:'Open operator ↗', cls:'port', fn(){ hwOpenOperator(); }},
+      ] },
+
+    { who:'HERO', title:'That’s the studio',
+      say:'Five rooms, three tools, one door out. Speak to the world, scrub the score, export the mesh. Press <span class="kbd">?</span> in the corner to see me again. Now — make something.',
+      sel:null, enter(){ goMode('stage'); look('HERO'); poseHW('HERO','both raised'); } },
+  ];
+
+  function placeCard(rect){
+    const cw=Math.min(360, Math.max(240, innerWidth*0.92)), gap=14;
+    let left, top;
+    if(!rect){ // center
+      left=(innerWidth-cw)/2; top=Math.max(70,(innerHeight-card.offsetHeight)/2);
+    }else{
+      left=Math.min(Math.max(12, rect.left+rect.width/2-cw/2), innerWidth-cw-12);
+      const below=rect.bottom+gap, ch=card.offsetHeight||220;
+      top=(below+ch<innerHeight-12)?below:Math.max(12,rect.top-gap-ch);
+    }
+    card.style.left=left+'px'; card.style.top=top+'px';
+  }
+  function spotlight(target){
+    if(!target){ ring.classList.remove('show'); veil.style.display='block'; veil.style.background='rgba(20,20,20,.44)'; return; }
+    const r=target.getBoundingClientRect(); if(!r.width){ ring.classList.remove('show'); veil.style.display='block'; return; }
+    veil.style.display='none';   // the ring's huge shadow is the veil, with a hole at the target
+    const pad=5;
+    ring.style.left=(r.left-pad)+'px'; ring.style.top=(r.top-pad)+'px';
+    ring.style.width=(r.width+pad*2)+'px'; ring.style.height=(r.height+pad*2)+'px';
+    ring.style.boxShadow='0 0 0 3px rgba(224,27,27,.20), 0 0 0 9999px rgba(20,20,20,.5)';
+    ring.classList.add('show');
+    return r;
+  }
+  function render(){
+    const s=STEPS[idx]; if(!s)return end();
+    const faces={HERO:'H',BOSS:'B',JUNE:'J'};
+    el('tourFace').textContent=faces[s.who]||'·';
+    el('tourName').innerHTML=s.who+' <em>· '+(idx===0?'host':'guide')+'</em>';
+    el('tourStep').textContent=String(idx+1).padStart(2,'0')+' / '+STEPS.length;
+    el('tourTitle').textContent=s.title;
+    el('tourSay').innerHTML=s.say;
+    try{ s.enter&&s.enter(); }catch(e){}
+    const target=s.sel?document.querySelector(s.sel):null;
+    const r=spotlight(target); placeCard(r);
+    // actions
+    const acts=el('tourActs'); acts.innerHTML='';
+    if(idx>0){ const b=mkBtn('← Back','lnk',()=>{idx--;render();}); acts.appendChild(b); }
+    if(s.acts){ s.acts.forEach(a=>acts.appendChild(mkBtn(a.label,'btn'+(a.cls?' '+a.cls:''),a.fn))); }
+    const sp=document.createElement('div'); sp.className='sp'; acts.appendChild(sp);
+    if(idx<STEPS.length-1){ acts.appendChild(mkBtn('Skip','lnk',end)); acts.appendChild(mkBtn('Next →','btn',()=>{idx++;render();})); }
+    else acts.appendChild(mkBtn('Done ✓','btn',end));
+  }
+  function mkBtn(label,cls,fn){ const b=document.createElement('button'); b.className=cls; b.textContent=label;
+    b.onclick=(ev)=>{ try{ fn(ev); }catch(e){} }; return b; }
+
+  function start(){ if(EMBED)return; active=true; idx=0; tour.classList.add('on'); tour.setAttribute('aria-hidden','false'); render(); }
+  function end(){ active=false; tour.classList.remove('on'); tour.setAttribute('aria-hidden','true');
+    ring.classList.remove('show'); try{ localStorage.setItem(T_KEY,'1'); }catch(e){} }
+
+  el('tourBtn').onclick=start;
+  addEventListener('keydown',e=>{ if(!active)return;
+    if(e.key==='Escape')end();
+    else if(e.key==='ArrowRight'||e.key==='Enter'){ if(idx<STEPS.length-1){idx++;render();}else end(); }
+    else if(e.key==='ArrowLeft'){ if(idx>0){idx--;render();} } });
+  addEventListener('resize',()=>{ if(active)render(); });
+  window.HW_startTour=start;
+  // first visit → auto-run once the stage has settled
+  let seen=false; try{ seen=!!localStorage.getItem(T_KEY); }catch(e){}
+  if(!seen&&!EMBED) setTimeout(start,900);
+})();
+
 /* ── boot ──────────────────────────────────────────────────────────── */
 fit();buildTones();
 P=load()||seedDemo();
 DUR=scoreDur();
 requestAnimationFrame(loop);
-setTimeout(()=>toast('HALFWORLD STUDIO v0.3 — FILM SHOOTS THE STAGE TO BEFLIX FOR OPERATOR · RIGHT-CLICK ANYTHING · STYLE RE-DOTS THE SCENE'),600);
+setTimeout(()=>{ if(!/[?&]embed/.test(location.search)) toast('HALFWORLD STUDIO v0.3 · BOOTS IN MESH · PRESS ? FOR THE TOUR'); },600);
 </script>
 </body>
 </html>
