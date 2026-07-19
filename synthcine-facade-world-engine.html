@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>SYNTHCINE — Continuous Social Comedy World</title>
+<style>
+:root{
+  --paper:#f4f1e9;--ink:#111;--red:#e3302b;--blue:#2758d8;--amber:#d7b52a;
+  --glass:rgba(247,244,236,.9);--line:2px solid #111;
+}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit;border-radius:0}
+#world{position:fixed;inset:0;width:100%;height:100%;display:block;background:#252525;touch-action:none;cursor:crosshair}
+#topbar{position:fixed;left:0;right:0;top:0;z-index:20;height:42px;display:flex;align-items:center;gap:10px;padding:0 12px;background:rgba(245,242,234,.92);border-bottom:3px solid #111;backdrop-filter:blur(6px)}
+#brand{font-size:12px;font-weight:900;letter-spacing:.15em;white-space:nowrap}
+#beatRead{min-width:0;font-size:10px;letter-spacing:.08em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555}
+#status{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:9px;font-weight:900;letter-spacing:.1em}
+.dot{width:8px;height:8px;border:1px solid #111;background:#777}.dot.live{background:var(--red)}
+.topbtn{height:26px;border:2px solid #111;background:#fff;font-size:9px;font-weight:900;letter-spacing:.08em;padding:0 8px;box-shadow:2px 2px 0 #111;cursor:pointer}.topbtn:active{transform:translate(2px,2px);box-shadow:none}.topbtn.on{background:#111;color:#fff}
+#caption{position:fixed;z-index:18;left:50%;bottom:91px;transform:translateX(-50%);width:min(760px,88vw);pointer-events:none;text-align:center;color:#fff;text-shadow:-2px -2px 0 #111,2px -2px 0 #111,-2px 2px 0 #111,2px 2px 0 #111;font-weight:900;font-size:clamp(15px,2vw,25px);line-height:1.18;min-height:2.4em}
+#caption b{color:#ffe84a;letter-spacing:.08em}
+#hint{position:fixed;z-index:19;top:54px;left:50%;transform:translateX(-50%);background:rgba(245,242,234,.92);border:2px solid #111;padding:6px 10px;font-size:10px;font-weight:900;letter-spacing:.08em;pointer-events:none;opacity:0;transition:opacity .2s}#hint.show{opacity:1}
+#hud{position:fixed;z-index:22;left:0;right:0;bottom:0;min-height:76px;display:grid;grid-template-columns:72px 106px minmax(120px,1fr) 56px 52px;align-items:stretch;background:rgba(245,242,234,.96);border-top:3px solid #111;backdrop-filter:blur(8px)}
+#handBtn,#sendBtn,#voiceBtn{border:0;border-right:2px solid #111;background:#fff;font-size:10px;font-weight:900;letter-spacing:.08em;cursor:pointer}#handBtn{font-size:24px}#handBtn.ready{background:var(--amber)}#voiceBtn.on{background:#111;color:#fff}
+#target{border:0;border-right:2px solid #111;background:#eee;padding:0 8px;font-size:10px;font-weight:900;letter-spacing:.08em;outline:none}
+#say{border:0;background:transparent;padding:0 12px;font-size:14px;font-weight:700;outline:none;min-width:0}#say:focus{box-shadow:inset 0 0 0 3px var(--amber)}
+#sendBtn{border-left:2px solid #111;border-right:0;background:var(--blue);color:#fff}
+#voiceBtn{border-left:2px solid #111;border-right:0}
+#reticle{position:fixed;z-index:8;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%);pointer-events:none;opacity:.65}#reticle:before,#reticle:after{content:"";position:absolute;background:#fff;box-shadow:0 0 0 1px #111}#reticle:before{width:18px;height:2px;left:0;top:8px}#reticle:after{width:2px;height:18px;left:8px;top:0}
+#start{position:fixed;z-index:40;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,rgba(45,45,45,.58),rgba(0,0,0,.94));color:#fff;padding:20px}
+#startCard{width:min(650px,94vw);border:3px solid #fff;padding:22px;background:rgba(0,0,0,.78);box-shadow:8px 8px 0 var(--red)}#start h1{font-size:clamp(27px,5vw,58px);line-height:.92;letter-spacing:-.04em;margin:0 0 15px;text-transform:uppercase}#start p{max-width:48em;font-size:13px;line-height:1.5;color:#ddd}#enter{display:block;margin-top:18px;width:100%;height:54px;background:#fff;color:#111;border:3px solid #fff;font-size:13px;font-weight:900;letter-spacing:.15em;cursor:pointer}#enter:hover{background:var(--red);color:#fff}
+#debug{position:fixed;z-index:31;right:10px;top:52px;width:270px;max-height:calc(100vh - 145px);overflow:auto;background:rgba(245,242,234,.95);border:3px solid #111;padding:10px;display:none;font:10px/1.45 monospace;white-space:pre-wrap}#debug.on{display:block}
+#cameraPreview{position:fixed;z-index:30;right:10px;bottom:88px;width:190px;height:142px;border:3px solid #111;background:#222;display:none;object-fit:cover;transform:scaleX(-1)}#cameraPreview.on{display:block}
+#mobileMove{position:fixed;z-index:25;left:14px;bottom:92px;width:112px;height:112px;border:2px solid rgba(255,255,255,.8);border-radius:50%!important;background:rgba(0,0,0,.18);display:none;touch-action:none}#mobileMove i{position:absolute;left:38px;top:38px;width:34px;height:34px;border-radius:50%!important;background:rgba(255,255,255,.75);border:2px solid #111}
+#mobileLook{position:fixed;z-index:24;right:0;top:42px;bottom:76px;width:50vw;display:none;touch-action:none}
+@media(max-width:760px){#beatRead{display:none}#topbar{height:40px;padding:0 7px}.topbtn{padding:0 6px}#hud{grid-template-columns:56px 82px 1fr 50px 44px;min-height:70px}#caption{bottom:83px;font-size:16px}#mobileMove,#mobileLook{display:block}#reticle{opacity:.35}#brand{font-size:10px}}
+</style>
+</head>
+<body>
+<canvas id="world"></canvas>
+<div id="topbar">
+  <div id="brand">SYNTHCINE // ONE ROOM</div>
+  <div id="beatRead">HALLWAY — OUTSIDE NAT'S APARTMENT</div>
+  <button class="topbtn" id="camBtn">BODY</button>
+  <button class="topbtn" id="debugBtn">STATE</button>
+  <div id="status"><i class="dot" id="liveDot"></i><span id="statusText">WAITING</span></div>
+</div>
+<div id="hint"></div>
+<div id="caption"></div>
+<div id="reticle"></div>
+<div id="hud">
+  <button id="handBtn" title="Use, take, give, touch">✋</button>
+  <select id="target" aria-label="Who you are addressing"><option value="room">ROOM</option><option>NAT</option><option>CHRIS</option><option>SAMANTHA</option><option>ERNIE</option><option>PHIL</option></select>
+  <input id="say" placeholder="Say something, or move and touch the world…" autocomplete="off">
+  <button id="sendBtn">SAY</button>
+  <button id="voiceBtn" title="Character voices">VOICE</button>
+</div>
+<div id="mobileMove"><i></i></div><div id="mobileLook"></div>
+<video id="cameraPreview" playsinline muted></video>
+<pre id="debug"></pre>
+<div id="start"><div id="startCard"><h1>Enter the apartment.</h1><p>This is not a call grid. It is one continuous social room. Walk with W A S D or the left thumb control. Drag the world to turn. Look at people and objects. Press E or the hand to use what is in reach. Type at any time; interruption is part of the performance.</p><button id="enter">ENTER — KEEP THE SCENE RUNNING</button></div></div>
+<script>
+"use strict";
+const canvas=document.getElementById('world'),ctx=canvas.getContext('2d',{alpha:false});
+const $=s=>document.querySelector(s), clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t, smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t)}, easeOut=t=>1-Math.pow(1-clamp(t,0,1),3), TAU=Math.PI*2;
+let W=innerWidth,H=innerHeight,DPR=Math.min(2,devicePixelRatio||1),F=800,started=false,last=performance.now(),gameTime=0;
+function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(2,devicePixelRatio||1);canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);F=Math.max(560,Math.min(1050,W*.82));} addEventListener('resize',resize);resize();
+const COLORS={wall:'#151515',wall2:'#202020',floor:'#77746e',ceiling:'#343434',paper:'#f4f1e9',line:'#141414',blue:'#6da2e4',yellow:'#e2cf43',green:'#63b778',red:'#e9544f',skin:'#f2cfb5'};
+const camera={x:-6.55,z:7.15,y:1.63,yaw:.73,moveX:0,moveZ:0,lookVel:0,target:null,held:null};
+function angleDelta(a,b){let d=(a-b+Math.PI)%TAU-Math.PI;return d<-Math.PI?d+TAU:d}
+function worldToCam(p){const dx=p.x-camera.x,dz=p.z-camera.z,sy=Math.sin(camera.yaw),cy=Math.cos(camera.yaw);return{x:dx*cy+dz*sy,y:p.y-camera.y,z:dx*sy-dz*cy}}
+function project(p){const q=worldToCam(p);if(q.z<.08)return null;return{x:W*.5+q.x*F/q.z,y:H*.52-q.y*F/q.z,z:q.z,s:F/q.z}}
+function clipNear(poly,near=.12){let out=[];for(let i=0;i<poly.length;i++){let a=worldToCam(poly[i]),b=worldToCam(poly[(i+1)%poly.length]);let ain=a.z>=near,bin=b.z>=near;if(ain)out.push(a);if(ain!==bin){let t=(near-a.z)/(b.z-a.z);out.push({x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),z:near});}}return out}
+function drawPoly3(points,fill,stroke='#111',lw=1){const c=clipNear(points);if(c.length<3)return;ctx.beginPath();for(let i=0;i<c.length;i++){const x=W*.5+c[i].x*F/c[i].z,y=H*.52-c[i].y*F/c[i].z;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}
+function shade(hex,k){if(/^#[0-9a-f]{3}$/i.test(hex))hex='#'+hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;return`rgb(${clamp(r*k,0,255)},${clamp(g*k,0,255)},${clamp(b*k,0,255)})`}
+function box(x,y,z,w,h,d,color,outline='#111'){const X=[x-w/2,x+w/2],Y=[y,y+h],Z=[z-d/2,z+d/2],v=[];for(let yi=0;yi<2;yi++)for(let zi=0;zi<2;zi++)for(let xi=0;xi<2;xi++)v.push({x:X[xi],y:Y[yi],z:Z[zi]});const id=(xi,yi,zi)=>yi*4+zi*2+xi;let faces=[[[0,0,0],[1,0,0],[1,0,1],[0,0,1]],[[0,1,0],[0,1,1],[1,1,1],[1,1,0]],[[0,0,0],[0,1,0],[1,1,0],[1,0,0]],[[1,0,1],[1,1,1],[0,1,1],[0,0,1]],[[0,0,1],[0,1,1],[0,1,0],[0,0,0]],[[1,0,0],[1,1,0],[1,1,1],[1,0,1]]];let arr=faces.map((f,i)=>{const pts=f.map(a=>v[id(...a)]),dep=pts.reduce((s,p)=>s+worldToCam(p).z,0)/4;return{pts,dep,i}}).sort((a,b)=>b.dep-a.dep);for(const f of arr)drawPoly3(f.pts,shade(color,[.72,1,.88,.62,.8,.92][f.i]),outline,1.2)}
+function line3(a,b,color='#999',lw=1){const A=project(a),B=project(b);if(!A||!B)return;ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.stroke()}
+const room={xmin:-8.5,xmax:8.5,zmin:-7,zmax:12};
+const props=[
+ {id:'letter',label:'PERFORMANCE REVIEW LETTER',x:1.2,y:.52,z:-1.3,r:.42,kind:'letter',active:true},
+ {id:'glass',label:'DRINK',x:-5.35,y:1.22,z:-2.35,r:.35,kind:'glass',active:true},
+ {id:'phone',label:'NAT\'S PHONE',x:2.8,y:.54,z:-.9,r:.35,kind:'phone',active:true},
+ {id:'blender',label:'BLENDER',x:-6.05,y:1.23,z:-3.65,r:.45,kind:'blender',active:true},
+ {id:'chair',label:'SWIVEL CHAIR',x:4.7,y:0,z:-3.3,r:.7,kind:'chair',active:true},
+ {id:'door',label:'FRONT DOOR',x:-8.2,y:1.05,z:5.45,r:1.1,kind:'door',active:true}
+];
+let doorOpen=0,doorGoal=0,hovered=null,playerActionCooldown=0;
+function propBy(id){return props.find(p=>p.id===id)}
+function drawEnvironment(){
+ ctx.fillStyle='#1c1c1c';ctx.fillRect(0,0,W,H);
+ drawPoly3([{x:-8.5,y:0,z:-7},{x:8.5,y:0,z:-7},{x:8.5,y:0,z:12},{x:-8.5,y:0,z:12}],COLORS.floor,null);
+ drawPoly3([{x:-8.5,y:0,z:-7},{x:8.5,y:0,z:-7},{x:8.5,y:4.2,z:-7},{x:-8.5,y:4.2,z:-7}],COLORS.wall);
+ drawPoly3([{x:-8.5,y:0,z:12},{x:-8.5,y:0,z:-7},{x:-8.5,y:4.2,z:-7},{x:-8.5,y:4.2,z:12}],COLORS.wall2);
+ drawPoly3([{x:8.5,y:0,z:-7},{x:8.5,y:0,z:12},{x:8.5,y:4.2,z:12},{x:8.5,y:4.2,z:-7}],'#242424');
+ drawPoly3([{x:-8.5,y:4.2,z:-7},{x:8.5,y:4.2,z:-7},{x:8.5,y:4.2,z:12},{x:-8.5,y:4.2,z:12}],COLORS.ceiling,null);
+ for(let z=-6;z<=11;z+=1)line3({x:-8.5,y:.002,z},{x:8.5,y:.002,z},z%2?'#68655f':'#5c5954',1);
+ for(let x=-8;x<=8;x+=1)line3({x,y:.003,z:-7},{x,y:.003,z:12},'#6b6862',.6);
+ // window and city
+ drawPoly3([{x:-2.8,y:1.45,z:-6.98},{x:2.2,y:1.45,z:-6.98},{x:2.2,y:3.75,z:-6.98},{x:-2.8,y:3.75,z:-6.98}],'#08101b','#ddd',3);
+ for(let i=0;i<18;i++){let x=-2.65+(i%6)*.78,z=-6.975,y=1.65+Math.floor(i/6)*.62;drawPoly3([{x,y,z},{x:x+.16,y,z},{x:x+.16,y:y+.15,z},{x,y:y+.15,z}],i%3===0?'#e4d744':'#334b64',null)}
+ // art
+ drawPoly3([{x:4.3,y:2.0,z:-6.96},{x:6.6,y:2.0,z:-6.96},{x:6.6,y:3.55,z:-6.96},{x:4.3,y:3.55,z:-6.96}],'#f4f1d0','#eee',4);
+ line3({x:4.55,y:2.2,z:-6.94},{x:6.25,y:3.28,z:-6.94},'#222',4);line3({x:4.75,y:3.25,z:-6.94},{x:6.05,y:2.25,z:-6.94},'#d6c329',7);
+ // rug
+ drawPoly3([{x:-1.5,y:.01,z:-3.7},{x:4.3,y:.01,z:-3.7},{x:4.3,y:.01,z:1.1},{x:-1.5,y:.01,z:1.1}],'#ece9df','#111',2);
+ drawPoly3([{x:-1.05,y:.012,z:-3.3},{x:3.85,y:.012,z:-3.3},{x:3.85,y:.012,z:.7},{x:-1.05,y:.012,z:.7}],'#c2bdb0','#111',1);
+ // couch
+ box(5.4,0,-1.8,4.6,.46,1.35,'#eee');box(5.75,.45,-2.35,4.3,1.0,.34,'#f5f5f2');box(3.35,.32,-1.8,.42,.85,1.55,'#efefeb');box(7.75,.32,-1.8,.42,.85,1.55,'#efefeb');
+ box(4.35,.48,-1.88,1.75,.16,1.1,'#fff');box(6.15,.48,-1.88,1.75,.16,1.1,'#fff');
+ // coffee table
+ box(1.7,.34,-1.15,3.2,.18,1.35,'#d8d4cb');box(.45,0,-1.15,.15,.4,.15,'#222');box(2.95,0,-1.15,.15,.4,.15,'#222');
+ // bar and stools
+ box(-6.25,0,-2.8,2.55,1.18,4.7,'#393939');box(-4.85,1.08,-2.8,.55,.13,4.7,'#ddd');
+ box(-3.85,0,-1.8,.42,.74,.42,'#222');box(-3.85,.72,-1.8,.85,.12,.85,'#cfc9bb');box(-3.85,0,-3.6,.42,.74,.42,'#222');box(-3.85,.72,-3.6,.85,.12,.85,'#cfc9bb');
+ // desk and chair
+ box(5.2,.65,-4.5,3.6,.16,1.3,'#ded9cc');box(3.65,0,-4.5,.18,.68,.18,'#222');box(6.75,0,-4.5,.18,.68,.18,'#222');
+ box(4.7,.48,-3.3,1.05,.16,.95,'#313131');box(4.7,.58,-3.75,1.05,.9,.16,'#313131');
+ // plant
+ box(-7.25,0,-5.1,.72,.66,.72,'#d5d0c4');for(let i=0;i<9;i++){let a=i/9*TAU,r=.28+(i%3)*.13;let x=-7.25+Math.cos(a)*r,z=-5.1+Math.sin(a)*r;drawPoly3([{x:-7.25,y:.5,z:-5.1},{x,y:1.35+(i%2)*.4,z},{x:x+Math.cos(a+.8)*.3,y:1.02,z:z+Math.sin(a+.8)*.3}],'#2e8b57','#111',1)}
+ drawDoor();drawProps();
+}
+function drawDoor(){const hx=-8.43,z=4.38,w=2.15,h=2.85,a=doorOpen*1.25;const p0={x:hx,y:0,z},p1={x:hx+Math.sin(a)*w,y:0,z:z+Math.cos(a)*w},p2={x:p1.x,y:h,z:p1.z},p3={x:hx,y:h,z};drawPoly3([p0,p1,p2,p3],'#e8e1c8','#111',3);const knob={x:lerp(p0.x,p1.x,.83),y:1.32,z:lerp(p0.z,p1.z,.83)},K=project(knob);if(K){ctx.beginPath();ctx.arc(K.x,K.y,Math.max(2,K.s*.035),0,TAU);ctx.fillStyle='#111';ctx.fill()}}
+function drawProps(){
+ // letter and phone on table
+ let L=propBy('letter');if(L.active)drawPoly3([{x:.72,y:.535,z:-1.58},{x:1.62,y:.535,z:-1.58},{x:1.62,y:.535,z:-1.02},{x:.72,y:.535,z:-1.02}],'#fff4b8','#111',1);
+ let P=propBy('phone');if(P.active)box(P.x,.535,P.z,.28,.035,.52,'#111');
+ // bar objects
+ let G=propBy('glass');if(G.active){box(G.x,1.18,G.z,.32,.36,.32,'#cfe6ef');line3({x:G.x-.14,y:1.34,z:G.z-.14},{x:G.x+.14,y:1.34,z:G.z-.14},'#fff',2)}
+ let B=propBy('blender');if(B.active){box(B.x,1.18,B.z,.48,.55,.48,'#d6e3e6');box(B.x,1.08,B.z,.6,.18,.6,'#222')}
+}
+const STAGE={door:{x:-7.0,z:5.25},welcome:{x:-4.5,z:3.8},rugL:{x:-.9,z:-.3},rugC:{x:1.1,z:-.5},rugR:{x:3.0,z:-.35},bar:{x:-4.4,z:-2.35},sofa:{x:4.1,z:-.7},desk:{x:4.5,z:-3.05},window:{x:0,z:-4.8},playerNear:{x:0,z:3.6}};
+const profiles={
+ NAT:{shirt:'#6aa5db',pants:'#777982',skin:'#f0c9ad',hair:'#37261e',height:1.72,shoulder:.39,waist:.29,energy:1.08,jaw:1.28,still:.75},
+ CHRIS:{shirt:'#486c55',pants:'#6d7074',skin:'#e9c5aa',hair:'#a07142',height:1.80,shoulder:.47,waist:.34,energy:.72,jaw:.82,still:1.1},
+ SAMANTHA:{shirt:'#d3b449',pants:'#666b74',skin:'#edc6aa',hair:'#30261f',height:1.68,shoulder:.38,waist:.28,energy:.9,jaw:1.0,still:.92},
+ ERNIE:{shirt:'#a64f49',pants:'#50555e',skin:'#c88f6d',hair:'#202020',height:1.84,shoulder:.49,waist:.35,energy:1.26,jaw:1.18,still:.65},
+ PHIL:{shirt:'#444f46',pants:'#55585b',skin:'#e9c5aa',hair:'#b38d62',height:1.86,shoulder:.46,waist:.33,energy:.45,jaw:.62,still:1.45}
+};
+class Character{
+ constructor(name,pos){this.name=name;this.p=profiles[name];this.x=pos.x;this.z=pos.z;this.target=null;this.speed=1.1;this.facing=0;this.lookTarget='player';this.walk=0;this.speaking=false;this.line='';this.lineT=0;this.lineDur=0;this.gesture='idle';this.gestureT=0;this.gestureDur=1;this.emotion='neutral';this.held=null;this.visible=name!=='PHIL';this.resources={};this.lastScreen=null;this.spin=0;this.blink=Math.random()*2;}
+ moveTo(pos,speed=1.1){this.target={x:pos.x,z:pos.z};this.speed=speed}
+ setGesture(g,d=1.2){this.gesture=g;this.gestureT=0;this.gestureDur=d}
+ speak(text,gesture='talk',emotion=null){this.line=text;this.lineT=0;this.lineDur=Math.max(1.3,text.split(/\s+/).length*.29);this.speaking=true;this.setGesture(gesture,this.lineDur);if(emotion)this.emotion=emotion;return this.lineDur}
+ update(dt){
+  this.blink-=dt;if(this.blink<0)this.blink=2+Math.random()*3.5;
+  if(this.target){let dx=this.target.x-this.x,dz=this.target.z-this.z,dist=Math.hypot(dx,dz);if(dist<.06){this.x=this.target.x;this.z=this.target.z;this.target=null;}else{let step=Math.min(dist,this.speed*dt);this.x+=dx/dist*step;this.z+=dz/dist*step;this.facing=Math.atan2(dx,-dz);this.walk+=dt*this.speed*7}}
+  else this.walk=lerp(this.walk,0,1-Math.exp(-dt*4));
+  if(this.lookTarget==='player'&&!this.target){let want=Math.atan2(camera.x-this.x,-(camera.z-this.z));this.facing+=angleDelta(want,this.facing)*(1-Math.exp(-dt*2.2));}
+  if(this.speaking){this.lineT+=dt;if(this.lineT>=this.lineDur){this.speaking=false;this.line='';this.setGesture('listen',.8)}}
+  this.gestureT+=dt;this.spin*=Math.exp(-dt*2);
+ }
+}
+const chars={NAT:new Character('NAT',STAGE.bar),CHRIS:new Character('CHRIS',STAGE.door),SAMANTHA:new Character('SAMANTHA',STAGE.sofa),ERNIE:new Character('ERNIE',STAGE.desk),PHIL:new Character('PHIL',{x:-5.9,z:-6.2})};
+chars.NAT.held='glass';propBy('glass').active=false;chars.CHRIS.facing=0;chars.SAMANTHA.facing=Math.PI;chars.ERNIE.facing=Math.PI;
+function capLine(x1,y1,x2,y2,w,color){ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.lineCap='butt'}
+function drawHand(x,y,s,angle,open,color){ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.strokeStyle='#111';ctx.fillStyle=color;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=s*.018;ctx.beginPath();ctx.ellipse(0,0,s*.065,s*.09,0,0,TAU);ctx.fill();ctx.stroke();const spread=open?[-.55,-.28,0,.25,.5]:[-.22,-.1,0,.1,.22];for(let i=0;i<5;i++){let a=-Math.PI/2+spread[i],len=s*(i===0?.105:.16-(Math.abs(i-2)*.012)),bx=Math.cos(a)*s*.045,by=Math.sin(a)*s*.045,tx=bx+Math.cos(a)*len,ty=by+Math.sin(a)*len;capLine(bx,by,tx,ty,s*(.014-i*.0015),color);ctx.beginPath();ctx.arc(tx,ty,s*.008,0,TAU);ctx.fillStyle=color;ctx.fill()}ctx.restore()}
+function gesturePose(c){let u=clamp(c.gestureT/Math.max(.001,c.gestureDur),0,1),pulse=Math.sin(u*Math.PI),g=c.gesture;let p={lShoulder:[-.22,1.43],rShoulder:[.22,1.43],lElbow:[-.38,1.12],rElbow:[.38,1.12],lHand:[-.34,.88],rHand:[.34,.88],headRoll:0,headPitch:0,lean:0,openL:false,openR:false};
+ if(g==='talk'){p.rElbow=[.42,1.23];p.rHand=[.48+Math.sin(u*TAU*1.5)*.05,1.24+Math.cos(u*TAU)*.05];p.openR=true;p.headPitch=Math.sin(u*TAU*2)*.03}
+ if(g==='welcome'||g==='offer'){p.rElbow=[.45,1.28];p.rHand=[.62,1.20];p.openR=true;p.lean=.05*pulse}
+ if(g==='point'){p.rElbow=[.43,1.33];p.rHand=[.68,1.38];p.openR=false;p.lean=.08*pulse}
+ if(g==='palms'){p.lElbow=[-.42,1.18];p.rElbow=[.42,1.18];p.lHand=[-.56,1.22];p.rHand=[.56,1.22];p.openL=p.openR=true;p.headRoll=.05}
+ if(g==='recoil'){p.lHand=[-.24,1.42];p.rHand=[.24,1.42];p.openL=p.openR=true;p.lean=-.13*pulse;p.headPitch=-.09*pulse}
+ if(g==='cover'){p.rElbow=[.34,1.34];p.rHand=[.12,1.58];p.openR=false;p.lean=-.04}
+ if(g==='fold'){p.lElbow=[-.30,1.18];p.rElbow=[.30,1.18];p.lHand=[.20,1.18];p.rHand=[-.20,1.18]}
+ if(g==='hair'){p.rElbow=[.34,1.48];p.rHand=[.22,1.74];p.openR=true}
+ if(g==='stop'){p.rElbow=[.39,1.34];p.rHand=[.54,1.53];p.openR=true;p.lean=.03}
+ if(g==='shrug'){p.lElbow=[-.45,1.25];p.rElbow=[.45,1.25];p.lHand=[-.48,1.22];p.rHand=[.48,1.22];p.openL=p.openR=true;p.headRoll=.06*Math.sin(u*Math.PI)}
+ if(g==='drink'){p.rElbow=[.28,1.40];p.rHand=[.12,1.55];}
+ if(g==='freeze'){p.lHand=[-.31,.96];p.rHand=[.31,.96];p.lean=0}
+ if(g==='spin'){p.lHand=[-.44,1.2];p.rHand=[.44,1.2];p.openL=p.openR=true;c.spin=Math.sin(u*TAU*2.4)*.42}
+ return p}
+function drawCharacter(c){
+ if(!c.visible)return;
+ const foot=project({x:c.x,y:0,z:c.z});
+ if(!foot||foot.z>20){c.lastScreen=null;return}
+ const scale=foot.s;
+ const viewAng=Math.atan2(camera.x-c.x,-(camera.z-c.z));
+ const rel=angleDelta(c.facing+c.spin,viewAng),front=Math.cos(rel),side=Math.sin(rel);
+ const pose=gesturePose(c),walk=c.target?Math.sin(c.walk):0,bodyLean=pose.lean;
+ const bx=foot.x,by=foot.y;
+ ctx.save();
+ ctx.translate(bx,by);
+ ctx.scale(scale,-scale);
+ ctx.rotate(-side*.06);
+ // contact shadow
+ ctx.fillStyle='rgba(0,0,0,.24)';ctx.beginPath();ctx.ellipse(0,.012,.42,.10,0,0,TAU);ctx.fill();
+ // legs and feet
+ const pelvisY=.86,legSpread=.12;
+ capLine(-legSpread,pelvisY,-legSpread-.02*walk,.43,.12,c.p.pants);
+ capLine(-legSpread-.02*walk,.43,-legSpread+.035*walk,0,.095,c.p.pants);
+ capLine(legSpread,pelvisY,legSpread+.02*walk,.43,.12,c.p.pants);
+ capLine(legSpread+.02*walk,.43,legSpread-.035*walk,0,.095,c.p.pants);
+ ctx.fillStyle='#242424';ctx.strokeStyle='#111';ctx.lineWidth=.012;
+ for(const x of [-legSpread+.035*walk,legSpread-.035*walk]){ctx.beginPath();ctx.ellipse(x,.015,.12,.045,0,0,TAU);ctx.fill();ctx.stroke()}
+ // ribcage, waist, clavicle shelf
+ const shoulder=c.p.shoulder*(.76+.24*Math.abs(front)),waist=c.p.waist;
+ ctx.beginPath();ctx.moveTo(-waist,pelvisY);ctx.quadraticCurveTo(-shoulder*.98,1.16,-shoulder*.84,1.35);ctx.quadraticCurveTo(-shoulder*.58,1.49,0,1.49);ctx.quadraticCurveTo(shoulder*.58,1.49,shoulder*.84,1.35);ctx.quadraticCurveTo(shoulder*.98,1.16,waist,pelvisY);ctx.closePath();ctx.fillStyle=c.p.shirt;ctx.fill();ctx.strokeStyle='#111';ctx.lineWidth=.014;ctx.stroke();
+ // rounded deltoids hide the upper-arm roots
+ ctx.fillStyle=c.p.shirt;for(const x of [-shoulder*.86,shoulder*.86]){ctx.beginPath();ctx.ellipse(x,1.34,.095,.115,0,0,TAU);ctx.fill();ctx.stroke()}
+ const arm=sideName=>{
+   const left=sideName==='l',sign=left?-1:1;
+   let S=left?pose.lShoulder:pose.rShoulder,E=left?pose.lElbow:pose.rElbow,K=left?pose.lHand:pose.rHand;
+   S=[sign*shoulder*.84,1.34];
+   capLine(S[0],S[1],E[0],E[1],.105,c.p.shirt);
+   capLine(E[0],E[1],K[0],K[1],.075,c.p.skin);
+   drawHand(K[0],K[1],1,0,left?pose.openL:pose.openR,c.p.skin);
+   if(c.held&&((c.held==='glass'&&!left)||(c.held==='letter'&&!left))){
+     ctx.save();ctx.translate(K[0],K[1]);
+     if(c.held==='glass'){ctx.fillStyle='rgba(190,225,238,.65)';ctx.strokeStyle='#111';ctx.lineWidth=.012;ctx.fillRect(-.08,-.02,.16,.25);ctx.strokeRect(-.08,-.02,.16,.25);ctx.fillStyle='#ddd';ctx.fillRect(-.075,.13,.15,.07)}
+     else{ctx.fillStyle='#fff2a8';ctx.strokeStyle='#111';ctx.lineWidth=.01;ctx.fillRect(-.16,-.03,.32,.2);ctx.strokeRect(-.16,-.03,.32,.2)}
+     ctx.restore();
+   }
+ };
+ arm('l');arm('r');
+ // articulated tapered neck
+ const neckShift=side*.045+pose.headRoll*.08,neckTopY=1.57+pose.headPitch*.04;
+ ctx.beginPath();ctx.moveTo(-.085,1.45);ctx.lineTo(-.065+neckShift,neckTopY);ctx.lineTo(.065+neckShift,neckTopY);ctx.lineTo(.085,1.45);ctx.closePath();ctx.fillStyle=c.p.skin;ctx.fill();ctx.strokeStyle='#111';ctx.lineWidth=.01;ctx.stroke();
+ // skull follows upper neck, not a flat face panel
+ const headX=neckShift+side*.055,headY=1.74+pose.headPitch+bodyLean*.12,headW=.22*(.72+.28*Math.abs(front)),headH=.29;
+ ctx.save();ctx.translate(headX,headY);ctx.rotate(pose.headRoll-side*.08);ctx.fillStyle=c.p.skin;ctx.strokeStyle='#111';ctx.lineWidth=.012;ctx.beginPath();ctx.ellipse(0,0,headW,headH,0,0,TAU);ctx.fill();ctx.stroke();
+ ctx.fillStyle=c.p.hair;ctx.beginPath();ctx.ellipse(0,.115,headW*.98,headH*.67,0,0,Math.PI);ctx.lineTo(headW*.95,.03);ctx.quadraticCurveTo(0,.23,-headW*.95,.03);ctx.closePath();ctx.fill();ctx.stroke();
+ if(front>-.55){
+   let mouthOpen=0;
+   if(c.speaking){const q=c.lineT/Math.max(.1,c.lineDur),syll=Math.abs(Math.sin(c.lineT*12.5+c.name.charCodeAt(0)*.7))**.55;mouthOpen=(.018+.075*syll)*c.p.jaw*(.7+.3*Math.sin(q*Math.PI))}
+   if(c.emotion==='surprised')mouthOpen=Math.max(mouthOpen,.11);
+   const eyeY=.045,eyeSep=.085*(.8+.2*Math.abs(front));ctx.fillStyle='#fff';ctx.strokeStyle='#111';ctx.lineWidth=.01;
+   for(const ex of [-eyeSep,eyeSep]){ctx.beginPath();ctx.ellipse(ex,eyeY,.046,.025*(c.emotion==='surprised'?1.5:1),0,0,TAU);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(ex+side*.012,eyeY,.011,0,TAU);ctx.fillStyle='#111';ctx.fill();ctx.fillStyle='#fff'}
+   ctx.strokeStyle='#111';ctx.lineWidth=.018;ctx.beginPath();ctx.moveTo(-.14,.10+(c.emotion==='worried'?-.015:.015));ctx.lineTo(-.04,.115+(c.emotion==='worried'?.02:0));ctx.moveTo(.04,.115+(c.emotion==='worried'?.02:0));ctx.lineTo(.14,.10+(c.emotion==='worried'?-.015:.015));ctx.stroke();
+   ctx.lineWidth=.009;ctx.beginPath();ctx.moveTo(side*.01,.055);ctx.lineTo(side*.025,-.015);ctx.lineTo(side*.005,-.025);ctx.stroke();
+   const jawDrop=mouthOpen*.58;ctx.fillStyle='#7b2f30';ctx.strokeStyle='#111';ctx.beginPath();ctx.ellipse(0,-.095-jawDrop*.32,.065+mouthOpen*.12,.012+mouthOpen*.58,0,0,TAU);ctx.fill();ctx.stroke();
+   if(mouthOpen>.045){ctx.strokeStyle='#f6e7dd';ctx.lineWidth=.012;ctx.beginPath();ctx.moveTo(-.045,-.09-jawDrop*.12);ctx.lineTo(.045,-.09-jawDrop*.12);ctx.stroke()}
+   if(mouthOpen>.035){ctx.strokeStyle='rgba(90,45,35,.35)';ctx.lineWidth=.01;ctx.beginPath();ctx.arc(0,-.18-jawDrop*.3,.06,0,Math.PI);ctx.stroke()}
+ }
+ ctx.restore();ctx.restore();
+ const top=project({x:c.x,y:c.p.height,z:c.z});
+ if(top){c.lastScreen={x:foot.x,y:(foot.y+top.y)/2,w:Math.max(28,scale*.65),h:Math.max(70,foot.y-top.y)};ctx.font=`900 ${clamp(scale*.07,9,13)}px Arial`;ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='#111';ctx.lineWidth=3;ctx.strokeText(c.name,foot.x,top.y-8);ctx.fillText(c.name,foot.x,top.y-8)}
+}
+const state={beat:'hallway',embarrassment:.12,composure:.82,suspicion:.08,urgency:.32,tension:.1,affinity:{NAT:0,CHRIS:0,SAMANTHA:0,ERNIE:0,PHIL:0},facts:{letterSeen:false,phoneSeen:false,philExpected:false,natWarned:false,drinkTaken:false},history:[],ending:null};
+class Director{
+ constructor(){this.queue=[];this.current=null;this.beatTimer=0;this.locked=false}
+ add(...acts){this.queue.push(...acts)}
+ front(...acts){this.queue.unshift(...acts)}
+ clear(){this.queue=[];this.current=null}
+ tick(dt){this.beatTimer+=dt;if(!this.current&&this.queue.length)this.current=this.instantiate(this.queue.shift());if(this.current&&this.current.tick(dt)){this.current=null}}
+ instantiate(a){if(typeof a==='function'){a();return{tick:()=>true}}if(a.type==='wait'){let t=0;return{tick:dt=>(t+=dt)>=a.d}}if(a.type==='say'){let c=chars[a.c],d=c.speak(a.text,a.g||'talk',a.e);setCaption(a.c,a.text,d);if(a.look)c.lookTarget=a.look;return{tick:()=>!c.speaking}}if(a.type==='move'){let c=chars[a.c];c.moveTo(a.to,a.speed||1.1);if(a.look)c.lookTarget=a.look;return{tick:()=>!c.target}}if(a.type==='gesture'){let c=chars[a.c],t=0;c.setGesture(a.g,a.d||1.2);if(a.e)c.emotion=a.e;return{tick:dt=>(t+=dt)>=(a.d||1.2)}}if(a.type==='parallel'){let subs=a.acts.map(x=>this.instantiate(x));return{tick:dt=>{subs=subs.filter(s=>!s.tick(dt));return subs.length===0}}}return{tick:()=>true}}
+}
+const director=new Director();
+const A={say:(c,text,g='talk',e=null)=>({type:'say',c,text,g,e}),move:(c,to,speed=1.1)=>({type:'move',c,to,speed}),wait:d=>({type:'wait',d}),gesture:(c,g,d=1.2,e=null)=>({type:'gesture',c,g,d,e}),parallel:(...acts)=>({type:'parallel',acts})};
+let captionUntil=0;function setCaption(name,text,d=2){$('#caption').innerHTML=`<b>${name}</b> ${text}`;captionUntil=gameTime+d+.4}
+function hint(text,d=2.2){let e=$('#hint');e.textContent=text;e.classList.add('show');clearTimeout(hint.t);hint.t=setTimeout(()=>e.classList.remove('show'),d*1000)}
+function setBeat(id,label){state.beat=id;director.beatTimer=0;$('#beatRead').textContent=label;state.history.push(id)}
+function opening(){setBeat('welcome','THE DOOR — CHRIS LETS YOU INTO THE ROOM');doorGoal=1;chars.CHRIS.lookTarget='player';director.add(A.wait(.45),A.move('CHRIS',{x:-4.65,z:3.7},1.25),A.say('CHRIS','You made it. Come in. Ignore the apartment. It became a meeting by accident.','welcome'),()=>{chars.NAT.lookTarget='player';chars.SAMANTHA.lookTarget='player';chars.ERNIE.lookTarget='player';},A.parallel(A.say('NAT','Hi. Perfect timing. Completely normal timing.','welcome','worried'),A.gesture('SAMANTHA','listen',2)),A.say('ERNIE','We are doing onboarding, crisis management, and apparently hospitality.','palms'),A.wait(.5),()=>startOnboarding())}
+function startOnboarding(){setBeat('onboarding','THE PLAN — EVERYONE TRIES TO LOOK ORGANIZED');chars.CHRIS.moveTo(STAGE.rugL);chars.SAMANTHA.moveTo(STAGE.rugR);chars.ERNIE.moveTo(STAGE.rugC);chars.NAT.moveTo(STAGE.bar);director.add(A.parallel(A.move('NAT',STAGE.rugC,1.0),A.say('CHRIS','The new team arrives Monday. Nat says she has a plan.','point')),A.say('NAT','I do have a plan. It has phases. The phases have tabs.','talk','worried'),A.say('SAMANTHA','And one of the tabs is blinking.','point'),A.wait(.4),()=>startSpin())}
+function startSpin(){setBeat('spin','THE LEAK — NAT CONTINUES AFTER THE ROOM HAS CHANGED');chars.NAT.moveTo(STAGE.desk,1.15);director.add(A.parallel(A.move('NAT',STAGE.desk,1.1),A.say('NAT','First, we divide onboarding into two streams. One for systems and one for culture.','talk')),A.gesture('NAT','spin',4.4,'neutral'),A.parallel(A.say('CHRIS','Nat?','recoil','surprised'),A.gesture('SAMANTHA','stop',2.2,'surprised'),A.gesture('ERNIE','point',2.2,'surprised')),A.say('SAMANTHA','Honey, you are still turning.','stop','surprised'),A.say('NAT','I know. I am making it look intentional.','hair','worried'),()=>revealLetter())}
+function revealLetter(){setBeat('evidence','THE EVIDENCE — THE COFFEE TABLE KNOWS MORE THAN THE CAST');state.urgency=.56;director.add(A.say('CHRIS','Before we continue, did anyone move the letter from the printer?','fold'),A.say('ERNIE','Which letter?','shrug'),A.say('SAMANTHA','The one on the table that says performance review in very large type.','point'),()=>{hint('Look at the yellow letter on the coffee table. Move close and press E or the hand.',4);});}
+function summonPhil(){if(state.facts.philExpected)return;state.facts.philExpected=true;setBeat('arrival','THE ARRIVAL — STATUS ENTERS THROUGH THE DOOR');director.front(A.say('NAT','Nobody panic. Particularly, nobody use the word panic.','stop','worried'),A.wait(.5),()=>{doorGoal=1;chars.PHIL.visible=true;chars.PHIL.moveTo({x:-4.4,z:1.6},.9)},A.parallel(A.move('PHIL',{x:-3.5,z:1.5},.85),A.say('PHIL','Good evening. I was told this was the best time to observe the onboarding process.','welcome')),A.parallel(A.gesture('NAT','freeze',2.5,'surprised'),A.gesture('CHRIS','freeze',2.5),A.gesture('SAMANTHA','cover',2.5),A.gesture('ERNIE','freeze',2.5)),A.say('NAT','Perfect timing.','welcome','worried'),()=>finalPressure())}
+function finalPressure(){setBeat('pressure','THE REVIEW — EVERY ACTION NOW BECOMES TESTIMONY');state.urgency=.82;director.add(A.say('PHIL','Who would like to explain what I am looking at?','fold'),A.wait(1),()=>{hint('Speak, offer the letter, protect Nat, blame the chair, or walk toward the door.',4)})}
+function finish(kind){if(state.ending)return;state.ending=kind;setBeat('ending','ENDING — THE ROOM REMEMBERS WHAT YOU DID');director.clear();if(kind==='rescue')director.add(A.say('NAT','They saw the problem before it became expensive. That is the whole job, actually.','welcome'),A.say('PHIL','Then perhaps the demonstration was more useful than intended.','fold'),A.say('CHRIS','We will call that a successful pilot.','talk'));else if(kind==='expose')director.add(A.say('PHIL','Thank you. Clarity is preferable to choreography.','fold'),A.say('NAT','That is one possible interpretation of clarity.','cover','worried'),A.say('SAMANTHA','We should probably stop the chair now.','point'));else director.add(A.say('ERNIE','They left.','recoil'),A.say('CHRIS','Honestly, that may be the strongest onboarding decision anyone made tonight.','fold'),A.say('PHIL','Noted.','fold'));}
+function classify(text){let t=text.toLowerCase();if(/help|support|fine|capable|good plan|protect|useful|pilot/.test(t))return'support';if(/chair|spinning|technical|glitch|accident|broken/.test(t))return'blameChair';if(/letter|review|phil|boss|coming|warn/.test(t))return'warn';if(/lie|fault|mess|bad|unprepared|explain yourself/.test(t))return'accuse';if(/joke|funny|laugh|hilarious/.test(t))return'tease';if(/calm|breathe|slow|okay/.test(t))return'comfort';if(/leave|bye|goodbye|going/.test(t))return'leave';if(/what|why|how|when|who|\?/.test(t))return'question';return'other'}
+function playerSay(){let input=$('#say'),text=input.value.trim();if(!text)return;input.value='';let target=$('#target').value.toUpperCase(),act=classify(text);state.history.push(`player:${act}:${target}:${text}`);setCaption('YOU',text,Math.max(1.4,text.split(/\s+/).length*.28));if(act==='leave'){finish('leave');return}if(act==='warn'){state.facts.natWarned=true;state.affinity.NAT+=2;state.suspicion+=.12;director.front(A.say('NAT','Thank you. I would have preferred that warning approximately six minutes ago, but thank you.','recoil','worried'));if(!state.facts.philExpected)setTimeout(summonPhil,1200);return}if(act==='support'){state.affinity.NAT+=2;state.composure+=.08;director.front(A.say('NAT','Yes. Exactly. That is what I was trying to demonstrate.','welcome'),A.say('CHRIS','You are being extremely generous, but strategically so.','talk'));if(state.beat==='pressure')finish('rescue');return}if(act==='blameChair'){state.embarrassment+=.08;director.front(A.say('ERNIE','The chair has no legal representation, so that is probably safe.','palms'),A.say('NAT','I accept this theory completely.','welcome'));if(state.beat==='pressure')finish('rescue');return}if(act==='accuse'){state.suspicion+=.25;state.affinity.NAT-=2;director.front(A.say('NAT','That was direct. Very efficient.','freeze','worried'),A.say('PHIL','Directness is useful when it is accurate.','fold'));if(state.beat==='pressure')finish('expose');return}if(act==='comfort'){state.affinity.NAT++;state.composure+=.1;director.front(A.say('NAT','I am breathing. It is simply occurring at an executive pace.','hair','worried'));return}if(act==='tease'){state.embarrassment+=.12;director.front(A.say('CHRIS','Excellent. We have reached the laughter portion of the risk assessment.','fold'),A.gesture('NAT','cover',1.8,'worried'));return}if(act==='question'){let c=chars[target]||chars.CHRIS;director.front(A.say(c.name,c.name==='PHIL'?'I am asking the questions for the moment.':c.name==='NAT'?'The short answer is yes. The useful answer requires a diagram.':'That depends on which part you noticed first.','talk'));return}director.front(A.say(target==='ROOM'?'SAMANTHA':target,(target==='NAT'?'I heard you. I am deciding whether that helps.':'That is now part of the meeting record.'),'talk'));}
+$('#sendBtn').onclick=playerSay;$('#say').addEventListener('keydown',e=>{if(e.key==='Enter')playerSay()});
+function nearestInteractable(){let best=null,bd=2.2;for(const p of props){if(!p.active&&p.kind!=='door')continue;let d=Math.hypot(p.x-camera.x,p.z-camera.z);if(d<bd){best=p;bd=d}}for(const c of Object.values(chars)){if(!c.visible)continue;let d=Math.hypot(c.x-camera.x,c.z-camera.z);if(d<bd){best=c;bd=d}}return best}
+function interact(){if(playerActionCooldown>0)return;playerActionCooldown=.5;let o=hovered||nearestInteractable();if(!o){hint('Nothing is within reach.',1.3);return}if(o instanceof Character){$('#target').value=o.name;if(camera.held){let item=camera.held;camera.held=null;o.held=item;director.front(A.say(o.name,item==='letter'?'Why are you giving me that now?':'Thank you. I was pretending not to need that.','recoil'));}else{state.affinity[o.name]++;director.front(A.gesture(o.name,o.name==='PHIL'?'fold':'welcome',1.3),A.say(o.name,o.name==='PHIL'?'Please maintain professional distance.':'I noticed that.','talk'));}return}
+ if(o.kind==='letter'){o.active=false;camera.held='letter';state.facts.letterSeen=true;state.suspicion+=.18;hint('You picked up the performance review letter.',2.2);director.front(A.say('NAT','That is not part of the onboarding packet.','recoil','surprised'),A.say('SAMANTHA','It is now.','point'));setTimeout(summonPhil,2600)}
+ if(o.kind==='phone'){state.facts.phoneSeen=true;state.urgency+=.15;director.front(A.say('NAT','Please do not read the notifications out loud.','stop','worried'));hint('A notification reads: PHIL — arriving early.',2.5);setTimeout(summonPhil,1200)}
+ if(o.kind==='blender'){director.front(A.gesture('ERNIE','recoil',1.4,'surprised'),A.say('ERNIE','Not during the explanation.','stop'));state.embarrassment+=.06}
+ if(o.kind==='chair'){director.front(A.gesture('NAT','spin',3.0,'surprised'),A.say('NAT','Please stop validating the chair theory.','recoil','worried'));state.embarrassment+=.08}
+ if(o.kind==='door'){doorGoal=1-doorGoal;if(state.beat==='pressure'&&doorGoal>.5)finish('leave')}
+}
+$('#handBtn').onclick=interact;
+const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key.toLowerCase()==='e')interact();if(e.key.toLowerCase()==='d')$('#debug').classList.toggle('on')});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+let dragging=false,lastPX=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastPX=e.clientX;canvas.setPointerCapture(e.pointerId);selectAt(e.clientX,e.clientY)});canvas.addEventListener('pointermove',e=>{if(dragging){camera.yaw-=(e.clientX-lastPX)*.006;lastPX=e.clientX}else hoverAt(e.clientX,e.clientY)});canvas.addEventListener('pointerup',e=>dragging=false);
+function selectAt(x,y){hoverAt(x,y);if(hovered instanceof Character){$('#target').value=hovered.name;hint(`Addressing ${hovered.name}`,1.1)}}
+function hoverAt(x,y){hovered=null;let best=1e9;for(const c of Object.values(chars)){let r=c.lastScreen;if(!r)continue;if(Math.abs(x-r.x)<r.w*.55&&Math.abs(y-r.y)<r.h*.55){let d=Math.hypot(x-r.x,y-r.y);if(d<best){best=d;hovered=c}}}for(const p of props){if(!p.active&&p.kind!=='door')continue;let q=project({x:p.x,y:p.y||.4,z:p.z});if(q&&Math.hypot(x-q.x,y-q.y)<Math.max(18,q.s*.35)){let d=Math.hypot(x-q.x,y-q.y);if(d<best){best=d;hovered=p}}}}
+let joy={x:0,y:0};const pad=$('#mobileMove'),knob=pad.querySelector('i');function joySet(e){let r=pad.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),m=Math.min(38,Math.hypot(x,y)),a=Math.atan2(y,x);joy.x=Math.cos(a)*m/38;joy.y=Math.sin(a)*m/38;knob.style.transform=`translate(${joy.x*38}px,${joy.y*38}px)`}pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);joySet(e)});pad.addEventListener('pointermove',e=>{if(e.buttons)joySet(e)});pad.addEventListener('pointerup',()=>{joy.x=joy.y=0;knob.style.transform=''})
+let lookTouch=null;$('#mobileLook').addEventListener('pointerdown',e=>{lookTouch=e.clientX;$('#mobileLook').setPointerCapture(e.pointerId)});$('#mobileLook').addEventListener('pointermove',e=>{if(lookTouch!=null){camera.yaw-=(e.clientX-lookTouch)*.008;lookTouch=e.clientX}});$('#mobileLook').addEventListener('pointerup',()=>lookTouch=null);
+function updateCamera(dt){let forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,right=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x,m=Math.hypot(forward,right);if(m>1){forward/=m;right/=m}let sp=2.15,sy=Math.sin(camera.yaw),cy=Math.cos(camera.yaw),dx=(sy*forward+cy*right)*sp*dt,dz=(-cy*forward+sy*right)*sp*dt;let nx=clamp(camera.x+dx,room.xmin+.45,room.xmax-.45),nz=clamp(camera.z+dz,room.zmin+.45,room.zmax-.45);
+ // coarse furniture collision
+ const blocks=[{x:5.4,z:-1.8,w:5,d:1.8},{x:-6.2,z:-2.8,w:3,d:5.2},{x:1.7,z:-1.15,w:3.6,d:1.7},{x:5.2,z:-4.5,w:4,d:1.6}];let blocked=blocks.some(b=>Math.abs(nx-b.x)<b.w/2+.28&&Math.abs(nz-b.z)<b.d/2+.28);if(!blocked){camera.x=nx;camera.z=nz}}
+function updateHoverCenter(){let best=null,bestScore=1e9;for(const c of Object.values(chars)){if(!c.visible)continue;let q=project({x:c.x,y:1.15,z:c.z});if(q){let score=Math.hypot(q.x-W/2,q.y-H/2)/Math.max(.5,q.s);if(score<bestScore&&q.z<3){best=c;bestScore=score}}}for(const p of props){if(!p.active&&p.kind!=='door')continue;let q=project({x:p.x,y:p.y||.5,z:p.z});if(q){let score=Math.hypot(q.x-W/2,q.y-H/2)/Math.max(.5,q.s);if(score<bestScore&&q.z<2.6){best=p;bestScore=score}}}if(bestScore<.42)hovered=best;$('#handBtn').classList.toggle('ready',!!hovered);$('#handBtn').title=hovered?`Use ${hovered.name||hovered.label}`:'Use, take, give, touch'}
+function socialProximity(){for(const c of Object.values(chars)){if(!c.visible)continue;let d=Math.hypot(c.x-camera.x,c.z-camera.z);if(d<1.15&&!c._near){c._near=true;state.affinity[c.name]+=.1;if(c.name==='NAT'&&state.beat==='evidence')director.front(A.say('NAT','You are standing very close to the evidence.','recoil','worried'))}if(d>1.5)c._near=false}}
+let mp={on:false,lastNose:null,lastRaise:false,stream:null};
+$('#camBtn').onclick=async()=>{if(mp.on){stopBody();return}try{mp.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480},audio:false});let v=$('#cameraPreview');v.srcObject=mp.stream;await v.play();v.classList.add('on');mp.on=true;$('#camBtn').classList.add('on');hint('Body input active. Raise a hand to interrupt. Lean to influence the room.',3);loadHolistic(v)}catch(e){hint('Camera permission was not available.',2.5)}};
+function stopBody(){mp.on=false;$('#camBtn').classList.remove('on');$('#cameraPreview').classList.remove('on');if(mp.stream)mp.stream.getTracks().forEach(t=>t.stop())}
+async function loadScript(src){return new Promise((res,rej)=>{let s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+async function loadHolistic(video){try{if(!window.Holistic){await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675471629/holistic.js')}const h=new Holistic({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675471629/'+f});h.setOptions({modelComplexity:0,smoothLandmarks:true,minDetectionConfidence:.55,minTrackingConfidence:.55});h.onResults(r=>{if(!mp.on)return;let p=r.poseLandmarks;if(p){let nose=p[0],ls=p[11],rs=p[12],lw=p[15],rw=p[16],mid=(ls.x+rs.x)/2,lean=(mid-.5);camera.yaw-=lean*.025;let raised=(lw&&lw.y<ls.y-.08)||(rw&&rw.y<rs.y-.08);if(raised&&!mp.lastRaise){director.front(A.say('CHRIS','You have the floor.','welcome'));hint('Hand raise recognized as an interruption.',1.5)}mp.lastRaise=raised;if(mp.lastNose!=null){let dy=nose.y-mp.lastNose;if(Math.abs(dy)>.014&&state.beat==='pressure'){state.composure+=.01;}}mp.lastNose=nose.y}});let busy=false;async function loop(){if(!mp.on)return;if(video.readyState>=2&&!busy){busy=true;await h.send({image:video});busy=false}setTimeout(loop,85)}loop()}catch(e){hint('Body model could not load. The scene remains playable.',2.5)}}
+$('#voiceBtn').onclick=()=>{$('#voiceBtn').classList.toggle('on');hint($('#voiceBtn').classList.contains('on')?'Character voices on':'Character voices off',1.2)};
+function maybeVoice(){for(const c of Object.values(chars)){if(c.speaking&&!c._voiced&&$('#voiceBtn').classList.contains('on')&&'speechSynthesis'in window){c._voiced=true;let u=new SpeechSynthesisUtterance(c.line);u.rate={NAT:1.08,CHRIS:.95,SAMANTHA:1,ERNIE:1.06,PHIL:.82}[c.name];u.pitch={NAT:1.15,CHRIS:.83,SAMANTHA:1.1,ERNIE:.95,PHIL:.72}[c.name];speechSynthesis.speak(u)}if(!c.speaking)c._voiced=false}}
+function render(){drawEnvironment();let list=Object.values(chars).filter(c=>c.visible).map(c=>({c,d:worldToCam({x:c.x,y:0,z:c.z}).z})).sort((a,b)=>b.d-a.d);for(const e of list)drawCharacter(e.c);if(camera.held){ctx.save();ctx.translate(W*.84,H*.82);ctx.rotate(-.2);ctx.fillStyle=camera.held==='letter'?'#fff2a8':'rgba(190,225,238,.7)';ctx.strokeStyle='#111';ctx.lineWidth=3;if(camera.held==='letter'){ctx.fillRect(-70,-45,140,90);ctx.strokeRect(-70,-45,140,90);ctx.fillStyle='#111';ctx.font='900 10px Arial';ctx.textAlign='center';ctx.fillText('PERFORMANCE REVIEW',0,-7)}else{ctx.fillRect(-35,-70,70,100);ctx.strokeRect(-35,-70,70,100)}ctx.restore()}}
+function update(dt){gameTime+=dt;doorOpen=lerp(doorOpen,doorGoal,1-Math.exp(-dt*3));playerActionCooldown=Math.max(0,playerActionCooldown-dt);updateCamera(dt);for(const c of Object.values(chars))c.update(dt);director.tick(dt);updateHoverCenter();socialProximity();maybeVoice();if(captionUntil<gameTime)$('#caption').textContent='';if(state.beat==='evidence'&&director.beatTimer>10&&!state.facts.philExpected)summonPhil();if(state.beat==='pressure'&&director.beatTimer>18&&!state.ending)finish(state.affinity.NAT>1?'rescue':state.suspicion>.35?'expose':'leave');$('#debug').textContent=JSON.stringify({camera:{x:+camera.x.toFixed(2),z:+camera.z.toFixed(2),yaw:+camera.yaw.toFixed(2),held:camera.held},state,active:director.current?true:false,queue:director.queue.length,characters:Object.fromEntries(Object.entries(chars).map(([k,c])=>[k,{x:+c.x.toFixed(1),z:+c.z.toFixed(1),gesture:c.gesture,speaking:c.speaking,held:c.held}]))},null,2)}
+function frame(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(started)update(dt);render();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+$('#enter').onclick=()=>{started=true;$('#start').remove();$('#liveDot').classList.add('live');$('#statusText').textContent='LIVE';opening();$('#say').focus()};
+$('#debugBtn').onclick=()=>{$('#debug').classList.toggle('on');$('#debugBtn').classList.toggle('on')};
+if(location.search.includes('autostart'))setTimeout(()=>$('#enter').click(),100);
+</script>
+</body>
+</html>

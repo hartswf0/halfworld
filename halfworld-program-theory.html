@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HALFWORLD — PROGRAM THEORY</title>
+<style>
+  :root{
+    --paper:#f2f1ec;
+    --card:#f7f6f2;
+    --ink:#141414;
+    --dim:#8a8a86;
+    --faint:#d8d6cf;
+    --red:#e01b1b;
+    --mono:ui-monospace,'SF Mono','IBM Plex Mono',Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--paper)}
+  body{
+    font-family:var(--mono);color:var(--ink);
+    background:
+      radial-gradient(circle at 1px 1px, rgba(20,20,20,.05) 1px, transparent 1.6px) 0 0/14px 14px,
+      var(--paper);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:34px 26px 90px}
+
+  header{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+  .glyph{display:grid;grid-template-columns:repeat(3,7px);gap:4px}
+  .glyph i{width:7px;height:7px;border-radius:50%;background:var(--ink)}
+  .glyph i.r{background:var(--red)}
+  .mast{flex:1;text-align:center}
+  h1{font-size:15px;font-weight:600;letter-spacing:.55em;text-indent:.55em;text-transform:uppercase}
+  .seat{width:29px}
+  .sub{margin-top:10px;font-size:10px;letter-spacing:.3em;text-indent:.3em;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:14px}
+  .backrow{display:flex;justify-content:center;margin-bottom:48px}
+  a.back{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);
+    text-decoration:none;border:1px solid var(--faint);padding:8px 14px;background:var(--card);
+  }
+  a.back:hover{color:var(--ink);border-color:var(--ink)}
+  .dotr{width:6px;height:6px;border-radius:50%;background:var(--red);flex:none}
+
+  section{margin-bottom:56px}
+  .shead{display:flex;align-items:baseline;gap:14px;border-top:1px solid var(--ink);padding-top:14px;margin-bottom:18px}
+  .snum{font-size:10px;letter-spacing:.2em;color:var(--red)}
+  .sname{font-size:12px;font-weight:700;letter-spacing:.4em;text-transform:uppercase}
+
+  p{font-size:12px;line-height:1.9;max-width:68ch}
+  p+p{margin-top:12px}
+  p b{font-weight:700}
+  p .r{color:var(--red)}
+  em{font-style:normal;border-bottom:1px solid var(--faint)}
+
+  .claim{
+    border:1px solid var(--ink);background:var(--card);padding:22px 24px;margin:20px 0;
+  }
+  .claim .k{display:flex;align-items:center;gap:8px;font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+  .claim p{font-size:12.5px;line-height:1.9}
+
+  pre{
+    background:var(--card);border:1px solid var(--faint);border-left:2px solid var(--ink);
+    padding:16px 18px;font-size:10.5px;line-height:1.75;overflow-x:auto;margin:14px 0;
+    font-family:var(--mono);color:var(--ink);
+  }
+  pre .c{color:var(--dim)}
+  pre .r{color:var(--red)}
+
+  .ledger{border-top:1px solid var(--faint)}
+  .row{display:grid;grid-template-columns:150px 1fr;gap:14px;border-bottom:1px solid var(--faint);padding:13px 0}
+  .row .l{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;padding-top:2px}
+  .row .l .sm{display:block;font-weight:400;color:var(--dim);letter-spacing:.14em;margin-top:4px;font-size:9px}
+  .row .b{font-size:11.5px;line-height:1.8}
+  .row .b .src{color:var(--dim);font-size:10px;letter-spacing:.06em}
+
+  ol.path{list-style:none;counter-reset:st;max-width:70ch}
+  ol.path li{
+    counter-increment:st;position:relative;padding:16px 0 18px 56px;border-top:1px solid var(--faint);
+    font-size:11.5px;line-height:1.85;
+  }
+  ol.path li::before{
+    content:"v0." counter(st);position:absolute;left:0;top:18px;
+    font-size:10px;letter-spacing:.14em;color:var(--red);
+  }
+  ol.path li b{display:block;font-size:11px;letter-spacing:.24em;text-transform:uppercase;margin-bottom:5px}
+
+  ul.flat{list-style:none;max-width:70ch}
+  ul.flat li{position:relative;padding:10px 0 10px 22px;font-size:11.5px;line-height:1.8;border-top:1px solid var(--faint)}
+  ul.flat li::before{content:"";position:absolute;left:2px;top:17px;width:6px;height:6px;border-radius:50%;background:var(--red)}
+  ul.flat li b{letter-spacing:.18em;text-transform:uppercase;font-size:10.5px}
+
+  .foot{
+    border-top:1px solid var(--ink);padding-top:18px;
+    display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+  }
+  .foot span b{color:var(--ink);font-weight:600}
+  @media(max-width:560px){
+    h1{letter-spacing:.3em;text-indent:.3em}
+    .row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="glyph" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="r"></i><i></i><i></i><i></i><i></i></div>
+    <div class="mast"><h1>Halfworld</h1></div>
+    <div class="seat"></div>
+  </header>
+  <div class="sub">Program theory &middot; naming and building the single engine</div>
+  <div class="backrow"><a class="back" href="halfworld-index.html"><span class="dotr"></span> BACK TO INDEX</a></div>
+
+  <!-- 00 NAME -->
+  <section>
+    <div class="shead"><span class="snum">00</span><span class="sname">The Name</span></div>
+    <p>
+      <b>HALFWORLD.</b> Halftone — the shared substrate: every artifact renders ink dots on paper.
+      HALFTRACK — the main artifact for characters, whose embedding API is the engine's spine.
+      World — what everything builds toward. And the diagnosis itself: each of the nine artifacts
+      is <em>half a world</em>. Characters without places. Places without characters. Scores without
+      stages. Minds without bodies. The engine is the weld.
+    </p>
+    <div class="claim">
+      <div class="k"><span class="dotr"></span> Definition</div>
+      <p>
+        HALFWORLD is a paper-and-ink performance engine in which <b>character &sub; scene &sub; world</b>,
+        every layer is plain JSON, and the same small verb set — pose, walk, face, say, place,
+        remember — is spoken equally by a hand on the screen, a game loop, a wall-clock score,
+        and an AI mind emitting bounded operation packets.
+      </p>
+    </div>
+  </section>
+
+  <!-- 01 DIAGNOSIS -->
+  <section>
+    <div class="shead"><span class="snum">01</span><span class="sname">Diagnosis</span></div>
+    <p>
+      Nine artifacts, four families, one aesthetic, and three fractures.
+    </p>
+    <p>
+      <b class="r">Fracture one — three character systems that cannot meet.</b> HALFTRACK has the
+      richest figure rig (spec &rarr; metrics &rarr; 40 poses, IK arms, silhouette hands, four halftone
+      styles). Atlantis grew its own identity-forward cast system (pronouns, wardrobe, ten skin
+      tones, access markers, an articulated dot rig) that even names its drives after HALFTRACK's —
+      but shares no schema with it. SYNTHCINE's ICARO rig has the best faces (visemes, affect,
+      head-carriage springs) bound to five fixed characters and one canonical donor head. A HERO
+      made in HALFTRACK cannot walk into Atlantis, and NAT cannot leave her call tile.
+    </p>
+    <p>
+      <b class="r">Fracture two — three clocks that cannot agree.</b> Whispers runs live and
+      reactive (ripples, no timeline). The Call runs scored and scrub-deterministic (every frame
+      derived from the playhead). Virentis runs turn-based (one packet per utterance). The comedy
+      engine layers a beat graph over a score and proves the clocks can nest — but only inside one
+      file.
+    </p>
+    <p>
+      <b class="r">Fracture three — no shared memory or bus.</b> HALFTRACK and Worldsmith persist
+      nothing. Atlantis exports project JSON; Virentis exports world JSON; the Call persists mocap
+      takes in localStorage — five stores, no common schema, and not one BroadcastChannel or
+      postMessage between any two artifacts.
+    </p>
+  </section>
+
+  <!-- 02 THEORY OF CHANGE -->
+  <section>
+    <div class="shead"><span class="snum">02</span><span class="sname">Theory of Change</span></div>
+    <p>
+      The artifacts already contain their own solution. Each one, independently, arrived at the
+      same move: <em>reduce the thing to a small JSON contract and let anything speak it</em>.
+      HALFTRACK's <b>window.HALFTRACK</b>. Atlantis's <b>project snapshot</b>. The Call's
+      <b>OTIO line manifest</b>. Virentis's <b>world packet</b>. The comedy engine's <b>beat
+      graph</b>. These are not nine programs; they are five contracts wearing nine costumes.
+    </p>
+    <div class="claim">
+      <div class="k"><span class="dotr"></span> The Wager</div>
+      <p>
+        <b>IF</b> the five contracts are lifted out of their host files and made canonical —
+        one CAST, one STAGE, one SCORE, one MIND, one MEMORY —
+        <b>THEN</b> any fa&ccedil;ade becomes a restageable scene, any character can walk into any
+        world, any clock can drive any stage, and any mind can direct any cast —
+        <b>BECAUSE</b> every artifact already proves its own contract works; what has never
+        existed is the weld between them.
+      </p>
+    </div>
+    <p>
+      The unit of progress is therefore not "a bigger app." It is <em>one contract at a time,
+      demonstrated by one seam at a time</em> — the opposite of half-track's everything-at-once
+      attempt, which the diagnosis says falls short precisely because it swallowed the world
+      instead of contracting with it.
+    </p>
+  </section>
+
+  <!-- 03 FIVE CONTRACTS -->
+  <section>
+    <div class="shead"><span class="snum">03</span><span class="sname">The Five Contracts</span></div>
+
+    <pre><span class="c">// 1 · CAST — who exists. donor: HALFTRACK spec + Atlantis identity + ICARO face</span>
+{ id, identity:{ name, pronouns, culture, access },
+  look:{ hair, skin, garment, build, height, glasses, tone },   <span class="c">// HALFTRACK spec dials</span>
+  face:{ style, skinInk, hairTone },                            <span class="c">// ICARO casting dials</span>
+  rig:"halfworld-pose-1" }                                      <span class="c">// one channel set, union of</span>
+                                                                <span class="c">// mkSignals / mkPose / performance.*</span>
+
+<span class="c">// 2 · STAGE — what exists where. donor: Atlantis asset/instance/world + Worldsmith generator</span>
+{ assets:{ id:{ kind, points|grid|cmds, childWorldId } },       <span class="c">// dots are the geometry</span>
+  instances:[{ assetId, x, z, y, scale, rot, layer, anim }],
+  cast:[{ castId, x, z, pose, facing }],                        <span class="c">// people are placements too</span>
+  layers:[ ground..interface ] }                                <span class="c">// Atlantis's 12, executable</span>
+
+<span class="c">// 3 · SCORE — when things happen. donor: SYNTHCINE LINES (the MONTE transport pattern)</span>
+{ fps:24, dur, rows:[{ id, c, s, d, t, m:"cue@word; cue=param", wpm }] }
+                                                                <span class="c">// scrub-deterministic:</span>
+                                                                <span class="c">// state = f(playhead), never queued</span>
+
+<span class="c">// 4 · MIND — who decides. donor: Virentis packet + whispers ripples + comedy BEATS</span>
+{ reply, changes:[ op &le; 8, validated, clamped ],               <span class="c">// ops target STAGE + CAST + SCORE</span>
+  memory:[], suggestions:[] }
+beats:[{ id, pre(world), lines:[{ c, text, phrase, reactions }] }]
+
+<span class="c">// 5 · MEMORY — what persists. donor: Atlantis project JSON + ledger</span>
+{ schema:"halfworld/v1", cast, stages, scores, beats, worlds,
+  operations:[ append-only ledger ], field:{ virentis tiles } }</pre>
+
+    <p>
+      Two laws bind the contracts. <b>Law of the dot:</b> all geometry bottoms out in dots on
+      paper — Worldsmith grids, Atlantis point clouds, HALFTRACK tone screens, ICARO halftone
+      fields are one substrate at four densities, so any renderer can draw any contract.
+      <b>Law of the packet:</b> minds never touch pixels. An AI director holds exactly the powers
+      a finger has — it emits ops and cues against the contracts, bounded and validated, the way
+      Virentis already clamps its planet to eight changes a turn.
+    </p>
+  </section>
+
+  <!-- 04 ORGANS -->
+  <section>
+    <div class="shead"><span class="snum">04</span><span class="sname">The Organs</span></div>
+    <div class="ledger">
+      <div class="row"><div class="l">Cast<span class="sm">halftrack</span></div>
+        <div class="b">The character standard and the embedding spine. Its pose/walk/face verbs and scene-as-cue-list are adopted engine-wide. <span class="src">donates: CAST, the verb set, window.HALFTRACK</span></div></div>
+      <div class="row"><div class="l">Generator<span class="sm">worldsmith</span></div>
+        <div class="b">The open-vocabulary floor: any word becomes a deterministic dot asset. Becomes the asset-generation service inside every builder. <span class="src">donates: word&rarr;asset, draw&rarr;asset, reveal animation</span></div></div>
+      <div class="row"><div class="l">Studio<span class="sm">atlantis</span></div>
+        <div class="b">The world model and the memory. Asset/instance/world recursion, twelve executable layers, operation ledger, project snapshot, playable export. <span class="src">donates: STAGE, MEMORY, rules/scenes, import/export</span></div></div>
+      <div class="row"><div class="l">Harness<span class="sm">whispers</span></div>
+        <div class="b">The live agent room: interior vs. exterior speech, affect ripples over adjacency, ambient life, inhabiting a character with your body. <span class="src">donates: MIND (live half), PLAY AS</span></div></div>
+      <div class="row"><div class="l">Transport<span class="sm">call body rig</span></div>
+        <div class="b">The clock: timecoded cue rows, scrub-determinism, mocap takes recorded onto the timeline, BEFLIX frame export. <span class="src">donates: SCORE, takes, the cue grammar</span></div></div>
+      <div class="row"><div class="l">Field<span class="sm">virentis</span></div>
+        <div class="b">The worldtext: a navigable, persistent territory edited only through bounded op-packets — by you or by any model, local or remote. <span class="src">donates: MIND (packet half), the atlas-as-territory</span></div></div>
+      <div class="row"><div class="l">Fa&ccedil;ades<span class="sm">beflix room · world engine · comedy engine</span></div>
+        <div class="b">Three proofs that one canon can be restaged — as scored room, walkable apartment, live drama. They are the engine's first productions, not its parts. <span class="src">donate: BEATS + PHRASES, social meters, the target scene</span></div></div>
+    </div>
+  </section>
+
+  <!-- 05 SEAMS -->
+  <section>
+    <div class="shead"><span class="snum">05</span><span class="sname">Seams to Weld</span></div>
+    <ul class="flat">
+      <li><b>Cast &rarr; Studio.</b> Adapter from HALFTRACK spec to Atlantis's character record; HALFTRACK's figure renderer drawn at an Atlantis instance transform. The proof: HERO stands in a recursive world. Atlantis's <em>performance.*</em> fields already accept external drives — this seam is the cheapest and unlocks the most.</li>
+      <li><b>Cast &rarr; Fa&ccedil;ade.</b> ICARO casting is only hair + glasses + tone over one donor head; extend <em>cast()</em> to read a CAST record so Scene 06 can be performed by any characters, not five fixed ones.</li>
+      <li><b>Score &rarr; everything.</b> Whispers' agent outputs and the comedy engine's beat lines both compile down to SCORE rows; a recorded improvisation becomes a scrubbing score. Live and scored stop being different apps and become record/playback of one format.</li>
+      <li><b>Mind &rarr; everything.</b> One packet schema whose ops target STAGE (place, terrain), CAST (spawn, act), and SCORE (insert row). Virentis's validator is the reference implementation.</li>
+      <li><b>Memory &rarr; everything.</b> One <em>halfworld/v1</em> snapshot; every artifact gains load/save of the sections it understands. Atlantis's playable-HTML export becomes the engine's publishing move.</li>
+      <li><b>The bus.</b> Nothing talks today. A single BroadcastChannel (<em>halfworld-bus</em>) carrying ops and score rows lets the existing files cooperate before any of them merges — the MONTE director-console pattern, generalized.</li>
+      <li><b>The key.</b> Three artifacts call model APIs directly from the page (and one ships no auth at all). One shared model-endpoint setting — local-first like Virentis, remote when keyed — replaces three ad-hoc implementations.</li>
+    </ul>
+  </section>
+
+  <!-- 06 BUILD PATH -->
+  <section>
+    <div class="shead"><span class="snum">06</span><span class="sname">Build Path</span></div>
+    <ol class="path">
+      <li><b>Contracts on paper</b> Write halfworld/v1 as a single spec file with the five schemas and the validator. No app changes — just the truth, versioned.</li>
+      <li><b>The cast weld</b> HALFTRACK character appears in Atlantis via the adapter, placed, scaled, layered, saved into project JSON. First time a character crosses a file boundary.</li>
+      <li><b>The scored room</b> Rebuild the BeFliX room as the first native HALFWORLD stage: room geometry authored in Worldsmith/Atlantis tools (not literal code), cast drawn from CAST records, LINES driving them, beats above, packets editing the room live. This is the artifact the fa&ccedil;ades were reaching for.</li>
+      <li><b>The field above</b> Virentis becomes the atlas: each tile-feature can open onto a stage; expeditions link scenes into the worldtext. Character &sub; scene &sub; world, navigable end to end.</li>
+    </ol>
+  </section>
+
+  <!-- 07 PRINCIPLES -->
+  <section>
+    <div class="shead"><span class="snum">07</span><span class="sname">Principles</span></div>
+    <ul class="flat">
+      <li><b>Dots are the substrate.</b> Ink on paper at every scale — a mouth, a person, a house, a planet. No artifact may introduce geometry that cannot be expressed as dots.</li>
+      <li><b>Contracts, not merges.</b> The failure mode is the everything-app. Artifacts stay small and single-minded; they cooperate by speaking the five contracts over the bus and the snapshot.</li>
+      <li><b>Scrub-determinism.</b> Anything performed must be derivable from a playhead position. Live play is recording; playback is the score. Never queued timers.</li>
+      <li><b>Minds are bounded.</b> A model gets the same verbs as a finger, validated and clamped. The more powerful the director, the more important the contract.</li>
+      <li><b>Everyone is castable.</b> Identity is data — pronouns, culture, access, wardrobe — and every stage must accept every CAST record, not a fixed roster.</li>
+      <li><b>Start with nothing.</b> Any word must produce something. Generation is a promise, not a menu.</li>
+    </ul>
+  </section>
+
+  <div class="foot">
+    <span><b>HALFWORLD</b> &middot; PROGRAM THEORY 00</span>
+    <span>5 CONTRACTS &middot; 2 LAWS &middot; 4 STEPS</span>
+    <span>COMPILED 2026-07-18</span>
+  </div>
+
+</div>
+</body>
+</html>

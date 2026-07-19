@@ -1,0 +1,1956 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f4f0" />
+  <title>VIRENTIS — Operational World Field</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f4f0;
+      --white: #ffffff;
+      --black: #000000;
+      --blue: #0033cc;
+      --amber: #c8a800;
+      --red: #e60000;
+      --dim: #666666;
+      --bw: 3px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; border-radius: 0 !important; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background: var(--paper);
+      color: var(--black);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-weight: 700;
+    }
+
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid var(--amber);
+      outline-offset: -3px;
+    }
+    [hidden] { display: none !important; }
+
+    #world {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: var(--paper);
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    #worldWash {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      mix-blend-mode: multiply;
+      background: transparent;
+    }
+
+    #topbar {
+      position: fixed;
+      z-index: 12;
+      left: 0;
+      right: 0;
+      top: 0;
+      min-height: calc(43px + var(--safe-top));
+      padding: calc(8px + var(--safe-top)) 10px 7px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      border-bottom: var(--bw) solid var(--black);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      pointer-events: auto;
+    }
+
+    .brand-mark {
+      width: 14px;
+      height: 14px;
+      flex: none;
+      background:
+        radial-gradient(circle 2px at 3px 3px, var(--red) 98%, transparent),
+        radial-gradient(circle 2px at 11px 3px, var(--red) 98%, transparent),
+        radial-gradient(circle 2px at 3px 11px, var(--red) 98%, transparent),
+        radial-gradient(circle 2px at 11px 11px, var(--red) 98%, transparent);
+    }
+
+    .brand strong {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .16em;
+      white-space: nowrap;
+    }
+
+    #worldState {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--dim);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .top-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+      pointer-events: auto;
+    }
+
+    .top-actions button,
+    #introModelButton,
+    #closeDrawer,
+    .drawer-actions button {
+      appearance: none;
+      min-height: 29px;
+      padding: 0 9px;
+      border: 2px solid var(--black);
+      background: var(--white);
+      box-shadow: 2px 2px 0 var(--black);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .top-actions button:active,
+    #introModelButton:active,
+    #closeDrawer:active,
+    .drawer-actions button:active {
+      transform: translate(2px, 2px);
+      box-shadow: none;
+    }
+
+    #modelButton.connected { background: var(--blue); color: var(--white); }
+    #modelButton.busy { background: var(--amber); color: var(--black); }
+    #exitButton { color: var(--red); }
+
+    #dialogue {
+      position: fixed;
+      z-index: 8;
+      left: 10px;
+      bottom: calc(74px + var(--safe-bottom));
+      width: min(670px, calc(100% - 20px));
+      display: grid;
+      gap: 5px;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 220ms linear;
+    }
+    #dialogue.quiet { opacity: 0; }
+
+    .turn {
+      width: fit-content;
+      max-width: min(640px, 92vw);
+      padding: 7px 10px 8px;
+      border: 2px solid var(--black);
+      background: var(--white);
+      box-shadow: 3px 3px 0 var(--black);
+      animation: snapIn 140ms steps(2, end) both;
+    }
+
+    .turn.player {
+      margin-left: 22px;
+      border-left: 8px solid var(--blue);
+      font-size: 10px;
+    }
+
+    .turn.planet {
+      border-left: 8px solid var(--red);
+    }
+
+    .turn.system { border-left: 8px solid var(--amber); }
+
+    .speaker {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--dim);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .turn.planet .speaker { color: var(--red); }
+    .utterance {
+      margin: 0;
+      font-size: clamp(13px, 2.2vw, 19px);
+      line-height: 1.22;
+      letter-spacing: -.01em;
+    }
+
+    .world-delta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-top: 6px;
+    }
+
+    .world-delta span {
+      padding: 2px 5px;
+      border: 1px solid var(--black);
+      background: var(--amber);
+      color: var(--black);
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    @keyframes snapIn {
+      from { opacity: 0; transform: translate(0, 5px); }
+      to { opacity: 1; transform: translate(0, 0); }
+    }
+
+    #thinking {
+      position: fixed;
+      z-index: 9;
+      left: 10px;
+      bottom: calc(70px + var(--safe-bottom));
+      padding: 5px 8px;
+      border: 2px solid var(--black);
+      background: var(--amber);
+      color: var(--black);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #thinking.visible { opacity: 1; }
+
+    #gestureHint {
+      position: fixed;
+      z-index: 6;
+      left: 50%;
+      top: 52%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      place-items: center;
+      gap: 5px;
+      pointer-events: none;
+      transition: opacity 180ms linear;
+    }
+
+    #gestureHint.gone { opacity: 0; }
+    .gesture-disc {
+      width: 72px;
+      height: 72px;
+      display: grid;
+      place-items: center;
+      border: var(--bw) solid var(--black);
+      background: var(--white);
+      box-shadow: 5px 5px 0 var(--black);
+      color: var(--blue);
+      font-size: 34px;
+      animation: nudge 1.1s steps(2, end) infinite;
+    }
+    #gestureHint small {
+      padding: 3px 6px;
+      background: var(--black);
+      color: var(--white);
+      font-size: 8px;
+      letter-spacing: .13em;
+    }
+    @keyframes nudge { 50% { transform: translateX(8px); } }
+
+    #composer {
+      position: fixed;
+      z-index: 13;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      min-height: calc(58px + var(--safe-bottom));
+      padding: 7px 9px calc(7px + var(--safe-bottom));
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 7px;
+      align-items: stretch;
+      background: var(--white);
+      border-top: var(--bw) solid var(--black);
+    }
+
+    .compose-row { display: contents; }
+
+    #voiceButton,
+    #sendButton {
+      appearance: none;
+      min-width: 48px;
+      min-height: 42px;
+      border: 2px solid var(--black);
+      box-shadow: 2px 2px 0 var(--black);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    #voiceButton { background: var(--red); color: var(--white); }
+    #voiceButton.listening { background: var(--amber); color: var(--black); }
+    #sendButton { background: var(--blue); color: var(--white); }
+    #voiceButton:active, #sendButton:active { transform: translate(2px, 2px); box-shadow: none; }
+
+    #messageInput {
+      width: 100%;
+      min-height: 42px;
+      max-height: 84px;
+      resize: none;
+      padding: 10px 11px;
+      border: 2px solid var(--black);
+      outline: 0;
+      background: var(--paper);
+      color: var(--black);
+      font-size: 16px;
+      line-height: 1.2;
+    }
+    #messageInput::placeholder { color: var(--dim); opacity: 1; }
+    #sendButton:disabled { background: var(--dim); }
+    #suggestions { display: none; }
+
+    #intro {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    .intro-copy {
+      display: grid;
+      justify-items: center;
+      gap: 9px;
+      pointer-events: auto;
+    }
+    .intro-copy > p, .thesis { display: none; }
+    .intro-copy h1 {
+      margin: 0;
+      padding: 6px 12px 4px;
+      background: var(--black);
+      color: var(--white);
+      font-size: clamp(22px, 5vw, 44px);
+      font-weight: 900;
+      letter-spacing: .14em;
+      line-height: 1;
+    }
+    .intro-actions { display: grid; justify-items: center; gap: 8px; }
+    #enterButton {
+      appearance: none;
+      width: min(150px, 34vw);
+      aspect-ratio: 1;
+      border: 4px solid var(--black);
+      background: var(--white);
+      box-shadow: 8px 8px 0 var(--black);
+      color: var(--blue);
+      font-size: 0;
+    }
+    #enterButton::before {
+      content: "▶";
+      display: block;
+      font-size: clamp(48px, 12vw, 80px);
+      line-height: 1;
+      transform: translateX(4px);
+    }
+    #enterButton:active { transform: translate(8px, 8px); box-shadow: none; }
+    #introModelButton { font-size: 8px; }
+
+    #drawerBackdrop {
+      position: fixed;
+      z-index: 29;
+      inset: 0;
+      background: rgba(0,0,0,.42);
+      opacity: 0;
+      pointer-events: none;
+    }
+    #drawerBackdrop.open { opacity: 1; pointer-events: auto; }
+
+    #settingsDrawer {
+      position: fixed;
+      z-index: 30;
+      right: 8px;
+      top: calc(50px + var(--safe-top));
+      bottom: calc(66px + var(--safe-bottom));
+      width: min(390px, calc(100% - 16px));
+      padding: 0;
+      overflow: auto;
+      background: var(--white);
+      border: var(--bw) solid var(--black);
+      box-shadow: 6px 6px 0 var(--black);
+      transform: translateX(calc(100% + 20px));
+    }
+    #settingsDrawer.open { transform: translateX(0); }
+    .drawer-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 9px;
+      background: var(--black);
+      color: var(--white);
+      border-bottom: 2px solid var(--black);
+    }
+    .drawer-head h2 { margin: 0; flex: 1; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+    #closeDrawer { color: var(--black); box-shadow: none; }
+    .drawer-section { padding: 12px; border-top: 2px solid var(--black); }
+    .drawer-section:first-of-type { border-top: 0; }
+    .drawer-copy, .field-note { margin: 0; color: var(--dim); font-size: 10px; line-height: 1.45; }
+    .field { display: grid; grid-template-columns: 84px 1fr; align-items: center; gap: 7px; margin-top: 8px; }
+    .field label { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
+    .field input, .field select {
+      width: 100%; min-height: 36px; padding: 0 8px;
+      border: 2px solid var(--black); background: var(--paper);
+      font-size: 11px;
+    }
+    .drawer-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .drawer-actions .primary { background: var(--blue); color: var(--white); }
+    .drawer-actions .danger { color: var(--red); }
+
+    #statusToast {
+      position: fixed;
+      z-index: 25;
+      top: calc(50px + var(--safe-top));
+      left: 50%;
+      transform: translate(-50%, -8px);
+      max-width: min(560px, calc(100% - 18px));
+      padding: 6px 8px;
+      border: 2px solid var(--black);
+      background: var(--amber);
+      box-shadow: 3px 3px 0 var(--black);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #statusToast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 700px) {
+      #topbar { padding-left: 7px; padding-right: 7px; }
+      #worldState { display: none; }
+      .top-actions button { padding: 0 7px; min-width: 31px; font-size: 0; }
+      #modelButton::before { content: "M"; font-size: 10px; }
+      #exitButton::before { content: "×"; font-size: 16px; }
+      #dialogue { bottom: calc(70px + var(--safe-bottom)); }
+      .turn.player { display: none; }
+      .turn { max-width: calc(100vw - 20px); }
+      .utterance { font-size: 15px; }
+      #messageInput { font-size: 16px; }
+      #introModelButton { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="world" aria-label="A living field changed through movement, touch, speech, and language-model responses."></canvas>
+  <div id="worldWash" aria-hidden="true"></div>
+
+  <header id="topbar" hidden>
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <strong>VIRENTIS</strong>
+      <span id="worldState">FIELD 00</span>
+    </div>
+    <div class="top-actions">
+      <button id="modelButton" type="button" aria-label="World mind settings">MIND</button>
+      <button id="exitButton" type="button" aria-label="Leave world">EXIT</button>
+    </div>
+  </header>
+
+  <main id="dialogue" hidden aria-live="polite" aria-label="Latest exchange with Virentis"></main>
+  <div id="thinking">WORLD FORMING</div>
+  <div id="gestureHint" hidden aria-hidden="true"><span class="gesture-disc">↔</span><small>TAP · SWIPE · SPEAK</small></div>
+
+  <form id="composer" hidden>
+    <button id="voiceButton" type="button" aria-label="Speak to Virentis" title="Speak">●</button>
+    <div class="compose-row">
+      <textarea id="messageInput" rows="1" maxlength="900" aria-label="Speak or act in Virentis" placeholder="SPEAK OR TYPE AN ACTION"></textarea>
+      <button id="sendButton" type="submit" aria-label="Send action">→</button>
+    </div>
+    <div id="suggestions" aria-label="Possible actions"></div>
+  </form>
+
+  <section id="intro">
+    <div class="intro-copy">
+      <p>A world field</p>
+      <h1>VIRENTIS</h1>
+      <p class="thesis">Touch, move, or speak. The world answers in matter.</p>
+      <div class="intro-actions">
+        <button id="enterButton" class="primary" type="button" aria-label="Enter Virentis">Enter</button>
+        <button id="introModelButton" type="button">MIND</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="drawerBackdrop"></div>
+  <aside id="settingsDrawer" aria-label="Model and world settings" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>WORLD MIND</h2>
+      <button id="closeDrawer" type="button">CLOSE</button>
+    </div>
+
+    <section class="drawer-section">
+      <p class="drawer-copy">The built-in world is always playable. A compatible model may propose brief utterances and bounded changes.</p>
+      <div class="field"><label for="modelMode">Mode</label><select id="modelMode"><option value="builtin">Built-in</option><option value="compatible">Compatible API</option></select></div>
+      <div id="remoteFields">
+        <div class="field"><label for="endpointInput">Endpoint</label><input id="endpointInput" inputmode="url" value="http://localhost:11434/v1" /></div>
+        <div class="field"><label for="modelInput">Model</label><input id="modelInput" value="llama3.2:3b" /></div>
+        <div class="field"><label for="apiKeyInput">Key</label><input id="apiKeyInput" type="password" autocomplete="off" placeholder="Session only" /></div>
+        <p class="field-note">The endpoint must permit browser requests. Use a local model or trusted proxy.</p>
+      </div>
+      <div class="drawer-actions"><button id="saveModelButton" class="primary" type="button">USE</button><button id="testModelButton" type="button">TEST</button></div>
+    </section>
+
+    <section class="drawer-section">
+      <p class="drawer-copy"><strong>Contract.</strong> A model proposes. The field validates. Only bounded operations become persistent.</p>
+      <div class="drawer-actions"><button id="copyPromptButton" type="button">COPY CONTRACT</button><button id="exportButton" type="button">EXPORT</button><button id="resetButton" class="danger" type="button">RESET</button></div>
+    </section>
+  </aside>
+
+  <div id="statusToast" role="status" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const canvas = document.getElementById('world');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) {
+      document.body.innerHTML = '<main style="padding:2rem;color:#000;background:#fff;min-height:100vh;font:900 18px Helvetica">CANVAS REQUIRED</main>';
+      return;
+    }
+
+    const ui = {
+      worldWash: document.getElementById('worldWash'),
+      topbar: document.getElementById('topbar'),
+      worldState: document.getElementById('worldState'),
+      modelButton: document.getElementById('modelButton'),
+      exitButton: document.getElementById('exitButton'),
+      dialogue: document.getElementById('dialogue'),
+      thinking: document.getElementById('thinking'),
+      gestureHint: document.getElementById('gestureHint'),
+      voiceButton: document.getElementById('voiceButton'),
+      composer: document.getElementById('composer'),
+      messageInput: document.getElementById('messageInput'),
+      sendButton: document.getElementById('sendButton'),
+      suggestions: document.getElementById('suggestions'),
+      intro: document.getElementById('intro'),
+      enterButton: document.getElementById('enterButton'),
+      introModelButton: document.getElementById('introModelButton'),
+      drawerBackdrop: document.getElementById('drawerBackdrop'),
+      settingsDrawer: document.getElementById('settingsDrawer'),
+      closeDrawer: document.getElementById('closeDrawer'),
+      modelMode: document.getElementById('modelMode'),
+      remoteFields: document.getElementById('remoteFields'),
+      endpointInput: document.getElementById('endpointInput'),
+      modelInput: document.getElementById('modelInput'),
+      apiKeyInput: document.getElementById('apiKeyInput'),
+      saveModelButton: document.getElementById('saveModelButton'),
+      testModelButton: document.getElementById('testModelButton'),
+      copyPromptButton: document.getElementById('copyPromptButton'),
+      exportButton: document.getElementById('exportButton'),
+      resetButton: document.getElementById('resetButton'),
+      statusToast: document.getElementById('statusToast')
+    };
+
+    const CONFIG = Object.freeze({
+      worldSize: 31,
+      revealRadius: 3,
+      saveKey: 'virentis-world-chat-v2',
+      modelKey: 'virentis-model-config-v1',
+      maxChat: 80,
+      maxFeatures: 90,
+      maxRoutes: 80,
+      maxRelations: 70,
+      completionChanges: 8
+    });
+
+    const BIOMES = Object.freeze([
+      { name: 'Paper Plain', color: '#ffffff', dark: '#ffffff', accent: '#000000' },
+      { name: 'Black Basin', color: '#000000', dark: '#000000', accent: '#ffffff' },
+      { name: 'Red Orchard', color: '#ffffff', dark: '#ffffff', accent: '#e60000' },
+      { name: 'Blue Steppe', color: '#ffffff', dark: '#ffffff', accent: '#0033cc' },
+      { name: 'Amber Vein', color: '#ffffff', dark: '#ffffff', accent: '#c8a800' }
+    ]);
+
+    const WEATHER = Object.freeze({
+      calm: { wash: 'transparent' },
+      mist: { wash: 'repeating-linear-gradient(90deg, transparent 0 12px, rgba(0,51,204,.08) 12px 14px)' },
+      rain: { wash: 'repeating-linear-gradient(112deg, transparent 0 17px, rgba(0,51,204,.12) 17px 19px)' },
+      ash: { wash: 'radial-gradient(circle at 25% 30%, rgba(230,0,0,.09), transparent 26%), radial-gradient(circle at 70% 68%, rgba(230,0,0,.08), transparent 22%)' },
+      bloom: { wash: 'repeating-radial-gradient(circle at 50% 50%, transparent 0 26px, rgba(200,168,0,.08) 27px 29px)' }
+    });
+
+    const FEATURE_KINDS = Object.freeze({
+      grove: { label: 'grove', color: '#0033cc' },
+      spire: { label: 'spire', color: '#e60000' },
+      gate: { label: 'gate', color: '#c8a800' },
+      spring: { label: 'spring', color: '#0033cc' },
+      settlement: { label: 'settlement', color: '#e60000' },
+      memory: { label: 'memory', color: '#c8a800' },
+      scar: { label: 'scar', color: '#e60000' },
+      bridge: { label: 'bridge', color: '#000000' },
+      signal: { label: 'signal', color: '#e60000' }
+    });
+
+    function seeded(seed) {
+      let t = seed >>> 0;
+      return () => {
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function makeInitialState() {
+      const seed = Math.floor(Math.random() * 0x7fffffff);
+      const origin = { x: 15, y: 15 };
+      return {
+        started: false,
+        complete: false,
+        busy: false,
+        seed,
+        turn: 0,
+        player: { ...origin },
+        origin: { ...origin },
+        camera: { ...origin },
+        visited: [coordKey(origin.x, origin.y)],
+        weather: 'calm',
+        terrainOverrides: {},
+        features: [
+          { id: uid('feature'), x: 15, y: 15, kind: 'signal', name: 'Origin Pulse', intensity: 1 },
+          { id: uid('feature'), x: 20, y: 12, kind: 'spire', name: 'Unanswered Spire', intensity: 0.8 },
+          { id: uid('feature'), x: 10, y: 19, kind: 'grove', name: 'Folded Grove', intensity: 0.75 }
+        ],
+        routes: [],
+        relations: [],
+        memories: [],
+        names: {},
+        chat: [],
+        changes: [],
+        ripples: [],
+        particles: [],
+        pointerStart: null,
+        lastFrame: performance.now()
+      };
+    }
+
+    let state = loadState();
+    let modelConfig = loadModelConfig();
+    let toastTimer = null;
+    let dialogueTimer = null;
+
+    function uid(prefix = 'id') {
+      return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function coordKey(x, y) { return `${x},${y}`; }
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function hash2(x, y, seed = state.seed) {
+      let h = Math.imul((x + 37) ^ seed, 374761393) + Math.imul((y + 71) ^ (seed >>> 1), 668265263);
+      h = (h ^ (h >>> 13)) >>> 0;
+      h = Math.imul(h, 1274126177);
+      return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(CONFIG.saveKey);
+        if (!raw) return makeInitialState();
+        const parsed = JSON.parse(raw);
+        return {
+          ...makeInitialState(),
+          ...parsed,
+          busy: false,
+          camera: parsed.player ? { ...parsed.player } : { x: 15, y: 15 },
+          ripples: [],
+          particles: [],
+          pointerStart: null,
+          lastFrame: performance.now()
+        };
+      } catch (_) {
+        return makeInitialState();
+      }
+    }
+
+    function saveState() {
+      try {
+        const snapshot = {
+          ...state,
+          busy: false,
+          ripples: [],
+          particles: [],
+          pointerStart: null,
+          lastFrame: 0
+        };
+        localStorage.setItem(CONFIG.saveKey, JSON.stringify(snapshot));
+      } catch (_) {}
+    }
+
+    function loadModelConfig() {
+      let saved = {};
+      try { saved = JSON.parse(localStorage.getItem(CONFIG.modelKey) || '{}'); } catch (_) {}
+      let sessionKey = '';
+      try { sessionKey = sessionStorage.getItem('virentis-session-key') || ''; } catch (_) {}
+      return {
+        mode: saved.mode === 'compatible' ? 'compatible' : 'builtin',
+        endpoint: saved.endpoint || 'http://localhost:11434/v1',
+        model: saved.model || 'llama3.2:3b',
+        apiKey: sessionKey
+      };
+    }
+
+    function saveModelConfig() {
+      try {
+        localStorage.setItem(CONFIG.modelKey, JSON.stringify({
+          mode: modelConfig.mode,
+          endpoint: modelConfig.endpoint,
+          model: modelConfig.model
+        }));
+      } catch (_) {}
+      try {
+        if (modelConfig.apiKey) sessionStorage.setItem('virentis-session-key', modelConfig.apiKey);
+        else sessionStorage.removeItem('virentis-session-key');
+      } catch (_) {}
+    }
+
+    function terrainAt(x, y) {
+      const key = coordKey(x, y);
+      if (Number.isInteger(state.terrainOverrides[key])) return state.terrainOverrides[key];
+      const a = hash2(Math.floor(x / 3), Math.floor(y / 3));
+      const b = hash2(x, y) * 0.35;
+      return Math.floor(((a * 0.78 + b) % 1) * BIOMES.length);
+    }
+
+    function currentBiome() { return BIOMES[terrainAt(state.player.x, state.player.y)]; }
+    function currentName() { return state.names[coordKey(state.player.x, state.player.y)] || currentBiome().name; }
+    function featureById(id) { return state.features.find(feature => feature.id === id); }
+
+    function revealAround(x, y, radius = CONFIG.revealRadius) {
+      const set = new Set(state.visited);
+      for (let yy = y - radius; yy <= y + radius; yy++) {
+        for (let xx = x - radius; xx <= x + radius; xx++) {
+          if (xx < 0 || yy < 0 || xx >= CONFIG.worldSize || yy >= CONFIG.worldSize) continue;
+          if (Math.hypot(xx - x, yy - y) <= radius + 0.25) set.add(coordKey(xx, yy));
+        }
+      }
+      state.visited = Array.from(set);
+    }
+
+    function recordChange(summary, details = {}) {
+      const entry = {
+        id: uid('change'),
+        turn: state.turn,
+        summary,
+        at: new Date().toISOString(),
+        ...details
+      };
+      state.changes.unshift(entry);
+      state.changes = state.changes.slice(0, 120);
+      return entry;
+    }
+
+    function addChat(role, text, changes = []) {
+      state.chat.push({
+        id: uid('turn'),
+        role,
+        text: String(text || '').trim(),
+        changes,
+        at: new Date().toISOString()
+      });
+      state.chat = state.chat.slice(-CONFIG.maxChat);
+      renderDialogue();
+      ui.dialogue.classList.remove('quiet');
+      clearTimeout(dialogueTimer);
+      dialogueTimer = setTimeout(() => ui.dialogue.classList.add('quiet'), role === 'planet' ? 6800 : 3600);
+      if (role === 'planet') speakPlanet(text);
+    }
+
+    function renderDialogue() {
+      ui.dialogue.replaceChildren();
+      const recent = state.chat.slice(-2);
+      for (const item of recent) {
+        const article = document.createElement('article');
+        article.className = `turn ${item.role}`;
+        const speaker = document.createElement('span');
+        speaker.className = 'speaker';
+        speaker.textContent = item.role === 'planet' ? 'VIRENTIS' : item.role === 'player' ? 'YOU' : 'FIELD';
+        const p = document.createElement('p');
+        p.className = 'utterance';
+        p.textContent = item.text;
+        article.append(speaker, p);
+        if (Array.isArray(item.changes) && item.changes.length) {
+          const delta = document.createElement('div');
+          delta.className = 'world-delta';
+          for (const label of item.changes.slice(0, 3)) {
+            const chip = document.createElement('span');
+            chip.textContent = label;
+            delta.appendChild(chip);
+          }
+          article.appendChild(delta);
+        }
+        ui.dialogue.appendChild(article);
+      }
+    }
+
+    function renderSuggestions(items) {
+      const suggestions = items && items.length ? items : contextualSuggestions();
+      ui.suggestions.replaceChildren();
+      for (const suggestion of suggestions.slice(0, 4)) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'suggestion';
+        button.textContent = suggestion;
+        button.addEventListener('click', () => {
+          ui.messageInput.value = suggestion;
+          resizeInput();
+          ui.messageInput.focus();
+        });
+        ui.suggestions.appendChild(button);
+      }
+    }
+
+    function contextualSuggestions() {
+      const nearby = nearestFeature(8);
+      const suggestions = [
+        'listen to the ground',
+        'move east',
+        'remember this place'
+      ];
+      if (nearby) suggestions.push(`ask about ${nearby.name.toLowerCase()}`);
+      else suggestions.push('grow something here');
+      return suggestions;
+    }
+
+    function nearestFeature(maxDistance = Infinity) {
+      return state.features
+        .map(feature => ({ ...feature, d: distance(feature, state.player) }))
+        .filter(feature => feature.d <= maxDistance)
+        .sort((a, b) => a.d - b.d)[0] || null;
+    }
+
+    function updateUI() {
+      const modeText = modelConfig.mode === 'compatible' ? modelConfig.model : 'built-in';
+      ui.modelButton.textContent = state.busy ? 'FORMING' : modelConfig.mode === 'compatible' ? 'MIND LIVE' : 'MIND';
+      ui.modelButton.classList.toggle('connected', modelConfig.mode === 'compatible' && !state.busy);
+      ui.modelButton.classList.toggle('busy', state.busy);
+      ui.worldState.textContent = `FIELD ${String(state.changes.length).padStart(2, '0')} // ${state.weather.toUpperCase()} // ${currentName().toUpperCase()}`;
+      ui.worldWash.style.background = (WEATHER[state.weather] || WEATHER.calm).wash;
+      ui.sendButton.disabled = state.busy;
+      ui.messageInput.disabled = state.busy;
+      ui.thinking.classList.toggle('visible', state.busy);
+      // The world, not a menu, presents the next possibility.
+    }
+
+    function startWorld() {
+      state.started = true;
+      state.complete = false;
+      revealAround(state.player.x, state.player.y, 4);
+      ui.intro.hidden = true;
+      ui.topbar.hidden = false;
+      ui.dialogue.hidden = false;
+      ui.composer.hidden = false;
+      if (!state.chat.length) {
+        addChat('planet', 'Touch. Move. Speak. I answer in matter.', ['field open']);
+      } else {
+        renderDialogue();
+      }
+      ui.gestureHint.hidden = false;
+      ui.gestureHint.classList.remove('gone');
+      updateUI();
+      saveState();
+      setTimeout(() => ui.gestureHint.classList.add('gone'), 4200);
+    }
+
+    function leaveWorld() {
+      saveState();
+      state.started = false;
+      ui.intro.hidden = false;
+      ui.topbar.hidden = true;
+      ui.dialogue.hidden = true;
+      ui.composer.hidden = true;
+      closeDrawer();
+    }
+
+    function showToast(message, duration = 2400) {
+      ui.statusToast.textContent = message;
+      ui.statusToast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => ui.statusToast.classList.remove('visible'), duration);
+    }
+
+    function resizeInput() {
+      ui.messageInput.style.height = 'auto';
+      ui.messageInput.style.height = `${Math.min(128, Math.max(48, ui.messageInput.scrollHeight))}px`;
+    }
+
+    async function sendMessage(rawText) {
+      const text = String(rawText || '').trim();
+      if (!text || state.busy) return;
+      ui.gestureHint.classList.add('gone');
+      ui.messageInput.value = '';
+      resizeInput();
+      state.turn += 1;
+      addChat('player', text);
+
+      const commandResult = handleDirectCommand(text);
+      if (commandResult) {
+        const labels = applyWorldPacket(commandResult, 'direct');
+        addChat('planet', commandResult.reply, labels);
+        finishTurn(commandResult.suggestions);
+        return;
+      }
+
+      state.busy = true;
+      spawnRipple(state.player.x, state.player.y, '#e60000', 3.2);
+      updateUI();
+
+      let packet;
+      try {
+        if (modelConfig.mode === 'compatible') packet = await callCompatibleModel(text);
+        else packet = builtinWorldMind(text);
+      } catch (error) {
+        console.warn(error);
+        packet = builtinWorldMind(text, true);
+        showToast('Model unavailable. The built-in world mind continued the turn.');
+      }
+
+      const labels = applyWorldPacket(packet, modelConfig.mode);
+      addChat('planet', packet.reply, labels);
+      finishTurn(packet.suggestions);
+    }
+
+    function finishTurn(suggestions = []) {
+      state.busy = false;
+      updateUI();
+      renderSuggestions(suggestions);
+      saveState();
+      ui.messageInput.focus();
+    }
+
+    function handleDirectCommand(text) {
+      const lower = text.toLowerCase().trim();
+      if (lower === '/settings') { openDrawer(); return { reply: 'The world mind is exposed beside the world, not over it.', changes: [], suggestions: [], noWorld: true }; }
+      if (lower === '/export') { exportWorld(); return { reply: 'The current world record has been exported.', changes: [], suggestions: [], noWorld: true }; }
+      if (lower === '/reset') { resetWorld(); return { reply: 'The prior world has been released.', changes: [], suggestions: [], noWorld: true }; }
+
+      const completionIntent = /\b(end|finish|leave|return home|complete expedition|carry the map)\b/.test(lower);
+      if (completionIntent) {
+        const atOrigin = state.player.x === state.origin.x && state.player.y === state.origin.y;
+        if (state.changes.length < CONFIG.completionChanges) {
+          return {
+            reply: `The map has only ${state.changes.length} persistent changes. Let more relations accumulate before you leave.`,
+            changes: [{ op: 'pulse', x: state.player.x, y: state.player.y, kind: 'signal', label: 'completion deferred' }],
+            suggestions: ['remember this place', 'open a path east', 'ask what changed here']
+          };
+        }
+        if (!atOrigin) {
+          return {
+            reply: 'The origin is awake, but you are elsewhere. Return to the first pulse before ending the expedition.',
+            changes: [{ op: 'route', ax: state.player.x, ay: state.player.y, bx: state.origin.x, by: state.origin.y, label: 'route toward origin' }],
+            suggestions: ['move toward the origin', 'ask the ground for the shortest return']
+          };
+        }
+        state.complete = true;
+        return {
+          reply: 'The map holds enough difference to travel without pretending to contain me. You may leave with it.',
+          changes: [{ op: 'weather', value: 'bloom', label: 'origin blooms' }],
+          suggestions: ['export the world', 'leave']
+        };
+      }
+      return null;
+    }
+
+    function builtinWorldMind(text, recovered = false) {
+      const lower = text.toLowerCase();
+      const packet = { reply: '', changes: [], memory: [], suggestions: [] };
+      const direction = parseDirection(lower);
+
+      const touchMatch = text.match(/^touch\s+(.+)$/i);
+      if (touchMatch) {
+        const named = touchMatch[1].trim().toLowerCase();
+        const feature = state.features.find(item => item.name.toLowerCase() === named) || nearestFeature(5.5);
+        if (feature) {
+          packet.reply = `${feature.name} answers through contact. Its relation to this place becomes visible.`;
+          packet.changes.push({ op: 'pulse', x: feature.x, y: feature.y, radius: 2.6, label: `${feature.name} answers` });
+          packet.changes.push({ op: 'remember', x: feature.x, y: feature.y, text: `The cartographer touched ${feature.name} on turn ${state.turn}.`, label: 'contact remembered' });
+          packet.suggestions = ['touch again', 'move toward it', 'ask what changed'];
+          return packet;
+        }
+      }
+
+      if (direction) {
+        packet.reply = `Your movement presses a new edge into the ${currentBiome().name.toLowerCase()}.`;
+        packet.changes.push({ op: 'move', dx: direction.dx, dy: direction.dy, steps: direction.steps, label: `moved ${direction.label}` });
+        packet.changes.push({ op: 'reveal', radius: 3, label: 'terrain revealed' });
+        packet.suggestions = ['listen here', 'name this place', 'ask what follows you'];
+        return packet;
+      }
+
+      const weather = ['mist', 'rain', 'ash', 'bloom', 'calm'].find(item => new RegExp(`\\b${item}\\b`).test(lower));
+      if (weather) {
+        packet.reply = weather === 'calm' ? 'The atmosphere releases its pressure.' : `The ${weather} enters as a condition, not a backdrop.`;
+        packet.changes.push({ op: 'weather', value: weather, label: `${weather} begins` });
+        packet.suggestions = ['listen through it', 'move north', 'ask what the weather alters'];
+        return packet;
+      }
+
+      const nameMatch = text.match(/(?:name|call)\s+(?:this|here|the place)?\s*(?:place|ground|region|basin|site)?\s*(?:as)?\s*[“"']?([^“”"']{2,42})[”"']?$/i);
+      if (nameMatch && nameMatch[1]) {
+        const name = cleanName(nameMatch[1]);
+        packet.reply = `The cartographic name “${name}” enters the map. I remain larger than it.`;
+        packet.changes.push({ op: 'rename', x: state.player.x, y: state.player.y, name, label: `named ${name}` });
+        packet.suggestions = ['ask what refuses the name', 'remember this place', 'move west'];
+        return packet;
+      }
+
+      if (/\b(remember|memory|archive|do not forget)\b/.test(lower)) {
+        const memoryText = text.replace(/^.*?\b(remember|memory|archive|do not forget)\b[:\s-]*/i, '').trim() || `The cartographer stood here on turn ${state.turn}.`;
+        packet.reply = 'The sentence does not remain only in the transcript. It settles into the ground.';
+        packet.changes.push({ op: 'remember', x: state.player.x, y: state.player.y, text: memoryText, label: 'memory rooted' });
+        packet.suggestions = ['ask the memory to answer', 'connect it to another place', 'move south'];
+        return packet;
+      }
+
+      if (/\b(bridge|path|road|passage|route|connect)\b/.test(lower)) {
+        const target = direction || { dx: 1, dy: 0, steps: 4, label: 'east' };
+        packet.reply = 'A route is not a promise of safety. It is a relation that future movement can test.';
+        packet.changes.push({
+          op: 'route',
+          ax: state.player.x,
+          ay: state.player.y,
+          bx: clamp(state.player.x + target.dx * target.steps, 0, CONFIG.worldSize - 1),
+          by: clamp(state.player.y + target.dy * target.steps, 0, CONFIG.worldSize - 1),
+          label: `path ${target.label}`
+        });
+        packet.changes.push({ op: 'feature', kind: 'bridge', x: state.player.x, y: state.player.y, name: 'Provisional Crossing', label: 'crossing formed' });
+        packet.suggestions = ['follow the path', 'ask what the crossing costs', 'name this place'];
+        return packet;
+      }
+
+      if (/\b(grow|plant|forest|grove|garden|bloom)\b/.test(lower)) {
+        packet.reply = 'Growth appears as a claim made by soil, moisture, and time together.';
+        packet.changes.push({ op: 'feature', kind: 'grove', x: state.player.x, y: state.player.y, name: 'New Green Relation', intensity: 1, label: 'grove grows' });
+        packet.changes.push({ op: 'terrain', x: state.player.x, y: state.player.y, biome: 0, radius: 2, label: 'ground greens' });
+        packet.suggestions = ['ask what lives inside it', 'move through the grove', 'connect it to the spire'];
+        return packet;
+      }
+
+      if (/\b(build|raise|make|create|form)\b/.test(lower)) {
+        const kind = /spire|tower/.test(lower) ? 'spire' : /spring|water|well/.test(lower) ? 'spring' : /gate|door/.test(lower) ? 'gate' : /home|settlement|village/.test(lower) ? 'settlement' : 'signal';
+        const label = FEATURE_KINDS[kind].label;
+        packet.reply = `A ${label} appears, but its meaning will depend on what later encounters make of it.`;
+        packet.changes.push({ op: 'feature', kind, x: state.player.x, y: state.player.y, name: titleCase(`${label} of turn ${state.turn}`), label: `${label} raised` });
+        packet.suggestions = [`ask the ${label} a question`, 'move away and look back', 'remember why it was made'];
+        return packet;
+      }
+
+      if (/\b(listen|hear|sound|beneath|pulse|answer)\b/.test(lower)) {
+        const nearest = nearestFeature(9);
+        const phrase = nearest ? `${nearest.name} answers across ${nearest.d.toFixed(1)} map units.` : 'A pulse travels where the map has no object yet.';
+        packet.reply = phrase;
+        packet.changes.push({ op: 'pulse', x: nearest ? nearest.x : state.player.x, y: nearest ? nearest.y : state.player.y, kind: 'signal', label: 'signal heard' });
+        packet.changes.push({ op: 'reveal', x: nearest ? nearest.x : state.player.x, y: nearest ? nearest.y : state.player.y, radius: 4, label: 'signal field revealed' });
+        packet.suggestions = nearest ? [`move toward ${nearest.name.toLowerCase()}`, `ask what ${nearest.name.toLowerCase()} remembers`, 'mark the route'] : ['follow the pulse', 'name the signal', 'ask again from another place'];
+        return packet;
+      }
+
+      if (/\b(what|why|who|where|how|tell me|ask)\b/.test(lower)) {
+        const biome = currentBiome();
+        const nearby = nearestFeature(7);
+        packet.reply = nearby
+          ? `${nearby.name} and the ${biome.name.toLowerCase()} do not agree about which came first. Their disagreement now has a visible relation.`
+          : `The ${biome.name.toLowerCase()} answers by changing the conditions around your question.`;
+        if (nearby) {
+          packet.changes.push({ op: 'relation', a: nearestFeature(7).id, b: state.features[0].id, type: 'contests', label: 'relation contested' });
+        } else {
+          packet.changes.push({ op: 'feature', kind: 'memory', x: state.player.x, y: state.player.y, name: 'Question Deposit', label: 'question becomes site' });
+        }
+        packet.suggestions = ['ask what changed', 'move north', 'remember the answer'];
+        return packet;
+      }
+
+      const biome = currentBiome();
+      packet.reply = recovered
+        ? `The connected model did not answer, so the ${biome.name.toLowerCase()} answered through its local grammar instead.`
+        : `Your words arrive as pressure. The ${biome.name.toLowerCase()} keeps a trace even where no direct command was given.`;
+      packet.changes.push({ op: 'pulse', x: state.player.x, y: state.player.y, kind: 'signal', label: 'speech leaves echo' });
+      packet.changes.push({ op: 'remember', x: state.player.x, y: state.player.y, text: text.slice(0, 180), label: 'utterance sedimented' });
+      packet.suggestions = ['ask what the echo changed', 'move west', 'open a path'];
+      return packet;
+    }
+
+    function parseDirection(text) {
+      const stepsMatch = text.match(/\b(\d{1,2})\b/);
+      const steps = clamp(stepsMatch ? Number(stepsMatch[1]) : 1, 1, 6);
+      const north = /\b(north|up)\b/.test(text);
+      const south = /\b(south|down)\b/.test(text);
+      const east = /\b(east|right)\b/.test(text);
+      const west = /\b(west|left)\b/.test(text);
+      if (!(north || south || east || west) || !/\b(move|walk|go|travel|step|follow|head|return)\b/.test(text)) return null;
+      const dx = (east ? 1 : 0) + (west ? -1 : 0);
+      const dy = (south ? 1 : 0) + (north ? -1 : 0);
+      const parts = [];
+      if (north) parts.push('north');
+      if (south) parts.push('south');
+      if (east) parts.push('east');
+      if (west) parts.push('west');
+      return { dx, dy, steps, label: parts.join('-') };
+    }
+
+    function cleanName(value) {
+      return value.replace(/[.!?]+$/, '').trim().slice(0, 42) || 'Unnamed Relation';
+    }
+
+    function titleCase(value) {
+      return value.replace(/\b\w/g, character => character.toUpperCase());
+    }
+
+    function applyWorldPacket(packet, source) {
+      const safePacket = normalizePacket(packet);
+      const labels = [];
+      if (safePacket.noWorld) return labels;
+      const changes = safePacket.changes.length ? safePacket.changes : [{ op: 'pulse', x: state.player.x, y: state.player.y, label: 'reply leaves echo' }];
+
+      for (const rawChange of changes.slice(0, 8)) {
+        const label = applyChange(rawChange);
+        if (label) labels.push(label);
+      }
+      if (!labels.length) {
+        const fallbackLabel = applyChange({ op: 'pulse', x: state.player.x, y: state.player.y, label: 'reply leaves echo' });
+        if (fallbackLabel) labels.push(fallbackLabel);
+      }
+
+      if (Array.isArray(safePacket.memory)) {
+        for (const memory of safePacket.memory.slice(0, 3)) {
+          const text = String(memory || '').trim().slice(0, 240);
+          if (!text) continue;
+          state.memories.push({ id: uid('memory'), x: state.player.x, y: state.player.y, text, turn: state.turn });
+          labels.push('world memory');
+        }
+      }
+
+      recordChange(labels.join(' · ') || 'conversation changed the world', { source });
+      revealAround(state.player.x, state.player.y, CONFIG.revealRadius);
+      return Array.from(new Set(labels));
+    }
+
+    function normalizePacket(packet) {
+      const object = packet && typeof packet === 'object' ? packet : {};
+      return {
+        reply: String(object.reply || 'The world changed without finding a complete sentence.').slice(0, 700),
+        changes: Array.isArray(object.changes) ? object.changes : [],
+        memory: Array.isArray(object.memory) ? object.memory : [],
+        suggestions: Array.isArray(object.suggestions) ? object.suggestions.map(String).slice(0, 4) : [],
+        noWorld: object.noWorld === true
+      };
+    }
+
+    function applyChange(change) {
+      if (!change || typeof change !== 'object') return '';
+      const op = String(change.op || '').toLowerCase();
+      const label = String(change.label || op || 'world changed').slice(0, 52);
+
+      if (op === 'move') {
+        const steps = clamp(Number(change.steps) || 1, 1, 6);
+        const nx = Number.isFinite(Number(change.x)) ? Number(change.x) : state.player.x + clamp(Number(change.dx) || 0, -1, 1) * steps;
+        const ny = Number.isFinite(Number(change.y)) ? Number(change.y) : state.player.y + clamp(Number(change.dy) || 0, -1, 1) * steps;
+        state.player.x = clamp(Math.round(nx), 0, CONFIG.worldSize - 1);
+        state.player.y = clamp(Math.round(ny), 0, CONFIG.worldSize - 1);
+        revealAround(state.player.x, state.player.y, CONFIG.revealRadius);
+        spawnRipple(state.player.x, state.player.y, '#f2f4ef', 2.5);
+        return label || 'moved';
+      }
+
+      if (op === 'reveal') {
+        const x = clamp(Math.round(Number(change.x ?? state.player.x)), 0, CONFIG.worldSize - 1);
+        const y = clamp(Math.round(Number(change.y ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        const radius = clamp(Number(change.radius) || 3, 1, 7);
+        revealAround(x, y, radius);
+        spawnRipple(x, y, '#c8d5cb', radius);
+        return label || 'revealed';
+      }
+
+      if (op === 'weather') {
+        const value = Object.prototype.hasOwnProperty.call(WEATHER, change.value) ? change.value : 'calm';
+        state.weather = value;
+        burst(state.player.x, state.player.y, value === 'ash' ? '#d18a72' : value === 'rain' ? '#a8d9ea' : '#d7ff74', 24);
+        return label || `${value} begins`;
+      }
+
+      if (op === 'terrain') {
+        const x = clamp(Math.round(Number(change.x ?? state.player.x)), 0, CONFIG.worldSize - 1);
+        const y = clamp(Math.round(Number(change.y ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        const biome = clamp(Math.round(Number(change.biome) || 0), 0, BIOMES.length - 1);
+        const radius = clamp(Math.round(Number(change.radius) || 1), 0, 4);
+        for (let yy = y - radius; yy <= y + radius; yy++) {
+          for (let xx = x - radius; xx <= x + radius; xx++) {
+            if (xx < 0 || yy < 0 || xx >= CONFIG.worldSize || yy >= CONFIG.worldSize) continue;
+            if (Math.hypot(xx - x, yy - y) <= radius + 0.25) state.terrainOverrides[coordKey(xx, yy)] = biome;
+          }
+        }
+        burst(x, y, BIOMES[biome].accent, 18);
+        return label || 'terrain changed';
+      }
+
+      if (op === 'feature') {
+        if (state.features.length >= CONFIG.maxFeatures) return '';
+        const kind = FEATURE_KINDS[change.kind] ? change.kind : 'signal';
+        const x = clamp(Math.round(Number(change.x ?? state.player.x)), 0, CONFIG.worldSize - 1);
+        const y = clamp(Math.round(Number(change.y ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        const feature = {
+          id: uid('feature'),
+          x,
+          y,
+          kind,
+          name: String(change.name || titleCase(FEATURE_KINDS[kind].label)).slice(0, 60),
+          intensity: clamp(Number(change.intensity) || 0.8, 0.2, 1.5),
+          turn: state.turn
+        };
+        state.features.push(feature);
+        revealAround(x, y, 2);
+        burst(x, y, FEATURE_KINDS[kind].color, 20);
+        return label || `${FEATURE_KINDS[kind].label} formed`;
+      }
+
+      if (op === 'route') {
+        if (state.routes.length >= CONFIG.maxRoutes) return '';
+        const ax = clamp(Math.round(Number(change.ax ?? state.player.x)), 0, CONFIG.worldSize - 1);
+        const ay = clamp(Math.round(Number(change.ay ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        const bx = clamp(Math.round(Number(change.bx ?? state.player.x + 3)), 0, CONFIG.worldSize - 1);
+        const by = clamp(Math.round(Number(change.by ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        state.routes.push({ id: uid('route'), ax, ay, bx, by, label: String(change.label || 'route').slice(0, 60), turn: state.turn });
+        revealAround(ax, ay, 2);
+        revealAround(bx, by, 2);
+        spawnRipple(bx, by, '#dfd5bd', 2.4);
+        return label || 'route formed';
+      }
+
+      if (op === 'rename') {
+        const x = clamp(Math.round(Number(change.x ?? state.player.x)), 0, CONFIG.worldSize - 1);
+        const y = clamp(Math.round(Number(change.y ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        state.names[coordKey(x, y)] = cleanName(change.name || 'Unnamed Relation');
+        spawnRipple(x, y, '#d7ff74', 2.2);
+        return label || 'place named';
+      }
+
+      if (op === 'remember') {
+        const x = clamp(Math.round(Number(change.x ?? state.player.x)), 0, CONFIG.worldSize - 1);
+        const y = clamp(Math.round(Number(change.y ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        const text = String(change.text || 'An encounter occurred here.').slice(0, 260);
+        state.memories.push({ id: uid('memory'), x, y, text, turn: state.turn });
+        if (state.features.length < CONFIG.maxFeatures) state.features.push({ id: uid('feature'), x, y, kind: 'memory', name: text.slice(0, 44), intensity: 0.75, turn: state.turn });
+        spawnRipple(x, y, '#d7ff74', 3);
+        return label || 'memory rooted';
+      }
+
+      if (op === 'relation') {
+        if (state.relations.length >= CONFIG.maxRelations) return '';
+        let a = featureById(change.a);
+        let b = featureById(change.b);
+        if (!a) a = nearestFeature(10);
+        if (!b) b = state.features.find(feature => !a || feature.id !== a.id) || null;
+        if (!a || !b || a.id === b.id) return '';
+        state.relations.push({ id: uid('relation'), a: a.id, b: b.id, type: String(change.type || 'echoes').slice(0, 42), turn: state.turn });
+        spawnRipple(a.x, a.y, '#d7ff74', 2.2);
+        spawnRipple(b.x, b.y, '#d7ff74', 2.2);
+        return label || `${a.name} relates to ${b.name}`;
+      }
+
+      if (op === 'pulse') {
+        const x = clamp(Math.round(Number(change.x ?? state.player.x)), 0, CONFIG.worldSize - 1);
+        const y = clamp(Math.round(Number(change.y ?? state.player.y)), 0, CONFIG.worldSize - 1);
+        spawnRipple(x, y, FEATURE_KINDS.signal.color, clamp(Number(change.radius) || 3.5, 1.5, 7));
+        return label || 'pulse travels';
+      }
+
+      return '';
+    }
+
+    async function callCompatibleModel(userText, testing = false) {
+      const endpoint = normalizeEndpoint(modelConfig.endpoint);
+      const messages = [
+        { role: 'system', content: modelContract() },
+        ...state.chat.slice(-11, -1).map(item => ({ role: item.role === 'planet' ? 'assistant' : 'user', content: item.text })),
+        { role: 'user', content: testing ? 'Return a valid JSON packet that creates one harmless pulse at the current position.' : userText }
+      ];
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (modelConfig.apiKey) headers.Authorization = `Bearer ${modelConfig.apiKey}`;
+      const body = {
+        model: modelConfig.model,
+        messages,
+        temperature: 0.82,
+        max_tokens: 650,
+        response_format: { type: 'json_object' }
+      };
+
+      let response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
+      if (!response.ok && response.status >= 400) {
+        const retryBody = { ...body };
+        delete retryBody.response_format;
+        response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(retryBody) });
+      }
+      if (!response.ok) throw new Error(`Model request failed: ${response.status}`);
+      const data = await response.json();
+      const content = data?.choices?.[0]?.message?.content ?? data?.message?.content ?? data?.response;
+      if (!content) throw new Error('Model returned no message content');
+      return parseModelPacket(content);
+    }
+
+    function normalizeEndpoint(value) {
+      const trimmed = String(value || '').trim().replace(/\/$/, '');
+      if (!trimmed) throw new Error('No endpoint configured');
+      return trimmed.endsWith('/chat/completions') ? trimmed : `${trimmed}/chat/completions`;
+    }
+
+    function parseModelPacket(content) {
+      if (typeof content === 'object' && content) return normalizePacket(content);
+      const text = String(content).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+      try { return normalizePacket(JSON.parse(text)); } catch (_) {}
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start >= 0 && end > start) return normalizePacket(JSON.parse(text.slice(start, end + 1)));
+      throw new Error('Model reply was not valid JSON');
+    }
+
+    function modelContract() {
+      const summary = worldSummary();
+      return `You are Planet Virentis, the world itself, not an assistant describing a world from outside. The user is the Cartographer inside you. Reply with one concise in-world utterance and 1-4 bounded changes that make the conversation materially alter the world. Never use markdown. Return JSON only.\n\nWORLD NOW\n${JSON.stringify(summary)}\n\nOUTPUT SCHEMA\n{\n  "reply": "maximum 55 words",\n  "changes": [\n    {"op":"move","dx":-1|0|1,"dy":-1|0|1,"steps":1-6,"label":"short visible change"},\n    {"op":"reveal","x":0-30,"y":0-30,"radius":1-7,"label":"..."},\n    {"op":"weather","value":"calm|mist|rain|ash|bloom","label":"..."},\n    {"op":"terrain","x":0-30,"y":0-30,"biome":0-4,"radius":0-4,"label":"..."},\n    {"op":"feature","kind":"grove|spire|gate|spring|settlement|memory|scar|bridge|signal","x":0-30,"y":0-30,"name":"...","intensity":0.2-1.5,"label":"..."},\n    {"op":"route","ax":0-30,"ay":0-30,"bx":0-30,"by":0-30,"label":"..."},\n    {"op":"rename","x":0-30,"y":0-30,"name":"...","label":"..."},\n    {"op":"remember","x":0-30,"y":0-30,"text":"...","label":"..."},\n    {"op":"relation","a":"existing feature id","b":"existing feature id","type":"echoes|contests|feeds|protects|remembers","label":"..."},\n    {"op":"pulse","x":0-30,"y":0-30,"radius":1.5-7,"label":"..."}\n  ],\n  "memory": ["0-2 concise world facts worth retaining"],\n  "suggestions": ["2-4 short possible next utterances"]\n}\n\nCONTRACT\n- Preserve the separation between world truth and cartographic naming.\n- Make prior changes matter.\n- Do not overwrite the whole world in one turn.\n- Do not narrate controls or interface instructions.\n- The user may misunderstand you. Contradiction is allowed.\n- Every ordinary turn must contain at least one visible or persistent change.\n- Prefer relations among existing features over constant creation of new objects.\n- Use only the listed operations.`;
+    }
+
+    function worldSummary() {
+      const nearbyFeatures = state.features
+        .map(feature => ({ id: feature.id, name: feature.name, kind: feature.kind, x: feature.x, y: feature.y, distance: Number(distance(feature, state.player).toFixed(1)) }))
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 10);
+      return {
+        turn: state.turn,
+        player: state.player,
+        origin: state.origin,
+        locationName: currentName(),
+        biome: currentBiome().name,
+        weather: state.weather,
+        persistentChangeCount: state.changes.length,
+        nearbyFeatures,
+        recentMemories: state.memories.slice(-6),
+        recentRoutes: state.routes.slice(-6),
+        recentRelations: state.relations.slice(-6),
+        namedPlaces: Object.entries(state.names).slice(-10)
+      };
+    }
+
+    function openDrawer() {
+      ui.modelMode.value = modelConfig.mode;
+      ui.endpointInput.value = modelConfig.endpoint;
+      ui.modelInput.value = modelConfig.model;
+      ui.apiKeyInput.value = modelConfig.apiKey;
+      toggleRemoteFields();
+      ui.settingsDrawer.classList.add('open');
+      ui.drawerBackdrop.classList.add('open');
+      ui.settingsDrawer.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeDrawer() {
+      ui.settingsDrawer.classList.remove('open');
+      ui.drawerBackdrop.classList.remove('open');
+      ui.settingsDrawer.setAttribute('aria-hidden', 'true');
+    }
+
+    function toggleRemoteFields() {
+      ui.remoteFields.hidden = ui.modelMode.value !== 'compatible';
+    }
+
+    function commitModelSettings() {
+      modelConfig = {
+        mode: ui.modelMode.value === 'compatible' ? 'compatible' : 'builtin',
+        endpoint: ui.endpointInput.value.trim() || 'http://localhost:11434/v1',
+        model: ui.modelInput.value.trim() || 'llama3.2:3b',
+        apiKey: ui.apiKeyInput.value.trim()
+      };
+      saveModelConfig();
+      updateUI();
+      closeDrawer();
+      showToast(modelConfig.mode === 'compatible' ? `Using ${modelConfig.model}` : 'Using the built-in world mind');
+    }
+
+    async function testModel() {
+      if (ui.modelMode.value !== 'compatible') {
+        showToast('The built-in world mind is ready.');
+        return;
+      }
+      const provisional = { ...modelConfig };
+      modelConfig = {
+        mode: 'compatible',
+        endpoint: ui.endpointInput.value.trim(),
+        model: ui.modelInput.value.trim(),
+        apiKey: ui.apiKeyInput.value.trim()
+      };
+      ui.testModelButton.disabled = true;
+      ui.testModelButton.textContent = 'Testing…';
+      try {
+        await callCompatibleModel('connection test', true);
+        showToast('The model returned a valid world packet.');
+      } catch (error) {
+        console.warn(error);
+        showToast(`Connection failed: ${error.message}`);
+      } finally {
+        modelConfig = provisional;
+        updateUI();
+        ui.testModelButton.disabled = false;
+        ui.testModelButton.textContent = 'Test connection';
+      }
+    }
+
+    async function copyModelContract() {
+      try {
+        await navigator.clipboard.writeText(modelContract());
+        showToast('Model contract copied.');
+      } catch (_) {
+        showToast('Clipboard access is unavailable.');
+      }
+    }
+
+    function exportWorld() {
+      const payload = {
+        title: 'Virentis world record',
+        exportedAt: new Date().toISOString(),
+        world: {
+          seed: state.seed,
+          turn: state.turn,
+          player: state.player,
+          origin: state.origin,
+          weather: state.weather,
+          terrainOverrides: state.terrainOverrides,
+          names: state.names,
+          features: state.features,
+          routes: state.routes,
+          relations: state.relations,
+          memories: state.memories,
+          changes: state.changes
+        },
+        conversation: state.chat
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `virentis-world-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    function resetWorld() {
+      if (!confirm('Reset the entire world, conversation, and map on this device?')) return;
+      state = makeInitialState();
+      localStorage.removeItem(CONFIG.saveKey);
+      closeDrawer();
+      if (ui.intro.hidden) startWorld();
+      else updateUI();
+      showToast('A new Virentis has begun.');
+    }
+
+    function resizeCanvas() {
+      const ratio = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(innerWidth * ratio);
+      canvas.height = Math.floor(innerHeight * ratio);
+      canvas.style.width = `${innerWidth}px`;
+      canvas.style.height = `${innerHeight}px`;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function tileSize() {
+      return clamp(Math.min(innerWidth, innerHeight) / 11.5, 38, 64);
+    }
+
+    function worldToScreen(x, y) {
+      const size = tileSize();
+      return {
+        x: innerWidth / 2 + (x - state.camera.x) * size,
+        y: innerHeight / 2 + (y - state.camera.y) * size
+      };
+    }
+
+    function draw(now) {
+      const size = tileSize();
+      ctx.fillStyle = '#f4f4f0';
+      ctx.fillRect(0, 0, innerWidth, innerHeight);
+
+      const rangeX = Math.ceil(innerWidth / size / 2) + 2;
+      const rangeY = Math.ceil(innerHeight / size / 2) + 2;
+      const minX = clamp(Math.floor(state.camera.x - rangeX), 0, CONFIG.worldSize - 1);
+      const maxX = clamp(Math.ceil(state.camera.x + rangeX), 0, CONFIG.worldSize - 1);
+      const minY = clamp(Math.floor(state.camera.y - rangeY), 0, CONFIG.worldSize - 1);
+      const maxY = clamp(Math.ceil(state.camera.y + rangeY), 0, CONFIG.worldSize - 1);
+      const visited = new Set(state.visited);
+
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          const pos = worldToScreen(x, y);
+          const biomeIndex = terrainAt(x, y);
+          const biome = BIOMES[biomeIndex];
+          const seen = visited.has(coordKey(x, y));
+          const near = Math.hypot(x - state.player.x, y - state.player.y) <= 4.4;
+          const noise = hash2(x * 3, y * 5);
+          const left = pos.x - size * .5;
+          const top = pos.y - size * .5;
+
+          ctx.globalAlpha = seen ? 1 : near ? .48 : .16;
+          ctx.fillStyle = biome.color;
+          ctx.fillRect(left, top, size, size);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = seen ? 1.25 : .7;
+          ctx.strokeRect(left, top, size, size);
+
+          if (seen || near) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(left + 1, top + 1, size - 2, size - 2);
+            ctx.clip();
+            if (biomeIndex === 0) {
+              ctx.strokeStyle = '#000000';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(left, top + size * (.2 + noise * .45));
+              ctx.bezierCurveTo(left + size * .3, top + size * .1, left + size * .7, top + size * .9, left + size, top + size * (.35 + noise * .3));
+              ctx.stroke();
+            } else if (biomeIndex === 1) {
+              ctx.fillStyle = '#ffffff';
+              const step = Math.max(6, size / 7);
+              for (let py = top + 5; py < top + size; py += step) for (let px = left + 5; px < left + size; px += step) {
+                const r = 1.1 + hash2(Math.floor(px), Math.floor(py)) * 1.6;
+                ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
+              }
+            } else if (biomeIndex === 2) {
+              ctx.strokeStyle = '#e60000'; ctx.lineWidth = 2;
+              for (let k = -size; k < size * 2; k += 12) { ctx.beginPath(); ctx.moveTo(left + k, top + size); ctx.lineTo(left + k + size, top); ctx.stroke(); }
+            } else if (biomeIndex === 3) {
+              ctx.strokeStyle = '#0033cc'; ctx.lineWidth = 2;
+              const rr = size * (.16 + noise * .1);
+              ctx.beginPath(); ctx.arc(pos.x, pos.y, rr, 0, Math.PI * 2); ctx.stroke();
+              ctx.beginPath(); ctx.arc(pos.x, pos.y, rr * 1.8, 0, Math.PI * 2); ctx.stroke();
+            } else {
+              ctx.fillStyle = '#c8a800';
+              const step = Math.max(7, size / 6);
+              for (let py = top + 5; py < top + size; py += step) for (let px = left + 5; px < left + size; px += step) {
+                if (hash2(Math.floor(px + x), Math.floor(py + y)) > .38) ctx.fillRect(px, py, 3, 3);
+              }
+            }
+            ctx.restore();
+          }
+        }
+      }
+
+      ctx.globalAlpha = 1;
+      drawRoutes();
+      drawRelations(now);
+      drawFeatures(now);
+      drawOrigin(now);
+      drawRipples(now);
+      drawWeather(now);
+      drawParticles(now);
+      drawPlayer(now);
+
+      ctx.globalAlpha = .07;
+      ctx.fillStyle = '#000000';
+      for (let y = 47; y < innerHeight - 60; y += 9) for (let x = 4; x < innerWidth; x += 9) ctx.fillRect(x, y, 1, 1);
+      ctx.globalAlpha = 1;
+    }
+
+    function drawRoutes() {
+      for (const route of state.routes) {
+        const a = worldToScreen(route.ax, route.ay);
+        const b = worldToScreen(route.bx, route.by);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    function drawRelations(now) {
+      for (const relation of state.relations) {
+        const a = featureById(relation.a);
+        const b = featureById(relation.b);
+        if (!a || !b) continue;
+        const pa = worldToScreen(a.x, a.y);
+        const pb = worldToScreen(b.x, b.y);
+        const midX = (pa.x + pb.x) / 2;
+        const midY = (pa.y + pb.y) / 2 - Math.min(90, Math.abs(pb.x - pa.x) * 0.16 + 24);
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.quadraticCurveTo(midX, midY, pb.x, pb.y);
+        ctx.strokeStyle = Math.sin(now * .004 + pa.x) > 0 ? '#e60000' : '#0033cc';
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+      }
+    }
+
+    function drawFeatures(now) {
+      const visited = new Set(state.visited);
+      const size = tileSize();
+      for (const feature of state.features) {
+        if (!visited.has(coordKey(feature.x, feature.y)) && distance(feature, state.player) > 4.2) continue;
+        const pos = worldToScreen(feature.x, feature.y);
+        const spec = FEATURE_KINDS[feature.kind] || FEATURE_KINDS.signal;
+        const pulse = 0.5 + Math.sin(now * 0.003 + feature.x * 0.7 + feature.y) * 0.5;
+        const r = size * 0.15 * (feature.intensity || 1);
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.strokeStyle = spec.color;
+        ctx.fillStyle = spec.color;
+        ctx.globalAlpha = 0.72 + pulse * 0.2;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        if (feature.kind === 'spire') {
+          ctx.moveTo(0, -r * 1.7); ctx.lineTo(r, r); ctx.lineTo(-r, r); ctx.closePath(); ctx.stroke();
+        } else if (feature.kind === 'grove') {
+          ctx.arc(-r * .45, 0, r * .7, 0, Math.PI * 2);
+          ctx.arc(r * .45, 0, r * .7, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (feature.kind === 'gate') {
+          ctx.rect(-r, -r, r * 2, r * 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(0, r); ctx.stroke();
+        } else if (feature.kind === 'spring') {
+          ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, r * .45, 0, Math.PI * 2); ctx.fill();
+        } else if (feature.kind === 'settlement') {
+          ctx.rect(-r, -r * .7, r * .8, r * .8); ctx.rect(r * .2, -r * .2, r * .8, r * .8); ctx.stroke();
+        } else if (feature.kind === 'memory') {
+          ctx.arc(0, 0, r * (1 + pulse * .25), 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, r * .22, 0, Math.PI * 2); ctx.fill();
+        } else if (feature.kind === 'scar') {
+          ctx.moveTo(-r, -r); ctx.lineTo(r * .8, r); ctx.moveTo(-r * .45, r); ctx.lineTo(r, -r * .55); ctx.stroke();
+        } else if (feature.kind === 'bridge') {
+          ctx.moveTo(-r * 1.2, r * .5); ctx.quadraticCurveTo(0, -r, r * 1.2, r * .5); ctx.stroke();
+        } else {
+          ctx.arc(0, 0, r * (0.7 + pulse * .25), 0, Math.PI * 2); ctx.stroke();
+        }
+        if (distance(feature, state.player) <= 2.4) {
+          const label = String(feature.name || spec.label).toUpperCase();
+          ctx.font = '900 9px Helvetica, Arial, sans-serif';
+          const tw = ctx.measureText(label).width + 10;
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(-tw / 2, r * 1.8, tw, 15);
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, 0, r * 1.8 + 7.5);
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawOrigin(now) {
+      const pos = worldToScreen(state.origin.x, state.origin.y);
+      const ready = state.changes.length >= CONFIG.completionChanges;
+      const pulse = 0.5 + Math.sin(now * 0.004) * 0.5;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, tileSize() * (ready ? .28 + pulse * .08 : .18), 0, Math.PI * 2);
+      ctx.strokeStyle = ready ? '#e60000' : '#000000';
+      ctx.lineWidth = ready ? 4 : 2;
+      ctx.stroke();
+    }
+
+    function drawPlayer(now) {
+      const pos = worldToScreen(state.player.x, state.player.y);
+      const breath = 0.5 + Math.sin(now * 0.005) * 0.5;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, tileSize() * (0.105 + breath * .016), 0, Math.PI * 2);
+      ctx.fillStyle = '#000000';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, tileSize() * (0.20 + breath * .025), 0, Math.PI * 2);
+      ctx.strokeStyle = '#0033cc';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    function spawnRipple(x, y, color, radius = 3.5) {
+      state.ripples.push({ x, y, color, radius, started: performance.now(), duration: 1300 });
+    }
+
+    function drawRipples(now) {
+      state.ripples = state.ripples.filter(item => now - item.started < item.duration);
+      for (const ripple of state.ripples) {
+        const t = clamp((now - ripple.started) / ripple.duration, 0, 1);
+        const pos = worldToScreen(ripple.x, ripple.y);
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, tileSize() * ripple.radius * t, 0, Math.PI * 2);
+        ctx.strokeStyle = hexToRgba(ripple.color, (1 - t) * 0.42);
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+
+    function burst(x, y, color, count = 20) {
+      const rng = seeded(Math.floor(performance.now() * 1000) ^ state.seed);
+      for (let i = 0; i < count; i++) {
+        state.particles.push({
+          x, y,
+          angle: rng() * Math.PI * 2,
+          distance: 18 + rng() * 82,
+          size: 1 + rng() * 2.8,
+          color,
+          alpha: 0.4 + rng() * 0.48,
+          started: performance.now() + rng() * 80,
+          duration: 650 + rng() * 750
+        });
+      }
+    }
+
+    function drawParticles(now) {
+      state.particles = state.particles.filter(item => now - item.started < item.duration);
+      for (const particle of state.particles) {
+        const t = clamp((now - particle.started) / particle.duration, 0, 1);
+        const base = worldToScreen(particle.x, particle.y);
+        const px = base.x + Math.cos(particle.angle) * particle.distance * t;
+        const py = base.y + Math.sin(particle.angle) * particle.distance * t;
+        ctx.beginPath();
+        ctx.arc(px, py, particle.size * (1 - t * .5), 0, Math.PI * 2);
+        ctx.fillStyle = particle.color;
+        ctx.globalAlpha = (1 - t) * particle.alpha;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawWeather(now) {
+      if (state.weather === 'calm' || state.weather === 'bloom') return;
+      const count = state.weather === 'rain' ? 80 : 48;
+      ctx.strokeStyle = state.weather === 'rain' ? 'rgba(168,217,234,.22)' : state.weather === 'ash' ? 'rgba(209,138,114,.18)' : 'rgba(210,225,216,.11)';
+      ctx.fillStyle = ctx.strokeStyle;
+      for (let i = 0; i < count; i++) {
+        const x = (hash2(i, 17) * innerWidth + now * (state.weather === 'rain' ? .16 : .025) * (i % 3 + 1)) % innerWidth;
+        const y = (hash2(i, 41) * innerHeight + now * (state.weather === 'rain' ? .32 : .04) * (i % 4 + 1)) % innerHeight;
+        if (state.weather === 'rain') {
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 5, y + 13); ctx.stroke();
+        } else {
+          ctx.beginPath(); ctx.arc(x, y, state.weather === 'ash' ? 1.3 : 2.2, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    }
+
+    function hexToRgba(hex, alpha) {
+      const normalized = hex.replace('#', '');
+      const number = parseInt(normalized.length === 3 ? normalized.split('').map(c => c + c).join('') : normalized, 16);
+      return `rgba(${(number >> 16) & 255},${(number >> 8) & 255},${number & 255},${alpha})`;
+    }
+
+    function animate(now) {
+      const dt = Math.min(32, now - state.lastFrame);
+      state.lastFrame = now;
+      const lerp = 1 - Math.pow(0.001, dt / 1000);
+      state.camera.x += (state.player.x - state.camera.x) * lerp;
+      state.camera.y += (state.player.y - state.camera.y) * lerp;
+      draw(now);
+      requestAnimationFrame(animate);
+    }
+
+    let recognition = null;
+    let voiceOutputEnabled = true;
+
+    function speakPlanet(text) {
+      if (!voiceOutputEnabled || !state.started || !('speechSynthesis' in window)) return;
+      const clean = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 260);
+      if (!clean) return;
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 0.96;
+      utterance.pitch = 0.76;
+      utterance.volume = 0.86;
+      const voices = speechSynthesis.getVoices();
+      utterance.voice = voices.find(v => /english/i.test(v.lang) && /male|daniel|alex|fred/i.test(v.name)) || voices.find(v => /english/i.test(v.lang)) || null;
+      speechSynthesis.speak(utterance);
+    }
+
+    function startVoiceInput() {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Recognition) {
+        showToast('Speech input is unavailable here. Type into the field.');
+        ui.messageInput.focus();
+        return;
+      }
+      if (recognition) {
+        try { recognition.stop(); } catch (_) {}
+        return;
+      }
+      recognition = new Recognition();
+      recognition.lang = navigator.language || 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      ui.voiceButton.classList.add('listening');
+      ui.voiceButton.textContent = '■';
+      recognition.onresult = event => {
+        const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+        if (transcript) sendMessage(transcript);
+      };
+      recognition.onerror = () => showToast('The field did not catch that voice.');
+      recognition.onend = () => {
+        recognition = null;
+        ui.voiceButton.classList.remove('listening');
+        ui.voiceButton.textContent = '●';
+      };
+      recognition.start();
+    }
+
+    function screenToWorld(clientX, clientY) {
+      const size = tileSize();
+      return {
+        x: Math.round(state.camera.x + (clientX - innerWidth / 2) / size),
+        y: Math.round(state.camera.y + (clientY - innerHeight / 2) / size)
+      };
+    }
+
+    function tappedFeature(clientX, clientY) {
+      let best = null;
+      for (const feature of state.features) {
+        const p = worldToScreen(feature.x, feature.y);
+        const d = Math.hypot(clientX - p.x, clientY - p.y);
+        if (d < 34 && (!best || d < best.d)) best = { feature, d };
+      }
+      return best?.feature || null;
+    }
+
+    function tapWorld(clientX, clientY) {
+      const feature = tappedFeature(clientX, clientY);
+      if (feature && distance(feature, state.player) <= 5.5) {
+        spawnRipple(feature.x, feature.y, FEATURE_KINDS[feature.kind]?.color || '#e60000', 2.2);
+        sendMessage(`touch ${feature.name}`);
+        return;
+      }
+      const target = screenToWorld(clientX, clientY);
+      const dx = target.x === state.player.x ? 0 : target.x > state.player.x ? 1 : -1;
+      const dy = target.y === state.player.y ? 0 : target.y > state.player.y ? 1 : -1;
+      if (Math.abs(clientX - innerWidth / 2) > Math.abs(clientY - innerHeight / 2)) moveByKeyboard(dx, 0);
+      else moveByKeyboard(0, dy);
+    }
+
+    function moveByKeyboard(dx, dy) {
+      if (!state.started || state.busy) return;
+      const nx = clamp(state.player.x + dx, 0, CONFIG.worldSize - 1);
+      const ny = clamp(state.player.y + dy, 0, CONFIG.worldSize - 1);
+      if (nx === state.player.x && ny === state.player.y) return;
+      state.player.x = nx;
+      state.player.y = ny;
+      revealAround(nx, ny, CONFIG.revealRadius);
+      spawnRipple(nx, ny, '#0033cc', 1.8);
+      ui.gestureHint.classList.add('gone');
+      updateUI();
+      saveState();
+    }
+
+    function pointerDirection(start, end) {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      if (Math.hypot(dx, dy) < 24) return null;
+      if (Math.abs(dx) > Math.abs(dy)) return { dx: dx > 0 ? 1 : -1, dy: 0 };
+      return { dx: 0, dy: dy > 0 ? 1 : -1 };
+    }
+
+    ui.enterButton.addEventListener('click', startWorld);
+    ui.voiceButton.addEventListener('click', startVoiceInput);
+    ui.introModelButton.addEventListener('click', openDrawer);
+    ui.modelButton.addEventListener('click', openDrawer);
+    ui.exitButton.addEventListener('click', leaveWorld);
+    ui.closeDrawer.addEventListener('click', closeDrawer);
+    ui.drawerBackdrop.addEventListener('click', closeDrawer);
+    ui.modelMode.addEventListener('change', toggleRemoteFields);
+    ui.saveModelButton.addEventListener('click', commitModelSettings);
+    ui.testModelButton.addEventListener('click', testModel);
+    ui.copyPromptButton.addEventListener('click', copyModelContract);
+    ui.exportButton.addEventListener('click', exportWorld);
+    ui.resetButton.addEventListener('click', resetWorld);
+
+    ui.composer.addEventListener('submit', event => {
+      event.preventDefault();
+      sendMessage(ui.messageInput.value);
+    });
+
+    ui.messageInput.addEventListener('input', resizeInput);
+    ui.messageInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        ui.composer.requestSubmit();
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (!state.started || state.busy || document.activeElement === ui.messageInput) return;
+      const key = event.key.toLowerCase();
+      const movement = key === 'arrowup' || key === 'w' ? [0, -1]
+        : key === 'arrowdown' || key === 's' ? [0, 1]
+        : key === 'arrowleft' || key === 'a' ? [-1, 0]
+        : key === 'arrowright' || key === 'd' ? [1, 0]
+        : null;
+      if (movement) {
+        event.preventDefault();
+        moveByKeyboard(movement[0], movement[1]);
+      }
+      if (event.key === 'Escape') closeDrawer();
+      if (event.key === '/') {
+        event.preventDefault();
+        ui.messageInput.focus();
+      }
+    });
+
+    canvas.addEventListener('pointerdown', event => {
+      state.pointerStart = { x: event.clientX, y: event.clientY };
+      canvas.setPointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener('pointerup', event => {
+      if (!state.pointerStart || !state.started || state.busy) return;
+      const start = state.pointerStart;
+      const direction = pointerDirection(start, { x: event.clientX, y: event.clientY });
+      state.pointerStart = null;
+      if (direction) moveByKeyboard(direction.dx, direction.dy);
+      else tapWorld(event.clientX, event.clientY);
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('beforeunload', saveState);
+
+    resizeCanvas();
+    revealAround(state.player.x, state.player.y, 4);
+    renderDialogue();
+    updateUI();
+    requestAnimationFrame(animate);
+  })();
+  </script>
+</body>
+</html>

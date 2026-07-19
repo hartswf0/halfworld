@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HALFWORLD — INDEX</title>
+<style>
+  :root{
+    --paper:#f2f1ec;
+    --card:#f7f6f2;
+    --ink:#141414;
+    --dim:#8a8a86;
+    --faint:#d8d6cf;
+    --red:#e01b1b;
+    --mono:ui-monospace,'SF Mono','IBM Plex Mono',Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--paper)}
+  body{
+    font-family:var(--mono);
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 1px 1px, rgba(20,20,20,.05) 1px, transparent 1.6px) 0 0/14px 14px,
+      var(--paper);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:34px 26px 90px}
+
+  /* ── header ── */
+  header{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+  .glyph{display:grid;grid-template-columns:repeat(3,7px);gap:4px}
+  .glyph i{width:7px;height:7px;border-radius:50%;background:var(--ink)}
+  .glyph i.r{background:var(--red)}
+  .mast{flex:1;text-align:center}
+  h1{
+    font-size:15px;font-weight:600;letter-spacing:.55em;text-indent:.55em;
+    text-transform:uppercase;
+  }
+  .sub{
+    margin-top:10px;font-size:10px;letter-spacing:.3em;text-indent:.3em;
+    text-transform:uppercase;color:var(--dim);text-align:center;
+  }
+  .seat{width:29px}
+
+  /* ── globe ── */
+  .globeRow{display:flex;justify-content:center;margin:34px 0 10px}
+  canvas#globe{display:block}
+
+  .tap{
+    display:flex;justify-content:center;align-items:center;gap:8px;
+    font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink);
+    margin:6px 0 46px;
+  }
+  .dotr{width:6px;height:6px;border-radius:50%;background:var(--red);flex:none}
+  .dotk{width:5px;height:5px;border-radius:50%;background:var(--ink);flex:none}
+
+  /* ── engine card ── */
+  .engine{
+    border:1px solid var(--ink);
+    background:var(--card);
+    padding:26px 28px;
+    margin-bottom:64px;
+    position:relative;
+  }
+  .engine .kicker{
+    display:flex;align-items:center;gap:8px;
+    font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--red);
+    margin-bottom:14px;
+  }
+  .engine h2{
+    font-size:20px;font-weight:700;letter-spacing:.35em;text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .engine p{font-size:12px;line-height:1.85;color:var(--ink);max-width:64ch}
+  .engine p+p{margin-top:10px}
+  .engine .go{
+    display:inline-flex;align-items:center;gap:10px;margin-top:20px;
+    font-size:10px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--ink);text-decoration:none;
+    border:1px solid var(--ink);padding:10px 16px;background:var(--paper);
+  }
+  .engine .go{margin-right:10px}
+  .engine .go:hover{background:var(--ink);color:var(--paper)}
+  .engine .go:hover .dotr{background:var(--red)}
+
+  /* ── sections ── */
+  section{margin-bottom:58px}
+  .shead{
+    display:flex;align-items:baseline;gap:14px;
+    border-top:1px solid var(--ink);
+    padding-top:14px;margin-bottom:6px;
+  }
+  .snum{font-size:10px;letter-spacing:.2em;color:var(--red)}
+  .sname{
+    font-size:12px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;
+  }
+  .srole{
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+    margin-left:auto;text-align:right;
+  }
+  .sblurb{font-size:11px;line-height:1.8;color:var(--dim);max-width:70ch;margin:8px 0 22px}
+
+  /* ── artifact rows ── */
+  .art{
+    border-top:1px solid var(--faint);
+    padding:20px 0 22px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:6px;
+  }
+  .art .line1{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .art a.file{
+    color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;
+    border-bottom:1px solid var(--ink);padding-bottom:2px;
+  }
+  .art a.file:hover{color:var(--red);border-color:var(--red)}
+  .art .path{font-size:10px;color:var(--dim);letter-spacing:.06em}
+  .art .desc{font-size:11.5px;line-height:1.8;color:var(--ink);max-width:70ch;margin-top:6px}
+  .art .gives{
+    display:flex;align-items:flex-start;gap:8px;margin-top:10px;
+    font-size:10.5px;line-height:1.7;letter-spacing:.04em;color:var(--ink);max-width:70ch;
+  }
+  .art .gives .dotr{margin-top:5px}
+  .art .gives b{letter-spacing:.2em;text-transform:uppercase;font-size:9.5px;color:var(--red);font-weight:600}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .tag{
+    font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+    border:1px solid var(--faint);padding:4px 8px;background:var(--card);
+  }
+  .tag.hot{color:var(--red);border-color:var(--red)}
+
+  /* ── demi-monde ── */
+  .demi{margin:34px 0 8px;border-top:1px solid var(--ink);padding-top:26px}
+  .demi .kicker{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--red);margin-bottom:16px}
+  .demi .kicker .dotr{width:6px;height:6px;border-radius:50%;background:var(--red)}
+  .demi blockquote{
+    border-left:2px solid var(--red);padding:2px 0 2px 20px;margin:0 0 20px;
+    font-size:14px;line-height:1.7;color:var(--ink);max-width:66ch;font-style:normal;
+  }
+  .demi blockquote .cite{display:block;margin-top:10px;font-size:10px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--dim);font-style:normal}
+  .demi p{font-size:12px;line-height:1.9;color:var(--ink);max-width:68ch;margin:0 0 12px}
+  .demi p b{font-weight:700}
+  .demi p .r{color:var(--red)}
+  .demi .gloss{display:grid;grid-template-columns:150px 1fr;gap:0;border:1px solid var(--faint);margin:18px 0 4px}
+  .demi .gloss .k{padding:11px 12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:700;color:var(--red);border-right:1px solid var(--faint);border-bottom:1px solid var(--faint)}
+  .demi .gloss .v{padding:11px 12px;font-size:11.5px;line-height:1.75;color:var(--ink);border-bottom:1px solid var(--faint)}
+  .demi .gloss .k:nth-last-child(2){border-bottom:0}
+  .demi .gloss .v:last-child{border-bottom:0}
+  @media(max-width:560px){ .demi .gloss{grid-template-columns:1fr} .demi .gloss .k{border-right:0} }
+
+  /* ── unsorted library ── */
+  .libnote{font-size:11px;line-height:1.8;color:var(--dim);max-width:70ch;margin:8px 0 18px}
+  .libgrid{display:flex;flex-direction:column;gap:0}
+  .libgrp{border-top:1px solid var(--faint);padding:14px 0 4px}
+  .libgrp .gh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:2px}
+  .libgrp .gh b{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+  .libgrp .gh .gr{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+  .libgrp .gd{font-size:11px;line-height:1.7;color:var(--dim);max-width:70ch;margin-bottom:8px}
+  .librow{display:flex;align-items:baseline;gap:10px;padding:5px 0;flex-wrap:wrap}
+  .librow a{color:var(--ink);text-decoration:none;font-size:11px;letter-spacing:.04em;border-bottom:1px solid var(--faint)}
+  .librow a:hover{color:var(--red);border-color:var(--red)}
+  .librow .sz{font-size:9px;letter-spacing:.1em;color:var(--dim);flex:none}
+  .librow .dup{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+    border:1px solid var(--faint);padding:2px 6px;flex:none}
+
+  /* ── footer ── */
+  .foot{
+    border-top:1px solid var(--ink);padding-top:18px;
+    display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+  }
+  .foot span b{color:var(--ink);font-weight:600}
+
+  @media (max-width:560px){
+    h1{letter-spacing:.3em;text-indent:.3em}
+    .srole{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="glyph" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i class="r"></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="mast"><h1>Halfworld</h1></div>
+    <div class="seat"></div>
+  </header>
+  <div class="sub">A demi-monde of one engine &middot; nine organs &middot; five contracts &middot; an unsorted library</div>
+
+  <div class="globeRow"><canvas id="globe" width="560" height="360"></canvas></div>
+  <div class="tap"><span class="dotr"></span> EVERY DOT IS AN ASSET &middot; EVERY ASSET CAN BECOME A WORLD</div>
+
+  <div class="engine">
+    <div class="kicker"><span class="dotr"></span> THE SINGLE ENGINE WE SEEK</div>
+    <h2>Halfworld</h2>
+    <p>
+      Halftone + HALFTRACK + world. One paper substrate (ink dots on cream), one cast rig
+      (pose channels), one score (cue rows over a scrubable clock), one mind contract
+      (bounded op-packets), one memory (project JSON). Each artifact below is half a world;
+      the engine is what they become when the seams are welded.
+    </p>
+    <p>
+      The rule of the engine: <b>character &sub; scene &sub; world</b>, and every layer is
+      plain JSON that a hand, a game loop, a score, or an AI director can speak.
+    </p>
+    <p>
+      And the last seam is welded: the studio <b>rasterizes its stage to BEFLIX-128</b> and shoots
+      the score into an <code>operator-beflix-scenes</code> pack &mdash; so a composed HALFWORLD scene
+      opens inside <b>OPERATOR</b> as an editable, branchable, publishable film. HALFWORLD is
+      OPERATOR&rsquo;s scene-camera; OPERATOR is HALFWORLD&rsquo;s timeline, branch tree, and press.
+    </p>
+    <p>
+      More: the whole builder is <b>hosted inside OPERATOR as F &middot; STUDIO</b> &mdash; spawn the full cast,
+      place assets, pose and walk them, or hit <b>CAPTURE</b> to drive the selected character with your
+      webcam. The shutter shoots the stage straight onto the film tree, and you can sit in calls
+      <b>as a character</b>. On first launch, <b>HERO, JUNE and BOSS break the fourth wall and give
+      the tour themselves</b> &mdash; walking the interface, pointing at every control, and performing
+      each operation (they draw, add frames, fork, play, and take the shot) so the machine explains
+      itself in-world. The UI is the story engine; the onboarding is the story.
+    </p>
+    <p>
+      And the two studios became <b>one surface</b>: the HALFWORLD stage runs chrome-less behind
+      OPERATOR&rsquo;s own controls (cast, pose, style, camera-drive, shoot), so F &middot; STUDIO looks and
+      works like the rest of the lab. <b>SHOOT SCORE &rarr; SCENES</b> turns the score&rsquo;s beats into
+      <b>named scenes</b> on the film tree &mdash; they group as scenes in <b>DIRECT</b> and run as
+      batches in <b>BRANCH</b>. A scene name in AUTHOR tags every unit &mdash; Lens, Write, Prompt, Stage
+      &mdash; so the whole film organizes itself by scene.
+    </p>
+    <a class="go" href="halfworld-studio.html"><span class="dotr"></span> ENTER THE STUDIO — v0.3 · REAL RIG · FILM → BEFLIX</a>
+    <a class="go" href="operator-studio.html"><span class="dotr"></span> OPEN OPERATOR — CAST · BUILD · CAMERA-DRIVE INSIDE THE FILM LAB</a>
+    <a class="go" href="halfworld-program-theory.html"><span class="dotr"></span> READ THE PROGRAM THEORY</a>
+  </div>
+
+  <!-- ───────────── THE DEMI-MONDE ───────────── -->
+  <div class="demi">
+    <div class="kicker"><span class="dotr"></span> WHAT IT IS &middot; THE DEMI-MONDE</div>
+    <blockquote>
+      HALFWORLD is a digital studio of &ldquo;peaches with a flaw&rdquo; &mdash; a poetic limbo of
+      fragmented text and halftone ink where lonely characters, homeless scenes, and bodies without
+      minds are welded together by shared contracts, sampling a beautiful abundance of outcasts into
+      a single, publishable film.
+      <span class="cite">after Alexandre Dumas <i>fils</i> &middot; le demi-monde</span>
+    </blockquote>
+    <p>
+      Dumas coined <b>the demi-monde</b> for a half-world of people who belonged neither to high
+      society nor the gutter &mdash; a halfway house of the beautiful and the compromised. HALFWORLD
+      is its technical translation. Every artifact indexed below is <b>half of something</b>: a cast
+      with no world to stand in, a world with no one to inhabit it, a score with no stage, a mind with
+      no body. They are the bruised, discarded fruit of nine separate programs &mdash; the
+      <span class="r">peaches with a flaw</span>. The engine does not try to make them whole in
+      isolation. It says <i>they taste just as good</i>, and builds a cinematic medium out of their
+      very fragmentation.
+    </p>
+    <div class="gloss">
+      <div class="k">The half-world</div>
+      <div class="v">Dumas&rsquo;s social limbo becomes a <b>technical limbo</b> &mdash; a studio for
+        gorgeous pieces that <i>could not talk to the others</i> until shared contracts welded them.</div>
+      <div class="k">Peaches with a flaw</div>
+      <div class="v">Characters without places, places without characters, scores without stages.
+        Not repaired &mdash; <b>sampled</b>. The flaw is the grain of the film.</div>
+      <div class="k">The double standard</div>
+      <div class="v">In Dumas everyone is bound by one rigid contract. Here the <b>AI mind and the
+        human finger</b> obey the exact same canonical verbs &mdash; so no matter how powerful the
+        collaborator, the half-world stays safe, legible, intact. <i>The law of the packet.</i></div>
+      <div class="k">Ink &amp; residue</div>
+      <div class="v">Its citizens live in <b>halftone dots on cream</b> and commit to the film in
+        <b>128&times;96 BEFLIX</b> &mdash; the outcast rendered not as a failed photograph but as a
+        woodcut. The medium is the fragment made grammar.</div>
+    </div>
+    <p>
+      And the demi-monde knows it is one. On first arrival, the cast <b>break the fourth wall and
+      walk the interface</b> to explain their own isolation &mdash; performing each control as they
+      go, showing rather than telling. The onboarding is the story: outcasts giving you a tour of the
+      halfway house they were welded into.
+    </p>
+  </div>
+
+  <!-- ───────────── 01 CAST ───────────── -->
+  <section>
+    <div class="shead">
+      <span class="snum">ORGAN 01</span>
+      <span class="sname">Cast</span>
+      <span class="srole">who exists &middot; the character standard</span>
+    </div>
+    <div class="sblurb">
+      The main artifact for characters. The engine's people come from here: halftone paper
+      puppets with a 40-channel pose rig, driven by camera, chips, keys, game loop, or AI director.
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="halftrack-stage%20(2).html">Halftrack</a>
+        <span class="path">halftrack-stage (2).html</span>
+      </div>
+      <div class="desc">
+        "A cast &middot; scenes &middot; worlds." Eight preset characters (HERO, SLIM, BOSS, PROF, KID,
+        NOVA, JUNE, ACE) built from a small spec (hair, skin, garment, build, height), rendered as
+        halftone dot-screen figures with IK arms, silhouette hands, 40+ named poses, props, and four
+        styles (SHEET / NOLINE / GRID / MESH). Drives: CAPTURE (MediaPipe), PUPPET, GAME, WORLD, MAKE, DRAW.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the CAST contract: <code>window.HALFTRACK</code>, a JSON embedding surface whose three verbs (pose / walk / face) are what a human, a script, and an LLM all speak. Scenes as cue lists; character &sub; scene &sub; world already stated in code.</span></div>
+      <div class="tags">
+        <span class="tag hot">character rig</span><span class="tag">mediapipe capture</span>
+        <span class="tag">ai director</span><span class="tag">atlas of scenes</span>
+        <span class="tag">no persistence</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── 02 WORLD ───────────── -->
+  <section>
+    <div class="shead">
+      <span class="snum">ORGAN 02</span>
+      <span class="sname">World</span>
+      <span class="srole">what exists &middot; assets, libraries, places</span>
+    </div>
+    <div class="sblurb">
+      Two builders on one dot-field substrate. Worldsmith is the minimal open-vocabulary sketch;
+      Atlantis is the maximal recursive studio. Neither can yet cast a Halftrack character.
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="worldsmith.html">Worldsmith</a>
+        <span class="path">worldsmith.html</span>
+      </div>
+      <div class="desc">
+        "Start with nothing." Type any word and a deterministic dot-sprite appears — ~30 hand
+        painters plus a seeded fallback (creature / totem / plant / machine) so the vocabulary is
+        genuinely open. Ground-plane depth, groups, scene graph, freehand draw, voice notes,
+        void/paper themes. Fully offline; nothing persists.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the generative floor: "type to create anything is a promise, not a menu." The word&rarr;asset move every other tool should inherit.</span></div>
+      <div class="tags">
+        <span class="tag hot">open vocabulary</span><span class="tag">dot sprites</span>
+        <span class="tag">scene graph</span><span class="tag">offline</span>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="atlantis-world-studio.html">Atlantis World Studio</a>
+        <span class="path">atlantis-world-studio.html</span>
+      </div>
+      <div class="desc">
+        The Recursive World Engine: every generated item is at once a reusable asset, a placed
+        instance, and a world containing more assets. Real 3D orbit camera, twelve executable
+        layers (ground &rarr; interface) with per-layer verbs, an operation ledger, rule + scene
+        engines, game kits, its own character/casting system with mocap, and true persistence —
+        project JSON, playable-HTML export, generated docs. Synced to the WYGWYL / BEFLIX film corpus.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the STAGE + MEMORY contracts: asset / instance / world schema, recursion, the append-only operation ledger, and the <code>atlantis-world-studio/v1</code> project snapshot that proves the whole state can round-trip as JSON.</span></div>
+      <div class="tags">
+        <span class="tag hot">recursion</span><span class="tag hot">project json</span>
+        <span class="tag">12 layers</span><span class="tag">rules + scenes</span>
+        <span class="tag">own character rig</span><span class="tag">beflix films</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── 03 SCORE & MIND ───────────── -->
+  <section>
+    <div class="shead">
+      <span class="snum">ORGAN 03</span>
+      <span class="sname">Score &amp; Mind</span>
+      <span class="srole">when things happen &middot; who decides</span>
+    </div>
+    <div class="sblurb">
+      Two SYNTHCINE calls on one ICARO parametric face/body rig — identical bones, opposite clocks.
+      Whispers is live and agentic; the Call is scored and scrubbed. The engine needs both at once.
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="synthcine-whispers%20(5).html">Synthcine Whispers</a>
+        <span class="path">synthcine-whispers (5).html</span>
+      </div>
+      <div class="desc">
+        "A room to think in." Five halftone heads on a call plus YOU on webcam. WHISPER perturbs a
+        character's private interior monologue; affect ripples to neighbours through an adjacency
+        graph and decays toward baseline. SPEAK gets an in-character reply. Ambient thoughts keep
+        the room alive; every face runs emotion registers, tics, visemes, and a head-carriage spring.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the agentic harness: interior vs. exterior speech, the affect-ripple propagation model, and PLAY AS (inhabiting a cast member with your body).</span></div>
+      <div class="tags">
+        <span class="tag hot">agents</span><span class="tag hot">whisper / speak</span>
+        <span class="tag">affect ripples</span><span class="tag">llm-driven</span><span class="tag">live, unscored</span>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="SYNTHCINE_CALL_BODY_RIG_REBUILT%20(1).html">Synthcine Call — Body Rig</a>
+        <span class="path">SYNTHCINE_CALL_BODY_RIG_REBUILT (1).html</span>
+      </div>
+      <div class="desc">
+        Scene 06 as live halftone puppetry with a real transport: 82.5 seconds, 24fps timecode,
+        an OTIO line manifest as the score — every line <code>{c, s, d, t, m, wpm}</code> with motion cues
+        compiled to rig effects and text compiled to visemes. Scrub-deterministic: everything derives
+        from the playhead. Records webcam mocap takes onto the same timeline; exports BEFLIX macros.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the SCORE contract: wall-clock cue rows (the same pattern as the MONTE transports), the cue grammar <code>name@word</code>, and takes as first-class timeline citizens.</span></div>
+      <div class="tags">
+        <span class="tag hot">timeline</span><span class="tag hot">cue grammar</span>
+        <span class="tag">mocap takes</span><span class="tag">timecode</span><span class="tag">beflix export</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── 04 WORLDTEXT ───────────── -->
+  <section>
+    <div class="shead">
+      <span class="snum">ORGAN 04</span>
+      <span class="sname">Worldtext</span>
+      <span class="srole">how it is navigated &middot; how a mind edits a world</span>
+    </div>
+    <div class="sblurb">
+      One planet you walk through by talking to it. The world answers in matter — and in a
+      strictly bounded language of operations.
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="virentis-field-icaro.html">Virentis — Operational World Field</a>
+        <span class="path">virentis-field-icaro.html</span>
+      </div>
+      <div class="desc">
+        A 31&times;31 tile field with fog-of-war: biomes, features, routes, relations, memories, weather.
+        Turn-based — touch, move, or speak, and a world-mind (local rules or any LLM) replies with one
+        utterance plus at most eight validated world-mutation ops (move, reveal, terrain, feature,
+        route, rename, remember, relation, pulse). The whole world exports as dated JSON.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the MIND contract: agents never touch pixels; they emit bounded, validated op-packets against the same schema a human's gestures use. Also the navigable worldtext the atlas becomes.</span></div>
+      <div class="tags">
+        <span class="tag hot">op-packet contract</span><span class="tag">fog of war</span>
+        <span class="tag">turn-based</span><span class="tag">json export</span><span class="tag">model-agnostic</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── 05 FACADES ───────────── -->
+  <section>
+    <div class="shead">
+      <span class="snum">ORGAN 05</span>
+      <span class="sname">Fa&ccedil;ades</span>
+      <span class="srole">the scene to rebuild &middot; three faces of Scene 06</span>
+    </div>
+    <div class="sblurb">
+      One canon — NAT, CHRIS, SAMANTHA, ERNIE, PHIL; the onboarding call, the chair-spin, Phil's
+      surprise review — presented three ways. These are the target: scenes like this, built with
+      Worldsmith-class tools, cast from Halftrack, scored and minded by Synthcine.
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="synthcine-facade-beflix-room-v2.html">Fa&ccedil;ade — BeFliX One Room</a>
+        <span class="path">synthcine-facade-beflix-room-v2.html</span>
+      </div>
+      <div class="desc">
+        The call grid overtaken by a single isometric halftone living room. The scored engine runs
+        underneath (same OTIO lines, viseme compiler, grid/mesh/real/synth face modes, a canonical
+        donor head + mouth-anchor corpus); on top, a room you pan, address, and touch. Exports
+        ICARO-PRO BEFLIX frames.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the first stage to rebuild: its LINES score and casting dials are already externally authorable; its room geometry is the part a world-builder should own.</span></div>
+      <div class="tags">
+        <span class="tag hot">first target</span><span class="tag">isometric room</span>
+        <span class="tag">scored</span><span class="tag">donor-head corpus</span><span class="tag">beflix export</span>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="synthcine-facade-world-engine.html">Fa&ccedil;ade — World Engine</a>
+        <span class="path">synthcine-facade-world-engine.html</span>
+      </div>
+      <div class="desc">
+        "One continuous social room" — the same scene as a first-person walkable 3D apartment with a
+        real-time Director, beat functions, a social-state sim (embarrassment, composure, suspicion,
+        urgency, tension, affinity), interactable props, and endings. Fully local, fully hardcoded —
+        the clearest picture of what playing inside the engine should feel like.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — embodied navigation and the social-meter vocabulary; also the cautionary tale: its literal geometry and JS beats are exactly what the STAGE and SCORE contracts must replace.</span></div>
+      <div class="tags">
+        <span class="tag">first person</span><span class="tag">director queue</span>
+        <span class="tag">social meters</span><span class="tag hot">least authorable</span>
+      </div>
+    </div>
+
+    <div class="art">
+      <div class="line1">
+        <a class="file" href="synthcine-facade-comedy-engine.html">Fa&ccedil;ade — Comedy Engine</a>
+        <span class="path">synthcine-facade-comedy-engine.html</span>
+      </div>
+      <div class="desc">
+        The call grid plus a live social-drama dock: a declarative beat graph (guards over world-facts
+        &rarr; line sequences &rarr; timed reactions) and a phrase library with resource arbitration, so
+        simultaneous performances never fight over the same body part. Player intents classified and
+        answered in scene; endings earned from meters.
+      </div>
+      <div class="gives"><span class="dotr"></span><span><b>Gives the engine</b> — the most authorable drama layer: BEATS and PHRASES are the shape agent-written scenes should take, one level above the SCORE.</span></div>
+      <div class="tags">
+        <span class="tag hot">beat graph</span><span class="tag hot">phrase arbitration</span>
+        <span class="tag">social sim</span><span class="tag">scored + live</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── UNSORTED LIBRARY ───────────── -->
+  <section>
+    <div class="shead">
+      <span class="snum">LIBRARY</span>
+      <span class="sname">Unsorted</span>
+      <span class="srole">the workbench &middot; welds in progress, not yet triaged</span>
+    </div>
+    <div class="libnote">
+      Fifteen integration experiments &mdash; the demi-monde&rsquo;s newest arrivals, still finding
+      their rooms. Each is an attempt to weld halftrack cast into atlantis worlds, worldsmith sketches,
+      synthcine calls, or the world engine. Duplicates and versions kept as found. These are raw
+      residents of the half-world, not yet promoted to organs above.
+    </div>
+    <div class="libgrid">
+
+      <div class="libgrp">
+        <div class="gh"><b>Atlantis Halftrack — Fa&ccedil;ade Desktop Studio</b><span class="gr">cast &times; world</span></div>
+        <div class="gd">The desktop casting studio: HALFTRACK figures placed and directed inside the Atlantis recursive world &mdash; orchestration + performance, and a void-skinned variant.</div>
+        <div class="librow"><a href="atlantis-halftrack-orchestration-performance-studio.html">atlantis-halftrack-orchestration-performance-studio.html</a><span class="sz">316K</span></div>
+        <div class="librow"><a href="atlantis-halftrack-orchestration-performance-studio%20(1).html">atlantis-halftrack-orchestration-performance-studio (1).html</a><span class="sz">316K</span><span class="dup">copy</span></div>
+        <div class="librow"><a href="atlantis-halftrack-facade-void-studio.html">atlantis-halftrack-facade-void-studio.html</a><span class="sz">248K</span><span class="dup">void skin</span></div>
+      </div>
+
+      <div class="libgrp">
+        <div class="gh"><b>Synthcine · Halftrack Render Laboratory</b><span class="gr">cast &times; renderers</span></div>
+        <div class="gd">The whispers room with the HALFTRACK rig shown across every render style at once &mdash; a lab for how the cast reads under SHEET / NOLINE / GRID / MESH and the ICARO halftone.</div>
+        <div class="librow"><a href="synthcine-whispers-halftrack-all-renderers.html">synthcine-whispers-halftrack-all-renderers.html</a><span class="sz">172K</span></div>
+        <div class="librow"><a href="synthcine-whispers-halftrack-all-renderers%20(1).html">synthcine-whispers-halftrack-all-renderers (1).html</a><span class="sz">172K</span><span class="dup">copy</span></div>
+        <div class="librow"><a href="synthcine-whispers-halftrack-all-renderers%20(2).html">synthcine-whispers-halftrack-all-renderers (2).html</a><span class="sz">172K</span><span class="dup">copy</span></div>
+      </div>
+
+      <div class="libgrp">
+        <div class="gh"><b>Synthcine Call &times; Halftrack — Scene 06</b><span class="gr">score &times; cast</span></div>
+        <div class="gd">The timecoded Scene-06 call performed by the real HALFTRACK figures &mdash; the SCORE contract and the CAST contract in one file, scrubbable.</div>
+        <div class="librow"><a href="SYNTHCINE_CALL_HALFTRACK_FILM_STUDIO.html">SYNTHCINE_CALL_HALFTRACK_FILM_STUDIO.html</a><span class="sz">364K</span></div>
+        <div class="librow"><a href="SYNTHCINE_CALL_HALFTRACK_FILM_STUDIO(1).html">SYNTHCINE_CALL_HALFTRACK_FILM_STUDIO(1).html</a><span class="sz">376K</span><span class="dup">copy</span></div>
+      </div>
+
+      <div class="libgrp">
+        <div class="gh"><b>Atlantis — Recursive World Engine</b><span class="gr">stage</span></div>
+        <div class="gd">The world builder itself: the render-router revision (v7) and an integrated cut &mdash; asset / instance / world recursion, the substrate the STAGE contract is lifted from.</div>
+        <div class="librow"><a href="atlantis-world-studio-render-router-v7.html">atlantis-world-studio-render-router-v7.html</a><span class="sz">288K</span><span class="dup">v7 router</span></div>
+        <div class="librow"><a href="atlantis-integrated-world-studio.html">atlantis-integrated-world-studio.html</a><span class="sz">240K</span></div>
+      </div>
+
+      <div class="libgrp">
+        <div class="gh"><b>Atlantis World Studio — Single Actor Camera</b><span class="gr">stage &times; camera</span></div>
+        <div class="gd">V8: one actor, a moving camera &mdash; the seed of an in-scene camera framing a single performer inside the recursive world.</div>
+        <div class="librow"><a href="atlantis-world-studio-single-actor-v8.html">atlantis-world-studio-single-actor-v8.html</a><span class="sz">300K</span><span class="dup">v8</span></div>
+      </div>
+
+      <div class="libgrp">
+        <div class="gh"><b>Worldsmith — Minimal Halftrack Studio</b><span class="gr">generator &times; cast</span></div>
+        <div class="gd">The open-vocabulary sketch (&ldquo;start with nothing&rdquo;) with the HALFTRACK cast dropped in &mdash; a clean, minimal weld of the generator and the figure rig.</div>
+        <div class="librow"><a href="atlantis-worldsmith-minimal-clean.html">atlantis-worldsmith-minimal-clean.html</a><span class="sz">208K</span><span class="dup">clean</span></div>
+        <div class="librow"><a href="atlantis-worldsmith-halfworld-integrated.html">atlantis-worldsmith-halfworld-integrated.html</a><span class="sz">232K</span><span class="dup">integrated</span></div>
+      </div>
+
+      <div class="libgrp">
+        <div class="gh"><b>World Engine / Halftrack Desktop</b><span class="gr">engine weld</span></div>
+        <div class="gd">The world-engine and the HALFTRACK desktop welded into one integrated studio.</div>
+        <div class="librow"><a href="world-engine-integrated-studio.html">world-engine-integrated-studio.html</a><span class="sz">172K</span></div>
+      </div>
+
+      <div class="libgrp">
+        <div class="gh"><b>Halfworld — Integrated Atlantis Halftrack Studio</b><span class="gr">the earliest weld</span></div>
+        <div class="gd">An early named-HALFWORLD integration of Atlantis + Halftrack &mdash; the direct ancestor of the studio now standing above.</div>
+        <div class="librow"><a href="halfworld-atlantis-halftrack-integrated.html">halfworld-atlantis-halftrack-integrated.html</a><span class="sz">80K</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="foot">
+    <span><b>HALFWORLD</b> &middot; INDEX 01</span>
+    <span>9 ORGANS &middot; 15 UNSORTED &middot; 1 ENGINE</span>
+    <span>COMPILED 2026-07-19</span>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  // world-radio dot globe — a halftone sphere with scatter field and one red station
+  var cv=document.getElementById('globe'),cx=cv.getContext('2d');
+  var DPR=Math.min(2,window.devicePixelRatio||1);
+  var W=cv.width,H=cv.height;
+  cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';
+  cx.scale(DPR,DPR);
+  var CXX=W/2,CY=H/2,R=128;
+  function rnd(seed){return function(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff}}
+  var r1=rnd(20260718);
+  // scatter halo
+  for(var i=0;i<420;i++){
+    var a=r1()*Math.PI*2, d=R*1.12+Math.pow(r1(),1.6)*R*0.55;
+    var x=CXX+Math.cos(a)*d, y=CY+Math.sin(a)*d*0.92;
+    if(x<4||x>W-4||y<4||y>H-4)continue;
+    var s=.6+r1()*2.1;
+    cx.fillStyle='rgba(20,20,20,'+(0.25+r1()*0.6)+')';
+    cx.beginPath();cx.arc(x,y,s,0,7);cx.fill();
+  }
+  // sphere of dots, lit from upper-left, pseudo-landmass via value noise
+  var r2=rnd(77);
+  var G=Array.from({length:64},function(){return Array.from({length:64},function(){return r2()})});
+  function noise(u,v){
+    var x=u*10.5,y=v*10.5,xi=Math.floor(x)&63,yi=Math.floor(y)&63,xf=x-Math.floor(x),yf=y-Math.floor(y);
+    function s(t){return t*t*(3-2*t)}
+    var a=G[yi][xi],b=G[yi][(xi+1)&63],c=G[(yi+1)&63][xi],d2=G[(yi+1)&63][(xi+1)&63];
+    return a+(b-a)*s(xf)+(c-a)*s(yf)+(a-b-c+d2)*s(xf)*s(yf);
+  }
+  var STEP=5;
+  for(var gy=-R;gy<=R;gy+=STEP){
+    for(var gx=-R;gx<=R;gx+=STEP){
+      var rr=Math.sqrt(gx*gx+gy*gy);
+      if(rr>R)continue;
+      var z=Math.sqrt(R*R-gx*gx-gy*gy)/R;
+      var u=(gx/R+1)/2,v=(gy/R+1)/2;
+      var n=noise(u,v)*0.65+noise(u*2.1+3,v*2.1+3)*0.35;
+      var land=n>0.52;
+      var light=0.35+0.65*Math.max(0,(-gx*0.5-gy*0.6)/R+z*0.55);
+      var rad=land?(1.1+light*1.55):(0.45+light*0.55);
+      var alpha=land?(0.55+light*0.4):(0.18+light*0.22);
+      cx.fillStyle='rgba(20,20,20,'+alpha.toFixed(3)+')';
+      cx.beginPath();cx.arc(CXX+gx,CY+gy,rad,0,7);cx.fill();
+    }
+  }
+  // one red station dot
+  cx.fillStyle='#e01b1b';
+  cx.beginPath();cx.arc(CXX+R*0.42,CY-R*0.08,3.2,0,7);cx.fill();
+})();
+</script>
+</body>
+</html>
