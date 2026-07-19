@@ -285,6 +285,27 @@
   #timelineChoices.on{display:flex}#timelineChoices button{border:1px solid var(--atl-paper);background:transparent;color:var(--atl-paper);padding:8px 10px;font:900 9px/1 ui-monospace,monospace;letter-spacing:.08em}
   #timelineEmpty{font:9px/1.5 ui-monospace,monospace;color:var(--atl-dim);padding:10px}
 
+  /* ═══ BIND — the new edit-time state: move one action in SPACE ═══ */
+  #bindHud{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:40;
+    display:none;align-items:center;gap:10px;padding:8px 12px;
+    background:var(--atl-ink);color:var(--atl-paper);border:2px solid var(--atl-paper);
+    box-shadow:4px 4px 0 var(--atl-red);font:900 9px/1 ui-monospace,monospace;letter-spacing:.08em;
+    max-width:calc(100% - 24px)}
+  body.bind-on #bindHud{display:flex}
+  #bindHud #bindDot{color:var(--atl-red);animation:bindpulse .7s steps(1) infinite}
+  @keyframes bindpulse{50%{opacity:.25}}
+  #bindHud b{letter-spacing:.1em}
+  #bindHud #bindHow{font-weight:700;opacity:.72;letter-spacing:.04em;text-transform:none;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px}
+  #bindHud button{height:26px;border:1px solid var(--atl-paper);background:transparent;color:var(--atl-paper);
+    font:900 8.5px/1 ui-monospace,monospace;letter-spacing:.1em;padding:0 9px;cursor:pointer;flex:0 0 auto}
+  #bindHud #bindReset{border-color:var(--atl-red);color:#ffb3ad}
+  #bindHud button:active{background:var(--atl-paper);color:var(--atl-ink)}
+  #bindRing{position:absolute;z-index:20;pointer-events:none;display:none;
+    border:2px solid var(--atl-red);border-radius:50%;
+    box-shadow:0 0 0 3px rgba(224,27,27,.18);transform:translate(-50%,-50%)}
+  body.bind-on #bindRing{display:block}
+
   @media(max-width:760px){
     #timelineDock{height:min(48vh,350px)}body.timeline-open #stage{padding-bottom:min(48vh,350px)}
     #timelineWork{grid-template-columns:1fr}#timelineInspector{display:none}
@@ -519,6 +540,16 @@ body.orch-open #desktopLeft .desktopRailHead h2::after{content:'SCENE SEQUENCE';
     <canvas id="out"></canvas>
     <video id="cam" playsinline muted autoplay></video>
     <div id="hint"></div>
+    <!-- BIND — edit one action in space: a selected spatial cue becomes a
+         thing you drag on the stage. Ring tracks the bound entity; HUD is the state. -->
+    <div id="bindRing"></div>
+    <div id="bindHud">
+      <span id="bindDot">◉</span>
+      <b id="bindWhat">BIND</b>
+      <span id="bindHow">drag on the stage to set WHERE · drag the clip to set WHEN</span>
+      <button id="bindReset" type="button">RESET</button>
+      <button id="bindDone" type="button">DONE</button>
+    </div>
 
     <nav id="depthRailStudio" aria-label="World layers">
       <button data-panel="world" class="on" type="button"><span>WORLD</span></button>
@@ -3928,6 +3959,96 @@ const _timelineEditBase=studioTimelineEditCue,_timelineDeleteBase=studioTimeline
 studioTimelineEditCue=function(...a){composeCheckpoint('edit timeline');return _timelineEditBase(...a)};
 studioTimelineDeleteSelected=function(...a){composeCheckpoint('delete timeline cue');return _timelineDeleteBase(...a)};
 studioTimelineAddCommand=function(...a){composeCheckpoint('add timeline cue');const r=_timelineAddBase(...a);voidMarkChanged('timeline changed');return r};
+
+/* ═══════════ BIND — the missing edit-time state ═══════════════════════
+   Select a spatial cue on the timeline and it BINDS: the character (a `move`)
+   or the prop (a `place`) becomes a thing you drag on the stage to set WHERE,
+   while the clip still drags to set WHEN. RESET reverts, DONE releases.
+   One action, editable in time AND space — the theory's EDITING state. */
+STUDIO.bind = null;
+function bindIsSpatial(c){ return !!(c && (c.walk || c.place)); }
+function bindEntityWorld(){
+  const b = STUDIO.bind; if(!b) return null;
+  if(b.kind==='move'){ const C=characters.find(c=>c.id===b.id); return C&&C._world; }
+  const A = placed[b.placeIdx]; return A&&A._world;
+}
+function bindResolvePlaceIdx(c){
+  // after a seek the place cue has pushed its prop; find the nearest match
+  let best=-1,bd=1e9; for(let i=0;i<placed.length;i++){ const p=placed[i];
+    if(p.type!==c.place.type) continue; const dd=Math.hypot(p.x-c.place.x,(p.d-c.place.d)); if(dd<bd){bd=dd;best=i;} }
+  return best;
+}
+function bindBegin(index){
+  const tl=STUDIO.timeline, c=tl.compiled&&tl.compiled.cues[index];
+  if(!bindIsSpatial(c)){ bindEnd(); return; }
+  studioTimelineSeek(c.at);                       // show the exact instant
+  STUDIO.bind = { line:c._line, at:c.at, orig:studioCueCommand(c),
+    kind:c.walk?'move':'place', id:c.id,
+    placeIdx: c.place?bindResolvePlaceIdx(c):-1,
+    cur: c.walk?{x:c.walk[0],d:c.walk[1]}:{x:c.place.x,d:c.place.d,scale:c.place.scale||1} };
+  document.body.classList.add('bind-on');
+  $('bindWhat').textContent = 'BIND · ' + (c.walk ? c.id : ('PROP '+(c.place.type||'').toUpperCase()));
+  bindUpdateHud();
+  if(!STUDIO._bindRAF){ STUDIO._bindRAF=true; requestAnimationFrame(bindRingTick); }
+}
+function bindCueIndex(){ const cs=STUDIO.timeline.compiled&&STUDIO.timeline.compiled.cues||[];
+  return cs.findIndex(c=>c._line===STUDIO.bind.line); }
+function bindUpdateHud(){ const b=STUDIO.bind; if(!b)return;
+  $('bindHow').textContent = 'x '+b.cur.x.toFixed(2)+' · d '+b.cur.d.toFixed(2)+'  — drag stage = WHERE · drag clip = WHEN'; }
+function bindPreview(x,d){                          // live, no recompile
+  const b=STUDIO.bind; if(!b)return; b.cur.x=x; b.cur.d=d;
+  if(b.kind==='move'){ const C=characters.find(c=>c.id===b.id); if(C){C.game.x=C.game.tx=x; C.game.d=C.game.td=d;} }
+  else { const A=placed[b.placeIdx]; if(A){A.x=x; A.d=d;} }
+  bindUpdateHud();
+}
+function bindCommand(){ const b=STUDIO.bind;
+  return b.kind==='move' ? `${b.id} move ${b.cur.x.toFixed(3)} ${b.cur.d.toFixed(3)}`
+    : `place ${STUDIO.bind.orig.split(/\s+/)[1]} ${b.cur.x.toFixed(3)} ${b.cur.d.toFixed(3)} ${(b.cur.scale||1)}`; }
+function bindCommit(){
+  const b=STUDIO.bind; if(!b)return; const idx=bindCueIndex(); if(idx<0)return;
+  studioTimelineEditCue(idx,{command:bindCommand()});    // rewrites the source line
+  studioTimelineSeek(b.at);
+  if(b.kind==='place') b.placeIdx=bindResolvePlaceIdx({place:{type:b.orig.split(/\s+/)[1],x:b.cur.x,d:b.cur.d}});
+  studioToast('BOUND · '+(b.kind==='move'?b.id:'PROP')+' @ '+b.at.toFixed(1)+'s');
+}
+function bindReset(){
+  const b=STUDIO.bind; if(!b)return; const idx=bindCueIndex(); if(idx<0)return;
+  studioTimelineEditCue(idx,{command:b.orig});
+  const parts=b.orig.split(/\s+/);
+  b.cur = b.kind==='move' ? {x:+parts[2],d:+parts[3]} : {x:+parts[2],d:+parts[3],scale:+parts[4]||1};
+  studioTimelineSeek(b.at); bindUpdateHud(); studioToast('RESET');
+}
+function bindEnd(){ STUDIO.bind=null; document.body.classList.remove('bind-on'); const r=$('bindRing'); if(r)r.style.display='none'; }
+function bindRingTick(){
+  STUDIO._bindRAF=false;
+  if(STUDIO.bind && document.body.getAttribute('data-void-op')!=='TIME') bindEnd();
+  if(STUDIO.bind){
+    const w=bindEntityWorld(), ring=$('bindRing');
+    if(w && canvas.width){ const r=canvas.getBoundingClientRect(), sr=stage.getBoundingClientRect(), sx=r.width/canvas.width;
+      const dia=(w.u?w.u*1.15:130*(w.s||1))*sx;
+      ring.style.left=((r.left-sr.left)+w.wx*sx)+'px';
+      ring.style.top =((r.top -sr.top )+w.wy*(r.height/canvas.height))+'px';
+      ring.style.width=dia+'px'; ring.style.height=dia+'px'; ring.style.display='block';
+    } else if(ring) ring.style.display='none';
+    STUDIO._bindRAF=true; requestAnimationFrame(bindRingTick);
+  }
+}
+/* arm bind when a spatial clip is selected (the base still drags it in time) */
+const _bindClipDown = studioTimelineClipDown;
+studioTimelineClipDown = function(e,index){ _bindClipDown(e,index);
+  const c=STUDIO.timeline.compiled&&STUDIO.timeline.compiled.cues[index];
+  if(bindIsSpatial(c)) bindBegin(index); else bindEnd(); };
+/* the stage becomes the WHERE-editor while a cue is bound (capture phase wins) */
+stage.addEventListener('pointerdown', e=>{
+  if(!STUDIO.bind || document.body.getAttribute('data-void-op')!=='TIME') return;
+  if(e.target.closest('#bindHud')) return;
+  e.stopPropagation(); e.preventDefault();
+  const drag=ev=>{ const p=stagePoint(ev); bindPreview(p.x,p.d); };
+  const up=()=>{ window.removeEventListener('pointermove',drag,true); window.removeEventListener('pointerup',up,true); bindCommit(); };
+  window.addEventListener('pointermove',drag,true); window.addEventListener('pointerup',up,true);
+  drag(e);
+}, true);
+(function(){ const rb=$('bindReset'), db=$('bindDone'); if(rb)rb.onclick=bindReset; if(db)db.onclick=bindEnd; })();
 function composeOpenCreate(section='all'){
   document.body.classList.add('compose-create-open');const tray=$('composeCreateTray');if(!tray)return;tray.dataset.section=section;if(section==='generate')setTimeout(()=>$('composePrompt')?.focus(),0);composeRefreshUI();
 }
