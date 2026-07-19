@@ -909,7 +909,7 @@ function refreshDepthUI(){
   if(!single){d.classList.remove('show');return;}
   d.classList.add('show');
   const z=worldXZ(single).z;
-  $('#dmark').style.top=((1-z)*118)+'px';
+  $('#dmark').style.top=(z*118)+'px';   // FAR(z0)=top … NEAR(z1)=bottom, matching the labels
 }
 (function(){
   const track=$('#dtrack');let dragging=false;
@@ -918,7 +918,7 @@ function refreshDepthUI(){
     const r=track.getBoundingClientRect();
     const t=clamp((e.clientY-r.top)/r.height,0,1);
     single._db=single._db||snapT(single);
-    single.z=1-t;refreshDepthUI();
+    single.z=t;refreshDepthUI();   // top→FAR(0), bottom→NEAR(1): drag direction now matches labels
   };
   track.addEventListener('pointerdown',e=>{dragging=true;setFrom(e);});
   window.addEventListener('pointermove',e=>{if(dragging)setFrom(e);});

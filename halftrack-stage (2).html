@@ -116,6 +116,37 @@
   @media (prefers-reduced-motion: reduce){
     .tg.loading .lamp{animation:none;opacity:.6}
   }
+
+  /* ═══ OPERATOR PRAGMATIC SKIN — paper, black ink, hard-shadow buttons ═══
+     Kills the terminal-green chrome and the black letterbox: the stage IS
+     paper, the canvas fills its container, the buttons speak operator. */
+  html,body{ background:#e9e8e2; color:#141414; }
+  #app{ background:#e9e8e2; }
+  header{ background:#fff; border-bottom:3px solid #141414; padding:9px 12px; }
+  .wordmark{ color:#141414; } .wordmark .half{ color:#9a9a94; }
+  header button, footer .tg, .pchip, .cchip, #directGo{
+    background:#fff; color:#141414; border:2px solid #141414; box-shadow:2px 2px 0 #141414;
+    font-weight:700; letter-spacing:.1em; border-radius:0; transition:transform .05s, box-shadow .05s; }
+  header button:active, .tg:active, .pchip:active, .cchip:active, #directGo:active{
+    transform:translate(2px,2px); box-shadow:0 0 0 #141414; background:#141414; color:#fff; }
+  header button{ font-size:10px; padding:7px 10px; }
+  #fps{ color:#9a9a94; } #fps b{ color:#141414; font-weight:700; }
+  #stage{ background:#e9e8e2; }
+  #stage::after{ background:none !important; }          /* no scanlines */
+  #stage.paper{ background:#e9e8e2; }
+  canvas#out{ width:100%; height:100%; max-width:100%; max-height:100%; }
+  #hint, #stage.paper #hint{ color:#8a8a86; }
+  footer{ background:#fff; border-top:3px solid #141414; }
+  footer .tg{ color:#141414; }
+  footer .tg.on{ color:#141414; border-color:#141414; box-shadow:2px 2px 0 #b0261a; }
+  footer .tg.on .lamp{ background:#b0261a; box-shadow:none; border-color:#141414; }
+  footer .tg .lamp{ border-color:#141414; }
+  #shapes{ color:#55554f; } .shape .dots i{ background:#cfcec8; } .shape .dots i.lit{ background:#141414; box-shadow:none; }
+  .pchip{ color:#141414; } .pchip.on{ color:#b0261a; border-color:#141414; box-shadow:2px 2px 0 #b0261a; }
+  .pchip.aud, .pchip.aud.on{ color:#141414; }
+  .cchip{ color:#55554f; } .cchip.on{ color:#141414; border-color:#141414; box-shadow:2px 2px 0 #b0261a; }
+  #directIn{ background:#fff; border:2px solid #141414; color:#141414; box-shadow:2px 2px 0 #141414 inset; }
+  #directGo{ color:#141414; }
 </style>
 </head>
 <body>
@@ -207,7 +238,7 @@ const STYLES = {
   MESH:   { outline:true,  tones:"post",  post:{ cell:5, bg:"lines", gain:1.05 } },
 };
 const STYLE_ORDER = Object.keys(STYLES);
-let styleName = "SHEET", STYLE = STYLES.SHEET;
+let styleName = "MESH", STYLE = STYLES.MESH;   // boot in MESH — the shared true look
 function applyStyle(){
   STYLE = STYLES[styleName];
   $("styleBtn").textContent = "STYLE: " + styleName;
@@ -315,8 +346,18 @@ function resizeStage(w, h){
   buf.width = w; buf.height = h;
   for (const C of characters) rebuildChar(C);
 }
+function fitStage(){
+  // fill the stage container so there are no letterbox bars and the cast
+  // spreads across the full width; figure metrics scale to canvas height.
+  const st = $("stage");
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.max(320, st.clientWidth), h = Math.max(240, st.clientHeight);
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  if (buf){ buf.width = canvas.width; buf.height = canvas.height; }
+  for (const C of characters) rebuildChar(C);
+}
 function boot(){
-  canvas.width = 480; canvas.height = 640;
+  fitStage();
   samp.width = GRID_W;
   samp.height = Math.round(GRID_W * 640/480);
   initRig();
@@ -324,6 +365,10 @@ function boot(){
   buildCastChips();
   applyView();
   running = true;
+  let rt = null;
+  const ro = new ResizeObserver(()=>{ clearTimeout(rt); rt = setTimeout(fitStage, 80); });
+  ro.observe($("stage"));
+  addEventListener("resize", ()=>{ clearTimeout(rt); rt = setTimeout(fitStage, 80); });
   requestAnimationFrame(loop);
 }
 function closeGate(){
@@ -941,8 +986,9 @@ function initRig(){
   buf.width = W; buf.height = H;
   bufCtx = buf.getContext("2d", { willReadFrequently:true });
   if (!characters.length){
-    const xs = [0.50, 0.20, 0.80, 0.34, 0.66, 0.10, 0.90, 0.42];
-    const ds = [0.84, 0.74, 0.74, 0.66, 0.66, 0.58, 0.58, 0.90];
+    // spread the cast evenly across the full width, staggered in depth
+    const xs = [0.08, 0.22, 0.36, 0.50, 0.64, 0.78, 0.92, 0.29];
+    const ds = [0.44, 0.82, 0.40, 0.88, 0.42, 0.80, 0.46, 0.62];
     Object.keys(CAST_PRESETS).forEach((id, i)=>{
       spawnChar(id, CAST_PRESETS[id], xs[i] ?? 0.5, ds[i] ?? 0.8);
     });
@@ -1196,6 +1242,31 @@ function band(){
   return a<0.4 ? "front" : a<0.85 ? "threeq" : a<1.3 ? "profile" : "back";
 }
 
+/* the stage — a horizon and a receding floor the cast stands on.
+   Drawn into whichever buffer is active, so MESH re-dots it into scene grain. */
+function drawStageFloor(W, H){
+  const horizon = H*0.50, near = H*0.965;
+  // sky/floor split
+  const g = ctx.createLinearGradient(0, horizon, 0, near);
+  g.addColorStop(0, "rgba(20,20,20,0.02)");
+  g.addColorStop(1, "rgba(20,20,20,0.13)");
+  ctx.fillStyle = g; ctx.fillRect(0, horizon, W, near - horizon);
+  // horizon line
+  ctx.strokeStyle = "rgba(20,20,20,0.35)"; ctx.lineWidth = Math.max(1, H*0.003);
+  ctx.beginPath(); ctx.moveTo(0, horizon); ctx.lineTo(W, horizon); ctx.stroke();
+  // receding depth rails (perspective toward centre)
+  ctx.strokeStyle = "rgba(20,20,20,0.12)"; ctx.lineWidth = Math.max(1, H*0.002);
+  const cx = W/2;
+  for (let i = -6; i <= 6; i++){
+    const fx = cx + i*(W/12);
+    ctx.beginPath(); ctx.moveTo(cx + i*(W/72), horizon); ctx.lineTo(fx, near); ctx.stroke();
+  }
+  // depth bands
+  for (let k = 1; k <= 5; k++){
+    const y = horizon + (near - horizon)*Math.pow(k/5, 1.7);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+}
 function drawAvatar(t){
   const W = canvas.width, H = canvas.height;
   const list = [
@@ -1209,8 +1280,8 @@ function drawAvatar(t){
       const C = item.C;
       bind(C);
       let wx = C.game.x * W;
-      let wy = lerp(H*0.55, H*0.945, C.game.d);
-      let sc = lerp(0.60, 1.06, C.game.d);
+      let wy = lerp(H*0.52, H*0.95, C.game.d);
+      let sc = lerp(0.40, 0.74, C.game.d);
       if (drive === "CAPTURE" && C === selected) wx += S.bodyX * W * 0.06;
       ctx.save();
       ctx.translate(wx, wy); ctx.scale(sc, sc); ctx.translate(-W/2, -AV.groundY);
@@ -1224,11 +1295,13 @@ function drawAvatar(t){
   if (STYLE.post){
     ctx = bufCtx;
     ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,W,H);
+    drawStageFloor(W, H);
     renderCast();
     ctx = mainCtx;
     dotify(STYLE.post);
   } else {
     ctx.fillStyle = PAPER; ctx.fillRect(0,0,W,H);
+    drawStageFloor(W, H);
     renderCast();
   }
 
