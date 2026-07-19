@@ -84,6 +84,45 @@
   #tourActs .lnk:hover{color:var(--red)}
   html.embed #tour{display:none!important}
 
+  /* ═════ PERFORM HUD — driving one character's performance, made visible ═════ */
+  #perfhud{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-14px);
+    z-index:70;width:min(440px,94vw);background:var(--paper);border:2px solid var(--red);
+    box-shadow:0 10px 34px rgba(224,27,27,.22);padding:11px 14px;opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s}
+  #perfhud.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+  #perfhud .pf-top{display:flex;align-items:center;gap:9px;font-size:9px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--red);font-weight:700}
+  #perfhud #pf-dot{font-size:11px}
+  #perfhud.count #pf-dot{animation:pfblink .5s steps(1) infinite}
+  @keyframes pfblink{50%{opacity:.15}}
+  #perfhud #pf-name{color:var(--ink);letter-spacing:.14em}
+  #perfhud #pf-time{margin-left:auto;font-size:13px;letter-spacing:.06em;color:var(--ink);
+    font-weight:700;min-width:78px;text-align:right}
+  #perfhud.count #pf-time{font-size:22px;color:var(--red)}
+  #perfhud button{font-family:var(--mono);cursor:pointer;font-size:8.5px;letter-spacing:.16em;
+    text-transform:uppercase;padding:6px 9px;border:1px solid var(--ink);background:var(--paper)}
+  #perfhud #pf-stop{border-color:var(--red);color:var(--red)}
+  #perfhud #pf-stop:hover{background:var(--red);color:var(--paper)}
+  #perfhud #pf-cancel{border-color:var(--faint);color:var(--dim)}
+  #pf-bar{height:5px;background:var(--faint);margin:9px 0 6px;overflow:hidden}
+  #pf-bar>i{display:block;height:100%;width:0;background:var(--red);transition:width .1s linear}
+  #perfhud #pf-sub{font-size:9px;letter-spacing:.1em;color:var(--dim)}
+  html.embed #perfhud{display:none!important}
+
+  /* director + mind status */
+  .field textarea{width:100%;border:1px solid var(--faint);background:var(--paper);padding:8px;
+    font-size:11px;line-height:1.5;font-family:var(--mono);outline:none;resize:vertical}
+  .field textarea:focus{border-color:var(--ink)}
+  .statuspill{display:inline-block;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+    border:1px solid var(--faint);background:var(--card);color:var(--dim);padding:5px 9px;margin-bottom:6px}
+  .statuspill.on{border-color:var(--ink);color:var(--ink)}
+  .btn.perf{border-color:var(--red);color:var(--red);flex:1}
+  .btn.perf:hover{background:var(--red);color:var(--paper)}
+  .btn.port{border-color:var(--red);color:var(--red)}
+  .btn.port:hover{background:var(--red);color:var(--paper)}
+  select.lensel{border:1px solid var(--faint);background:var(--paper);font-family:var(--mono);
+    font-size:10px;padding:6px 4px}
+
   #stage{position:fixed;inset:52px 0 96px 0;cursor:crosshair}
   /* embed: OPERATOR hosts the stage and owns the chrome */
   html.embed #top,html.embed #bottom,html.embed #drawer,html.embed #filmDlg,html.embed #cmenu{display:none!important}
@@ -250,13 +289,13 @@
     <span class="sep"></span>
     <!-- TOOLS — what you do to the stage right now -->
     <div class="grp" data-grp="tools">
-      <div class="chip tool" id="styleBtn">MESH</div>
-      <div class="chip tool" id="drawBtn">DRAW</div>
-      <div class="chip tool" id="capBtn">CAPTURE</div>
+      <div class="chip tool" id="styleBtn" title="How the scene is drawn — cycle SHEET · NOLINE · GRID · MESH">MESH</div>
+      <div class="chip tool" id="drawBtn" title="Mark a character or sketch a thing by hand">DRAW</div>
+      <div class="chip tool" id="capBtn" title="INPUT · drive the selected character with your webcam">CAPTURE</div>
     </div>
     <span class="sep"></span>
     <!-- OUT — the port to the BEFLIX operator -->
-    <div class="chip out" id="filmBtn">EXPORT</div>
+    <div class="chip out" id="filmBtn" title="OUTPUT · render the finished scene to a BEFLIX film for OPERATOR">EXPORT</div>
     <div class="chip help" id="tourBtn" title="Tour the studio">?</div>
   </div>
 </div>
@@ -281,6 +320,17 @@
 </div>
 
 <div id="cmenu"></div>
+
+<div id="perfhud" aria-hidden="true">
+  <div class="pf-top"><span id="pf-dot">&#9679;</span> REC PERFORMANCE
+    <b id="pf-name">HERO &middot; PUPPET</b>
+    <span id="pf-time">3</span>
+    <button id="pf-stop">Stop &#10003;</button>
+    <button id="pf-cancel">&#10005;</button>
+  </div>
+  <div id="pf-bar"><i></i></div>
+  <div id="pf-sub">get ready&hellip;</div>
+</div>
 
 <div id="tour" aria-hidden="true">
   <div id="tourVeil"></div>
@@ -1566,7 +1616,7 @@ function addRow(c,s,d,t,m){
 }
 function scoreDur(){
   let end=0;for(const r of P.score.rows)end=Math.max(end,r.s+r.d);
-  return Math.max(24,end+2);
+  return Math.max(24,end+2,(typeof PF!=='undefined'&&PF)?PF.t1+0.5:0);
 }
 function parseCues(m){
   const out={};if(!m)return out;
@@ -1724,6 +1774,103 @@ async function remoteMind(text){
   const jm=raw.match(/\{[\s\S]*\}/);return JSON.parse(jm?jm[0]:raw);
 }
 
+/* ═════════ THE DIRECTOR — a prompt becomes a whole timed film ═══════════
+   The mind made meaningful: instead of one live op, the director returns a
+   SCORE — timed rows for each character — plus the cast and assets to place.
+   Works against any OpenAI-compatible endpoint; falls back to the built-in
+   pattern mind offline. This is "prompt → film". */
+let dirDraft='';
+function shortEndpoint(u){ try{ return new URL(u).host; }catch(e){ return String(u).replace(/^https?:\/\//,'').split('/')[0]; } }
+function saveMind(){ try{ localStorage.setItem('halfworld.mind',JSON.stringify({endpoint:MODEL.endpoint,model:MODEL.model})); }catch(e){} }
+function loadMind(){ try{ const m=JSON.parse(localStorage.getItem('halfworld.mind')||'null'); if(m){ MODEL.endpoint=m.endpoint||''; MODEL.model=m.model||''; } }catch(e){} }
+function directorPrompt(){
+  return 'You are the DIRECTOR of HALFWORLD, a paper puppet stage filmed in dots. '
+  +'Turn the user\'s description into a short film as a SCORE of timed rows. '
+  +'Reply with ONLY JSON, no prose:\n'
+  +'{"reply":"one short line","cast":["HERO","JUNE"],"assets":["bench","tower"],'
+  +'"score":[{"c":"HERO","s":0.5,"d":3,"t":"a spoken line or empty","m":"pose=wave; walk=6,0.6; face=left"}]}\n'
+  +'Rules:\n'
+  +'- cast ids MUST be from: '+Object.keys(CAST_PRESETS).join(' ')+' (pick fitting ones, reuse those already on stage).\n'
+  +'- assets are single lowercase nouns (tree bench house car dog tower cloud antenna …).\n'
+  +'- score row fields: c=character id; s=start seconds; d=duration seconds; t=spoken line (or ""); '
+  +'m=semicolon cues from: pose=<POSE>, walk=<x>,<z>, face=left|right|front|back.\n'
+  +'- x is -10..10 (stage left→right), z is 0..1 (0=far/back, 1=near/front).\n'
+  +'- poses: '+POSE_ORDER.join(', ')+'.\n'
+  +'- Sequence in time so the film reads left→right; let characters overlap. 6–16 rows, ~8–22s total. Lively and legible.\n'
+  +'Cast now: '+(Object.keys(P.cast).join(', ')||'none')+'. Assets: '+(Object.values(P.assets).map(a=>a.word).join(', ')||'none')+'.';
+}
+async function directorRemote(text){
+  const r=await fetch(MODEL.endpoint.replace(/\/$/,'')+'/chat/completions',{
+    method:'POST',headers:Object.assign({'Content-Type':'application/json'},MODEL.key?{'Authorization':'Bearer '+MODEL.key}:{}),
+    body:JSON.stringify({model:MODEL.model||'gpt-4o-mini',temperature:0.8,max_tokens:1400,
+      messages:[{role:'system',content:directorPrompt()},{role:'user',content:text}]})});
+  if(!r.ok){ let d=''; try{ d=(await r.json()).error?.message||''; }catch(e){} throw new Error('HTTP '+r.status+(d?' — '+d:'')); }
+  const j=await r.json(); const raw=(j.choices&&j.choices[0]&&j.choices[0].message.content)||'';
+  const jm=raw.match(/\{[\s\S]*\}/); return JSON.parse(jm?jm[0]:raw);
+}
+function builtinDirector(text){
+  // split into clauses, carrying the last-named character across and/then/commas
+  const clauses=String(text).split(/(?:[.;\n]+\s*|\band then\b|\bthen\b|\band\b|,)/i)
+    .map(s=>s.trim()).filter(Boolean);
+  const cast=[], assets=[], score=[]; let s=0.5, lastWho=null;
+  const add=id=>{ if(id&&!cast.includes(id))cast.push(id); };
+  for(const cl of clauses){
+    const named=findCharIn(cl);
+    const who=named||lastWho;
+    const inject=(who&&!named)?(who+' '+cl):cl;    // give an orphan action its subject
+    const pkt=builtinMind(inject);
+    for(const op of (pkt.changes||[])){
+      const cid=(op.id||who);
+      if(op.op==='spawn'){ add(op.id); }
+      else if(op.op==='generate'){ if(op.word)assets.push(op.word); }
+      else if(op.op==='pose'){ add(cid); score.push({c:cid,s,d:2.4,t:'',m:'pose='+op.pose}); s+=2.4; }
+      else if(op.op==='walk'){ add(cid); score.push({c:cid,s,d:2.6,t:'',m:'walk='+(+op.x).toFixed(1)+','+(+op.z).toFixed(2)}); s+=2.6; }
+      else if(op.op==='face'){ add(cid); score.push({c:cid,s,d:1,t:'',m:'face='+op.dir}); s+=1; }
+      else if(op.op==='say'){ add(cid); const d=Math.max(2,(op.text||'').split(/\s+/).length*0.34); score.push({c:cid,s,d,t:op.text,m:''}); s+=d+0.3; }
+      else if(op.op==='row'){ score.push({c:op.c,s:op.s!=null?op.s:s,d:op.d||2,t:op.t||'',m:op.m||''}); }
+    }
+    if(who)lastWho=who;
+  }
+  return {reply:'scene written',cast,assets,score};
+}
+function addRowSilent(c,s,d,t,m){ P.score.rows.push({id:nid(P),c,s:Math.round(s*100)/100,d:Math.max(0.3,Math.round(d*100)/100),t:t||'',m:m||''}); }
+function applyDirector(pkt){
+  P.score.rows=[];                              // a fresh film from the prompt
+  for(const id of (pkt.cast||[])){ const up=String(id).toUpperCase(); if(CAST_PRESETS[up]&&!P.cast[up])applyOp({op:'spawn',id:up},'director'); }
+  let ax=-7.5;
+  for(const w of (pkt.assets||[])){ const word=String(w).toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24); if(!word)continue;
+    let a=Object.values(P.assets).find(a=>a.word===word);
+    if(!a){ const grid=makeGrid(word); if(grid){ a={id:nid(P),word,grid}; P.assets[a.id]=a; } }
+    if(a)P.instances.push({id:nid(P),assetId:a.id,x:clampX(ax),z:0.36,scale:1,flip:1});
+    ax=Math.min(9,ax+3.1);
+  }
+  let n=0;
+  for(const r of (pkt.score||[])){ const c=String(r.c||'').toUpperCase(); if(!c)continue;
+    if(CAST_PRESETS[c]&&!P.cast[c])applyOp({op:'spawn',id:c},'director');
+    if(!P.cast[c])continue;
+    addRowSilent(c,+r.s||0,+r.d||2,r.t||'',r.m||''); n++;
+  }
+  P.score.rows.sort((a,b)=>a.s-b.s);
+  DUR=scoreDur(); T=0; setPlaying(false);
+  return n;
+}
+async function directorLLM(text){
+  mindLog.push({who:'you',text});
+  let pkt;
+  if(MODEL.endpoint){
+    toast('DIRECTOR IS WRITING…');
+    try{ pkt=await directorRemote(text); }
+    catch(e){ pkt=builtinDirector(text); toast('API FAILED ('+((e&&e.message)||e)+') — BUILT-IN'); }
+  } else pkt=builtinDirector(text);
+  lastPacket=pkt;
+  const n=applyDirector(pkt);
+  const line=(pkt.reply?pkt.reply+' · ':'')+n+' rows · '+(pkt.cast||[]).length+' cast';
+  mindLog.push({who:'radio',text:line});
+  if(mindLog.length>60)mindLog.splice(0,mindLog.length-60);
+  markDirty(); refreshDrawer();
+  toast(n?('SCENE DIRECTED · '+n+' ROWS → PRESS PLAY'):'DIRECTOR WROTE NOTHING — TRY NAMING CAST + ACTIONS');
+}
+
 /* ── speak: one mouth for hand and mind ────────────────────────────── */
 let voiceOn=false;
 async function speakCore(text){
@@ -1873,7 +2020,9 @@ function drawAssetOverlay(inst){
 
 /* ── per-character update + draw (the weld: rig ↔ score) ───────────── */
 function updateChar(c,nowS,nowMs){
-  const st=scoredState(c.id,T);
+  // a character being performed is driven live (drag/pose/camera), not the score
+  const performing=PF&&PF.phase==='rec'&&c.id===PF.id;
+  const st=performing?null:scoredState(c.id,T);
   c._st=st;
   let pose,x,z,talking=false;
   if(st){
@@ -1924,6 +2073,15 @@ function drawCharOverlay(c){
     ctx.beginPath();ctx.ellipse(p.x,p.y+4,AV.hipW*1.8*k,AV.hipW*0.24*k,0,0,7);ctx.stroke();
     ctx.setLineDash([]);
   }
+  if(PF&&PF.id===c.id){
+    const pulse=0.5+0.5*Math.sin(performance.now()/170);
+    ctx.strokeStyle=RED;ctx.lineWidth=2+pulse*1.6;ctx.globalAlpha=0.45+0.45*pulse;
+    ctx.beginPath();ctx.ellipse(p.x,p.y+4,AV.hipW*2.3*k,AV.hipW*0.34*k,0,0,7);ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=RED;ctx.textAlign='center';
+    ctx.font='700 '+Math.max(8,11*p.s)+'px '+getComputedStyle(document.body).fontFamily;
+    ctx.fillText(PF.phase==='count'?'● GET READY':'● DRIVING',p.x,p.y-Math.max(30,AV.ry*2.2*k));
+  }
   let say=null;
   if(c._st&&c._st.say)say=c._st.say;
   else{const ls=liveSay[c.id];if(ls)say={text:ls.text,u:1}}
@@ -1961,6 +2119,7 @@ function loop(ms){
   const now=ms/1000, dt=Math.min(0.05,now-lastFrame);lastFrame=now;
   if(playing){T+=dt;if(T>=DUR){T=DUR;setPlaying(false)}}
   DUR=scoreDur();
+  if(PF)performTick();
   for(const id in P.cast)updateChar(P.cast[id],now,ms);
   for(const inst of P.instances)updateInst(inst,now);
   const post=!!STYLE.post;
@@ -2037,6 +2196,11 @@ function drawScrub(){
     scx.fillStyle=r.t?INK:DIM;
     scx.fillRect(x,3+lane*3.4,ww,2.6);
   }
+  if(PF){
+    const x0=PF.t0/DUR*w, x1=PF.t1/DUR*w;
+    scx.fillStyle='rgba(224,27,27,0.15)';scx.fillRect(x0,0,Math.max(2,x1-x0),h);
+    scx.strokeStyle=RED;scx.lineWidth=1;scx.strokeRect(x0+0.5,0.5,Math.max(2,x1-x0)-1,h-1);
+  }
   scx.fillStyle=RED;
   scx.fillRect(T/DUR*w-0.75,0,1.5,h);
 }
@@ -2049,6 +2213,108 @@ document.getElementById('playBtn').onclick=()=>setPlaying(!playing);
 document.getElementById('rwBtn').onclick=()=>{T=0;setPlaying(false)};
 document.getElementById('recBtn').onclick=function(){recOn=!recOn;this.classList.toggle('on',recOn);
   toast(recOn?'REC — VERBS WRITE SCORE ROWS AT THE PLAYHEAD':'REC OFF — VERBS ACT LIVE')};
+
+/* ═════════ PERFORM — drive one character's performance for a span ═══════
+   The clearest way to make motion: pick a character, choose how long, hit
+   record. A 3·2·1 countdown, a pulsing halo on the driven figure, a red
+   band on the timeline. Whatever you do to them — DRAG to move, CLICK a
+   pose — is written as editable score rows for exactly that span. Turn on
+   CAPTURE first and your webcam drives them instead. */
+let PF=null, perfCdTimer=null, perfSrcMode='puppet';
+const PERF_SAMPLE=0.3, PERF_MOVE=0.16;
+function startPerform(id,len,src){
+  if(!P.cast[id]){ toast('SELECT A CHARACTER FIRST — CAST TAB'); return; }
+  if(PF)stopPerform(false);
+  src=src||'puppet';
+  if(src==='camera'&&!navigator.mediaDevices){ src='puppet'; toast('NO CAMERA — PUPPET MODE'); }
+  const c=P.cast[id];
+  const t0=Math.min(Math.max(0,T), Math.max(0,DUR-0.5));
+  len=Math.max(1,+len||4);
+  PF={ id, src, t0, t1:t0+len, len, phase:'count', cd:3,
+       wpX:c.x, wpZ:c.z, wpT:t0, lastPose:c.pose, rows:[], poseRows:[] };
+  sel={kind:'char',id};
+  T=t0; setPlaying(false);
+  showPerfHUD(); updatePerfHUD();
+  const step=()=>{
+    if(!PF)return;
+    if(PF.cd>0){ PF.cd--; updatePerfHUD(); perfCdTimer=setTimeout(step,700); }
+    else beginPerformRec();
+  };
+  perfCdTimer=setTimeout(step,140);
+}
+function beginPerformRec(){
+  if(!PF)return;
+  PF.phase='rec';
+  const c=P.cast[PF.id]; if(c){ PF.wpX=c.x; PF.wpZ=c.z; PF.wpT=PF.t0; PF.lastPose=c.pose; }
+  if(PF.src==='camera')captureSet(true);
+  T=PF.t0; setPlaying(true); updatePerfHUD();
+  toast('PERFORM — '+(PF.src==='camera'?'YOUR BODY DRIVES '+PF.id:'DRAG TO MOVE · CLICK A POSE IN CAST'));
+}
+function performTick(){
+  if(!PF)return;
+  if(PF.phase!=='rec'){ updatePerfHUD(); return; }
+  const c=P.cast[PF.id]; if(!c){ stopPerform(false); return; }
+  const moved=Math.hypot(c.x-PF.wpX,(c.z-PF.wpZ)*8);
+  if(moved>PERF_MOVE && (T-PF.wpT)>=PERF_SAMPLE){
+    PF.rows.push({c:PF.id,s:+PF.wpT.toFixed(2),d:+Math.max(0.2,T-PF.wpT).toFixed(2),t:'',m:'walk='+c.x.toFixed(1)+','+c.z.toFixed(2)});
+    PF.wpX=c.x; PF.wpZ=c.z; PF.wpT=T;
+  }
+  if(c.pose!==PF.lastPose && PF.src!=='camera'){
+    PF.poseRows.push({s:+T.toFixed(2),pose:c.pose}); PF.lastPose=c.pose;
+  }
+  updatePerfHUD();
+  if(T>=PF.t1)stopPerform(true);
+}
+function stopPerform(commit){
+  if(!PF)return;
+  clearTimeout(perfCdTimer); perfCdTimer=null;
+  const id=PF.id, t0=PF.t0, t1=Math.min(Math.max(T,PF.t0+0.1),PF.t1);
+  setPlaying(false);
+  if(PF.src==='camera')captureSet(false);
+  if(commit){
+    const c=P.cast[id];
+    if(c && Math.hypot(c.x-PF.wpX,(c.z-PF.wpZ)*8)>PERF_MOVE)
+      PF.rows.push({c:id,s:+PF.wpT.toFixed(2),d:+Math.max(0.2,t1-PF.wpT).toFixed(2),t:'',m:'walk='+c.x.toFixed(1)+','+c.z.toFixed(2)});
+    const pr=PF.poseRows;
+    for(let i=0;i<pr.length;i++){
+      const s=pr[i].s, e=(i+1<pr.length?pr[i+1].s:t1);
+      PF.rows.push({c:id,s:+s.toFixed(2),d:+Math.max(0.3,e-s).toFixed(2),t:'',m:'pose='+pr[i].pose});
+    }
+    // replace this character's rows that overlap the performed span
+    P.score.rows=P.score.rows.filter(r=> !(r.c===id && r.s<t1 && (r.s+r.d)>t0));
+    for(const r of PF.rows)P.score.rows.push({id:nid(P),...r});
+    P.score.rows.sort((a,b)=>a.s-b.s);
+    P.ledger.push({n:P.ledger.length+1,src:'perform',op:{op:'perform',id,s:+t0.toFixed(1),d:+(t1-t0).toFixed(1)}});
+    DUR=scoreDur(); markDirty();
+    toast('PERFORMANCE: '+id+' · '+t0.toFixed(1)+'–'+t1.toFixed(1)+'s · '+PF.rows.length+' MOVES — EDIT IN SCORE');
+  } else toast('PERFORM CANCELLED');
+  hidePerfHUD(); PF=null; refreshDrawer();
+}
+function showPerfHUD(){ const el=document.getElementById('perfhud'); if(el)el.classList.add('on'); }
+function hidePerfHUD(){ const el=document.getElementById('perfhud'); if(el){el.classList.remove('on');el.classList.remove('count');} }
+function updatePerfHUD(){
+  const el=document.getElementById('perfhud'); if(!el||!PF)return;
+  const q=s=>el.querySelector(s);
+  q('#pf-name').textContent=PF.id+' · '+(PF.src==='camera'?'CAMERA':'PUPPET');
+  const bar=q('#pf-bar>i');
+  if(PF.phase==='count'){
+    el.classList.add('count');
+    q('#pf-time').textContent=PF.cd>0?String(PF.cd):'GO';
+    q('#pf-sub').textContent='get ready — '+PF.id+' will perform for '+PF.len.toFixed(0)+'s';
+    if(bar)bar.style.width='0%';
+  }else{
+    el.classList.remove('count');
+    const rel=Math.max(0,Math.min(PF.len,T-PF.t0));
+    q('#pf-time').textContent=rel.toFixed(1)+' / '+PF.len.toFixed(1)+'s';
+    q('#pf-sub').textContent=PF.src==='camera'?('your body is driving '+PF.id+' — tap stage to recenter'):('drag '+PF.id+' to move · click a pose in the CAST panel');
+    if(bar)bar.style.width=(rel/PF.len*100).toFixed(1)+'%';
+  }
+}
+(function wirePerfHUD(){
+  const stop=document.getElementById('pf-stop'), cancel=document.getElementById('pf-cancel');
+  if(stop)stop.onclick=()=>stopPerform(true);
+  if(cancel)cancel.onclick=()=>stopPerform(false);
+})();
 document.getElementById('styleBtn').onclick=function(){
   styleName=STYLE_ORDER[(STYLE_ORDER.indexOf(styleName)+1)%STYLE_ORDER.length];
   STYLE=STYLES[styleName];
@@ -2347,11 +2613,19 @@ function refreshDrawer(){
     if(!Object.keys(P.cast).length)h+='<div class="note">no one on stage. tap a name above.</div>';
     h+='</div>';
     if(sel&&sel.kind==='char'&&P.cast[sel.id]){
+      h+='<h3><span class="dot"></span>'+sel.id+' — perform a span</h3>';
+      h+='<div class="btnrow" style="align-items:center">'
+        +'<div class="btn perf" id="perfBtn">&#9679; Perform '+sel.id+'</div>'
+        +'<label style="font-size:8.5px;letter-spacing:.16em;color:var(--dim)">FOR</label>'
+        +'<select id="perfLen" class="lensel"><option>2</option><option selected>4</option><option>6</option><option>8</option></select>'
+        +'<div class="btn" id="perfSrc">'+(perfSrcMode==='camera'?'Camera':'Puppet')+'</div>'
+        +'</div>';
+      h+='<div class="note">records from the playhead. drag '+sel.id+' to move, click a pose &mdash; it becomes editable score rows. <b>Camera</b> drives with your webcam.</div>';
       h+='<h3><span class="dot"></span>'+sel.id+' — pose</h3><div class="chips">';
       for(const p of POSE_ORDER)h+='<div class="chip posechip" data-pose="'+esc(p)+'">'+esc(p)+'</div>';
       h+='</div>';
       h+='<h3><span class="dot"></span>'+sel.id+' — make</h3><div class="chips" id="makeChips"></div>';
-      h+='<div class="note">drag on stage to walk &middot; verbs recorded when REC is on &middot; the same rig as halftrack: 40 poses, IK arms, silhouette hands, facing bands</div>';
+      h+='<div class="note">the same rig as halftrack: 40 poses, IK arms, silhouette hands, facing bands</div>';
     }
   }
   if(MODE==='score'){
@@ -2381,17 +2655,25 @@ function refreshDrawer(){
     h+='<div class="note">row grammar &middot; NAME @ s +d : text : pose=wave; walk=x,z; face=left<br>e.g. <b>JUNE @ 4 +3 : hello world : pose=wave</b> &middot; &minus;/+ shift &middot; &#8612;/&#8614; trim &middot; drives use walk= cues on the thing\'s row</div>';
   }
   if(MODE==='mind'){
-    h+='<h3><span class="dot"></span>Radio — the resident mind</h3>';
-    for(const m of mindLog.slice(-14))
-      h+='<div class="mline '+m.who+'"><b>'+(m.who==='you'?'YOU':'RADIO')+'</b> &middot; '+esc(m.text)+'</div>';
-    if(!mindLog.length)h+='<div class="note">speak in the command line. every utterance becomes a bounded packet of at most '+MAX_OPS+' validated ops — a mind gets exactly the powers a finger has.</div>';
+    const connected=!!MODEL.endpoint;
+    h+='<h3><span class="dot"></span>Director — write the film in words</h3>';
+    h+='<div class="field"><textarea id="dirPrompt" rows="4" placeholder="Describe the whole scene over time, e.g.&#10;HERO walks to the bench and waves. JUNE says &quot;hello&quot; then points at the tower. BOSS crosses his arms and looks skeptical.">'+esc(dirDraft||'')+'</textarea></div>';
+    h+='<div class="btnrow"><div class="btn port" id="dirGo">Direct &rarr; write the score</div><div class="btn warn" id="dirClear">Clear score</div></div>';
+    h+='<div class="note">the director casts who&rsquo;s needed, places assets, and writes every timed action into the <b>Score</b> &mdash; then press <b>PLAY</b>. Replaces the current score.</div>';
+    h+='<h3><span class="dot"></span>Mind — '+(connected?'connected':'built-in')+'</h3>';
+    h+='<div class="statuspill '+(connected?'on':'')+'">'+(connected
+        ? '&#9679; '+esc(MODEL.model||'model')+' @ '+esc(shortEndpoint(MODEL.endpoint))
+        : '&#9675; BUILT-IN &middot; offline, pattern-based')+'</div>';
+    for(const m of mindLog.slice(-6))
+      h+='<div class="mline '+m.who+'"><b>'+(m.who==='you'?'YOU':'DIR')+'</b> &middot; '+esc(m.text)+'</div>';
+    h+='<h3><span class="dot"></span>Connect an OpenAI-compatible API</h3>'
+      +'<div class="btnrow" style="margin-bottom:7px"><div class="btn" id="mOpenAI">Use openai.com</div><div class="btn" id="mOllama">Use local ollama</div></div>'
+      +'<div class="field"><label>endpoint (…/v1)</label><input id="mEnd" placeholder="https://api.openai.com/v1" value="'+esc(MODEL.endpoint)+'"></div>'
+      +'<div class="field"><label>model</label><input id="mMod" placeholder="gpt-4o-mini" value="'+esc(MODEL.model)+'"></div>'
+      +'<div class="field"><label>api key (session only, never saved)</label><input id="mKey" type="password" placeholder="sk-…" value="'+esc(MODEL.key)+'"></div>'
+      +'<div class="btnrow"><div class="btn" id="mSet">Connect</div><div class="btn" id="mClr">Built-in</div></div>'
+      +'<div class="note">Any OpenAI-compatible chat endpoint works &mdash; OpenAI, a local ollama, or a proxy. The key stays in memory for this session only; endpoint + model are remembered.</div>';
     h+='<h3><span class="dot"></span>Last packet</h3><pre id="packet">'+esc(lastPacket?JSON.stringify(lastPacket,null,1):'—')+'</pre>';
-    h+='<h3><span class="dot"></span>Remote mind (optional)</h3>'
-      +'<div class="field"><label>openai-compatible endpoint</label><input id="mEnd" placeholder="http://localhost:11434/v1" value="'+esc(MODEL.endpoint)+'"></div>'
-      +'<div class="field"><label>model</label><input id="mMod" placeholder="llama3.2:3b" value="'+esc(MODEL.model)+'"></div>'
-      +'<div class="field"><label>key (session only)</label><input id="mKey" type="password" value="'+esc(MODEL.key)+'"></div>'
-      +'<div class="btnrow"><div class="btn" id="mSet">USE</div><div class="btn" id="mClr">BUILT-IN</div></div>'
-      +'<div class="note">local-first: point at ollama and the planet thinks at home. same contract either way.</div>';
   }
   if(MODE==='memory'){
     h+='<h3><span class="dot"></span>Project — halfworld/v2</h3>'
@@ -2426,7 +2708,13 @@ function refreshDrawer(){
     if(e.target.dataset.del)return;
     sel={kind:'char',id:el.dataset.char};refreshDrawer()});
   drawer.querySelectorAll('[data-del]').forEach(el=>el.onclick=()=>{delete P.cast[el.dataset.del];sel=null;markDirty();refreshDrawer()});
-  drawer.querySelectorAll('.posechip').forEach(el=>el.onclick=()=>{applyOp({op:'pose',id:sel.id,pose:el.dataset.pose},'hand');markDirty();refreshDrawer()});
+  drawer.querySelectorAll('.posechip').forEach(el=>el.onclick=()=>{applyOp({op:'pose',id:sel.id,pose:el.dataset.pose},'hand');markDirty();if(!PF)refreshDrawer()});
+  if(drawer.querySelector('#perfBtn'))drawer.querySelector('#perfBtn').onclick=()=>{
+    const len=+((drawer.querySelector('#perfLen')||{}).value)||4;
+    startPerform(sel.id,len,perfSrcMode);
+  };
+  if(drawer.querySelector('#perfSrc'))drawer.querySelector('#perfSrc').onclick=()=>{
+    perfSrcMode=perfSrcMode==='puppet'?'camera':'puppet';refreshDrawer();};
   drawer.querySelectorAll('[data-seek]').forEach(el=>el.onclick=e=>{
     if(e.target.dataset.delrow)return;T=+el.dataset.seek;setPlaying(false)});
   drawer.querySelectorAll('[data-delrow]').forEach(el=>el.onclick=()=>{
@@ -2456,8 +2744,17 @@ function refreshDrawer(){
     }
   }
   const g=id=>drawer.querySelector('#'+id);
-  if(g('mSet'))g('mSet').onclick=()=>{MODEL.endpoint=g('mEnd').value.trim();MODEL.model=g('mMod').value.trim();MODEL.key=g('mKey').value;toast(MODEL.endpoint?'REMOTE MIND SET':'NO ENDPOINT — BUILT-IN')};
-  if(g('mClr'))g('mClr').onclick=()=>{MODEL={endpoint:'',model:'',key:''};toast('BUILT-IN MIND');refreshDrawer()};
+  if(g('dirPrompt'))g('dirPrompt').addEventListener('input',e=>{dirDraft=e.target.value});
+  if(g('dirGo'))g('dirGo').onclick=()=>{
+    const p=(g('dirPrompt').value||'').trim();
+    if(!p){toast('DESCRIBE THE SCENE FIRST');return;}
+    dirDraft=p; directorLLM(p);
+  };
+  if(g('dirClear'))g('dirClear').onclick=()=>{P.score.rows=[];DUR=scoreDur();T=0;markDirty();toast('SCORE CLEARED');refreshDrawer()};
+  if(g('mOpenAI'))g('mOpenAI').onclick=()=>{MODEL.endpoint='https://api.openai.com/v1';if(!MODEL.model)MODEL.model='gpt-4o-mini';saveMind();refreshDrawer();setTimeout(()=>{const k=drawer.querySelector('#mKey');if(k)k.focus()},30);toast('OPENAI SET — ADD YOUR KEY')};
+  if(g('mOllama'))g('mOllama').onclick=()=>{MODEL.endpoint='http://localhost:11434/v1';if(!MODEL.model)MODEL.model='llama3.2:3b';saveMind();refreshDrawer();toast('LOCAL OLLAMA SET')};
+  if(g('mSet'))g('mSet').onclick=()=>{MODEL.endpoint=g('mEnd').value.trim();MODEL.model=g('mMod').value.trim();MODEL.key=g('mKey').value;saveMind();toast(MODEL.endpoint?'CONNECTED — DIRECTOR IS LIVE':'NO ENDPOINT — BUILT-IN');refreshDrawer()};
+  if(g('mClr'))g('mClr').onclick=()=>{MODEL={endpoint:'',model:'',key:''};saveMind();toast('BUILT-IN MIND');refreshDrawer()};
   if(g('expBtn'))g('expBtn').onclick=exportJSON;
   if(g('edlBtn'))g('edlBtn').onclick=exportEDL;
   if(g('impBtn'))g('impBtn').onclick=importJSON;
@@ -3058,6 +3355,14 @@ addEventListener('message', async (e)=>{
       say:'We’re the real <b>HALFTRACK</b> rig — the same figure code as the reference artifacts. In <b>Cast</b> you pick us, give us a pose, mark us with the pen. Watch — I’ll wave.',
       sel:'.chip.mode[data-m="cast"]', enter(){ goMode('cast'); look('JUNE'); poseHW('JUNE','wave'); } },
 
+    { who:'JUNE', title:'Perform · drive one of us for a span',
+      say:'This is how you actually make motion. Select one of us, choose how long, hit <b>● Perform</b>: a 3·2·1 countdown, then whatever you do — <b>drag me to move</b>, <b>click a pose</b> — is recorded as my performance for that stretch of time. A red band shows the span; a halo shows who’s live. Do it once per character.',
+      sel:'.chip.mode[data-m="cast"]', enter(){ goMode('cast'); look('JUNE'); } },
+
+    { who:'BOSS', title:'Or Direct · write the film in words',
+      say:'Don’t want to puppet it by hand? Open <b>Mind</b>, describe the whole scene in plain words, and the <b>director</b> writes every timed action into the score for you. Connect an <b>OpenAI-compatible API key</b> for full scenes; a built-in mind handles simple lines offline.',
+      sel:'.chip.mode[data-m="mind"]', enter(){ goMode('mind'); } },
+
     { who:'HERO', title:'Score · the animation channels',
       say:'This is the heart. Each <b>row</b> is a channel — one of us doing one thing over a span of time: a pose, a walk, a line. Drag the playhead below to <b>scrub</b>. Every colored bar is a movement you can nudge, trim, or delete.',
       sel:'.chip.mode[data-m="score"]', enter(){ goMode('score'); setPlaying(false); } },
@@ -3160,7 +3465,7 @@ addEventListener('message', async (e)=>{
 })();
 
 /* ── boot ──────────────────────────────────────────────────────────── */
-fit();buildTones();
+fit();buildTones();loadMind();
 P=load()||seedDemo();
 DUR=scoreDur();
 requestAnimationFrame(loop);
