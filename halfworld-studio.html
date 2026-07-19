@@ -1802,7 +1802,7 @@ function directorPrompt(){
 async function directorRemote(text){
   const r=await fetch(MODEL.endpoint.replace(/\/$/,'')+'/chat/completions',{
     method:'POST',headers:Object.assign({'Content-Type':'application/json'},MODEL.key?{'Authorization':'Bearer '+MODEL.key}:{}),
-    body:JSON.stringify({model:MODEL.model||'gpt-4o-mini',temperature:0.8,max_tokens:1400,
+    body:JSON.stringify({model:MODEL.model||'gpt-5.6-sol',temperature:0.8,max_tokens:1400,
       messages:[{role:'system',content:directorPrompt()},{role:'user',content:text}]})});
   if(!r.ok){ let d=''; try{ d=(await r.json()).error?.message||''; }catch(e){} throw new Error('HTTP '+r.status+(d?' — '+d:'')); }
   const j=await r.json(); const raw=(j.choices&&j.choices[0]&&j.choices[0].message.content)||'';
@@ -2669,7 +2669,7 @@ function refreshDrawer(){
     h+='<h3><span class="dot"></span>Connect an OpenAI-compatible API</h3>'
       +'<div class="btnrow" style="margin-bottom:7px"><div class="btn" id="mOpenAI">Use openai.com</div><div class="btn" id="mOllama">Use local ollama</div></div>'
       +'<div class="field"><label>endpoint (…/v1)</label><input id="mEnd" placeholder="https://api.openai.com/v1" value="'+esc(MODEL.endpoint)+'"></div>'
-      +'<div class="field"><label>model</label><input id="mMod" placeholder="gpt-4o-mini" value="'+esc(MODEL.model)+'"></div>'
+      +'<div class="field"><label>model</label><input id="mMod" placeholder="gpt-5.6-sol" value="'+esc(MODEL.model)+'"></div>'
       +'<div class="field"><label>api key (session only, never saved)</label><input id="mKey" type="password" placeholder="sk-…" value="'+esc(MODEL.key)+'"></div>'
       +'<div class="btnrow"><div class="btn" id="mSet">Connect</div><div class="btn" id="mClr">Built-in</div></div>'
       +'<div class="note">Any OpenAI-compatible chat endpoint works &mdash; OpenAI, a local ollama, or a proxy. The key stays in memory for this session only; endpoint + model are remembered.</div>';
@@ -2751,7 +2751,7 @@ function refreshDrawer(){
     dirDraft=p; directorLLM(p);
   };
   if(g('dirClear'))g('dirClear').onclick=()=>{P.score.rows=[];DUR=scoreDur();T=0;markDirty();toast('SCORE CLEARED');refreshDrawer()};
-  if(g('mOpenAI'))g('mOpenAI').onclick=()=>{MODEL.endpoint='https://api.openai.com/v1';if(!MODEL.model)MODEL.model='gpt-4o-mini';saveMind();refreshDrawer();setTimeout(()=>{const k=drawer.querySelector('#mKey');if(k)k.focus()},30);toast('OPENAI SET — ADD YOUR KEY')};
+  if(g('mOpenAI'))g('mOpenAI').onclick=()=>{MODEL.endpoint='https://api.openai.com/v1';if(!MODEL.model)MODEL.model='gpt-5.6-sol';saveMind();refreshDrawer();setTimeout(()=>{const k=drawer.querySelector('#mKey');if(k)k.focus()},30);toast('OPENAI SET — ADD YOUR KEY')};
   if(g('mOllama'))g('mOllama').onclick=()=>{MODEL.endpoint='http://localhost:11434/v1';if(!MODEL.model)MODEL.model='llama3.2:3b';saveMind();refreshDrawer();toast('LOCAL OLLAMA SET')};
   if(g('mSet'))g('mSet').onclick=()=>{MODEL.endpoint=g('mEnd').value.trim();MODEL.model=g('mMod').value.trim();MODEL.key=g('mKey').value;saveMind();toast(MODEL.endpoint?'CONNECTED — DIRECTOR IS LIVE':'NO ENDPOINT — BUILT-IN');refreshDrawer()};
   if(g('mClr'))g('mClr').onclick=()=>{MODEL={endpoint:'',model:'',key:''};saveMind();toast('BUILT-IN MIND');refreshDrawer()};
