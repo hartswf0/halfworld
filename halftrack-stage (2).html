@@ -663,6 +663,22 @@ function mkChip(label, cls, fn){
   poseBar.appendChild(b);
   return b;
 }
+/* pose control — referenced by chips, keys, and stage taps but never defined
+   in the original file (setPose/nextPose ReferenceErrors). The rig renders
+   from the bound `poseName`, which bind(C) reads off selected.pose. */
+function setPose(name){
+  if (!selected || !POSES[name]) return;
+  selected.pose = name;
+  if (typeof chips === "object" && chips){
+    for (const k in chips){ if (chips[k]) chips[k].classList.remove("on"); }
+    if (chips[name]) chips[name].classList.add("on");
+  }
+}
+function nextPose(){
+  if (!selected) return;
+  const i = POSE_ORDER.indexOf(selected.pose);
+  setPose(POSE_ORDER[(i + 1) % POSE_ORDER.length]);
+}
 function buildPoseChips(withScene){
   poseBar.innerHTML = ""; chips = {};
   if (withScene){
