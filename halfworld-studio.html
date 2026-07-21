@@ -1808,8 +1808,43 @@ async function directorRemote(text){
   const j=await r.json(); const raw=(j.choices&&j.choices[0]&&j.choices[0].message.content)||'';
   const jm=raw.match(/\{[\s\S]*\}/); return JSON.parse(jm?jm[0]:raw);
 }
+/* the built-in director: a prompt → a scene, even with no cast named.
+   Roles become cast, nouns become props, action verbs become a timed arc.
+   (The API path — gpt-5.6-sol — does this far better; this makes it work offline.) */
+const ROLE_TO_PRESET={ player:'HERO',players:'HERO',striker:'HERO',forward:'HERO',winner:'HERO',champion:'HERO',
+  captain:'BOSS',keeper:'BOSS',goalie:'BOSS',goalkeeper:'BOSS',defender:'SLIM',midfielder:'JUNE',
+  referee:'PROF',ref:'PROF',umpire:'PROF',coach:'PROF',manager:'PROF',
+  hero:'HERO',villain:'BOSS',rival:'BOSS',kid:'KID',child:'KID',boy:'KID',girl:'JUNE',
+  woman:'JUNE',man:'BOSS',person:'HERO',people:'HERO',someone:'HERO',figure:'HERO',dancer:'JUNE',singer:'NOVA',
+  soldier:'BOSS',king:'BOSS',queen:'JUNE',robot:'ACE',stranger:'ACE',guest:'ACE',host:'HERO' };
+const SCENE_NOUN_SET=new Set(['ball','goal','net','trophy','cup','stadium','pitch','field','flag','banner','stands',
+  'scoreboard','fountain','arch','fire','fireworks','confetti','podium','microphone','camera','crowd','wall','fence']);
+const ACTION_POSE={ run:'walk',runs:'walk',race:'walk',races:'walk',racing:'walk',sprint:'walk',sprints:'walk',
+  dribble:'walk',dribbles:'walk',walk:'walk',walks:'walk',charge:'walk',charges:'walk',rush:'walk',rushes:'walk',
+  approach:'walk',approaches:'walk',enter:'walk',enters:'walk',cross:'walk',crosses:'walk',move:'walk',moves:'walk',
+  kick:'pointing',kicks:'pointing',shoot:'pointing',shoots:'pointing',strike:'pointing',strikes:'pointing',
+  score:'both raised',scores:'both raised',scored:'both raised',
+  dive:'stop',dives:'stop',save:'stop',saves:'stop',block:'stop',blocks:'stop',catch:'stop',catches:'stop',
+  cheer:'both raised',cheers:'both raised',roar:'both raised',roars:'both raised',celebrate:'both raised',
+  celebrates:'both raised',jump:'both raised',jumps:'both raised',
+  lift:'both raised',lifts:'both raised',raise:'both raised',raises:'both raised',hoist:'both raised',hoists:'both raised',
+  win:'both raised',wins:'both raised',won:'both raised',
+  point:'pointing',points:'pointing',pointing:'pointing',wave:'wave',waves:'wave',waving:'wave',
+  cry:'sad',cries:'sad',fall:'sad',falls:'sad',kneel:'sad',argue:'angry',argues:'angry',shout:'angry',shouts:'angry',
+  think:'thinking',thinks:'thinking',watch:'thinking',watches:'thinking',wait:'neutral',stand:'neutral',stands:'neutral' };
+const CELEBRATE=/\b(score|scores|scored|win|wins|won|lift|lifts|hoist|hoists|celebrate|celebrates|champion|goal)\b/;
+/* whole-word cast match — findCharIn is a loose substring test ("ace" ⊂ "race"),
+   which mis-routes free-form prompts. This only matches a real cast id as a word. */
+function findCharStrict(text){
+  const ids=[...Object.keys(P.cast),...Object.keys(CAST_PRESETS)];
+  for(const id of ids){ if(new RegExp('\\b'+id+'\\b','i').test(text)) return id.toUpperCase(); }
+  return null;
+}
 function builtinDirector(text){
-  // split into clauses, carrying the last-named character across and/then/commas
+  if(findCharStrict(text)) return builtinDirectorNamed(text);   // explicit names → the clause parser
+  return builtinDirectorFreeform(text);                         // free-form → infer a scene
+}
+function builtinDirectorNamed(text){
   const clauses=String(text).split(/(?:[.;\n]+\s*|\band then\b|\bthen\b|\band\b|,)/i)
     .map(s=>s.trim()).filter(Boolean);
   const cast=[], assets=[], score=[]; let s=0.5, lastWho=null;
@@ -1817,7 +1852,7 @@ function builtinDirector(text){
   for(const cl of clauses){
     const named=findCharIn(cl);
     const who=named||lastWho;
-    const inject=(who&&!named)?(who+' '+cl):cl;    // give an orphan action its subject
+    const inject=(who&&!named)?(who+' '+cl):cl;
     const pkt=builtinMind(inject);
     for(const op of (pkt.changes||[])){
       const cid=(op.id||who);
@@ -1833,16 +1868,65 @@ function builtinDirector(text){
   }
   return {reply:'scene written',cast,assets,score};
 }
+function builtinDirectorFreeform(text){
+  const cast=[], assets=[], score=[];
+  const pool=['HERO','JUNE','BOSS','SLIM','PROF','NOVA','KID','ACE']; let pi=0;
+  const nextPreset=()=>{ let id; do{ id=pool[(pi++)%pool.length]; }while(cast.includes(id)&&pi<24); if(!cast.includes(id))cast.push(id); return id; };
+  const roleId={};
+  const clauses=String(text).split(/(?:[.;\n]+|\band then\b|\bthen\b|,|\band\b)/i).map(s=>s.trim()).filter(Boolean);
+  let s=0.6, lastId=null;
+  function subjectOf(cl){
+    const nm=findCharStrict(cl); if(nm){ if(!cast.includes(nm))cast.push(nm); return (lastId=nm); }
+    for(const r in ROLE_TO_PRESET){ if(new RegExp('\\b'+r+'\\b').test(cl)){
+      if(!roleId[r]) roleId[r]=nextPreset();
+      if(/\b(two|both|pair|three|2|3|many)\b/.test(cl) && !roleId[r+'2']) roleId[r+'2']=nextPreset();
+      return (lastId=roleId[r]);
+    }}
+    return lastId;
+  }
+  function nouns(cl){ for(const w of cl.toLowerCase().split(/[^a-z]+/)){ if(!w)continue;
+    const key=SCENE_NOUN_SET.has(w)?w:(PAINTERS[w]?w:(SYN[w]||null));
+    if(key && !assets.includes(key)) assets.push(key); } }
+  for(const cl of clauses){
+    const low=cl.toLowerCase(); nouns(cl);
+    const id=subjectOf(cl)||nextPreset();
+    let acted=false;
+    const q=cl.match(/["“](.+?)["”]/);
+    if(q){ score.push({c:id,s,d:Math.max(2,q[1].split(/\s+/).length*0.34),t:q[1],m:''}); s+=2.6; acted=true; }
+    for(const v in ACTION_POSE){ if(new RegExp('\\b'+v+'\\b').test(low)){
+      const p=ACTION_POSE[v];
+      if(p==='walk'){ const x=/left/.test(low)?-6:/right/.test(low)?6:(/goal|center|middle|net|ball/.test(low)?0:(Math.round((pi%2?1:-1)*4))); score.push({c:id,s,d:2.6,t:'',m:'walk='+x+',0.62'}); }
+      else score.push({c:id,s,d:2.2,t:'',m:'pose='+p});
+      // a partner (the second player) mirrors a race
+      if(p==='walk'&&roleId[Object.keys(roleId).find(k=>/2$/.test(k))]){ const b=roleId[Object.keys(roleId).find(k=>/2$/.test(k))]; if(b&&b!==id)score.push({c:b,s,d:2.6,t:'',m:'walk='+(-3)+',0.55'}); }
+      s+=2.4; acted=true;
+      if(CELEBRATE.test(v)) score.push({c:id,s:+(s-2.2).toFixed(2),d:2.2,t:/lift|hoist|win|won|champion/.test(v)?'CHAMPIONS!':'GOAL!',m:''});
+      break;
+    }}
+    if(!acted && id){ score.push({c:id,s,d:2,t:'',m:'pose=thinking'}); s+=2.1; }
+  }
+  if(!cast.length){ cast.push('HERO','JUNE'); score.push({c:'HERO',s:0.6,d:2.4,t:'',m:'pose=wave'}); }
+  return {reply:'scene from prompt',cast,assets,score};
+}
 function addRowSilent(c,s,d,t,m){ P.score.rows.push({id:nid(P),c,s:Math.round(s*100)/100,d:Math.max(0.3,Math.round(d*100)/100),t:t||'',m:m||''}); }
 function applyDirector(pkt){
   P.score.rows=[];                              // a fresh film from the prompt
   for(const id of (pkt.cast||[])){ const up=String(id).toUpperCase(); if(CAST_PRESETS[up]&&!P.cast[up])applyOp({op:'spawn',id:up},'director'); }
-  let ax=-7.5;
+  const BACK=new Set(['crowd','stadium','stands','scoreboard','banner','flag','tower','mountain','cloud','sun','arch','wall','fence','fireworks']);
+  const NEAR=new Set(['ball','trophy','cup','flower','dog','podium','microphone']);
+  let axB=-8, axN=-3;
   for(const w of (pkt.assets||[])){ const word=String(w).toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24); if(!word)continue;
     let a=Object.values(P.assets).find(a=>a.word===word);
     if(!a){ const grid=makeGrid(word); if(grid){ a={id:nid(P),word,grid}; P.assets[a.id]=a; } }
-    if(a)P.instances.push({id:nid(P),assetId:a.id,x:clampX(ax),z:0.36,scale:1,flip:1});
-    ax=Math.min(9,ax+3.1);
+    if(!a)continue;
+    const back=BACK.has(word), near=NEAR.has(word);
+    const z=back?0.08:near?0.82:0.34, sc=back?1.4:near?0.7:1;
+    // a crowd is a mass — scatter a few copies across the back
+    const reps=word==='crowd'?5:1;
+    for(let k=0;k<reps;k++){
+      const x=word==='crowd'?(-9+k*4.5+(k%2?0.8:0)):(back?(axB+=3.4)-3.4:near?(axN+=3.6)-3.6:(axB+=3.2)-3.2);
+      P.instances.push({id:nid(P),assetId:a.id,x:clampX(x),z:back?(0.05+k*0.015):z,scale:sc,flip:k%2?-1:1});
+    }
   }
   let n=0;
   for(const r of (pkt.score||[])){ const c=String(r.c||'').toUpperCase(); if(!c)continue;
