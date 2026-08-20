@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>EVERYBODY — pristine body-field dojo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0a0a;--paper:#fff;--teal:#19d8c1;--red:#ff2e2e;--soft:rgba(0,0,0,.16);--joy:min(30vw,220px)}
+*{box-sizing:border-box;border-radius:0!important}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:'IBM Plex Mono',monospace;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#bar{position:fixed;top:0;left:0;right:0;height:38px;z-index:40;display:flex;align-items:stretch;background:rgba(255,255,255,.92);border-bottom:1px solid rgba(0,0,0,.25);backdrop-filter:blur(5px)}
+#mark{width:38px;display:grid;place-items:center;border-right:1px solid rgba(0,0,0,.22)}
+#mark i{width:12px;height:12px;border:2px solid #000;position:relative}#mark i:after{content:"";position:absolute;width:3px;height:3px;background:var(--teal);left:50%;top:50%;transform:translate(-50%,-50%)}
+#word{flex:1;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;letter-spacing:1.7px;white-space:nowrap}
+#loads{width:58px;display:flex;gap:5px;align-items:center;padding:0 8px}
+.load{height:2px;flex:1;background:rgba(0,0,0,.12);overflow:hidden}.load i{display:block;width:100%;height:100%;background:var(--teal);transform:scaleX(.05);transform-origin:left center}
+.bbtn{width:38px;height:100%;padding:0;border:0;border-left:1px solid rgba(0,0,0,.22);background:transparent;color:#000;font:700 17px/1 'IBM Plex Mono',monospace;display:grid;place-items:center}.bbtn:active,.bbtn.on{background:#000;color:#fff}.bbtn.live{background:var(--red);color:#fff}#exportBtn{background:#000;color:#fff}
+#styleName{display:none}
+#thumbdeck{position:fixed;left:0;right:0;bottom:max(10px,env(safe-area-inset-bottom));height:calc(var(--joy) + 8px);z-index:50;pointer-events:none}
+.joy{position:absolute;bottom:0;width:var(--joy);height:var(--joy);border:1.25px solid rgba(0,0,0,.72);border-radius:50%!important;background:rgba(255,255,255,.72);pointer-events:auto;touch-action:none;backdrop-filter:blur(3px);will-change:transform;z-index:2}
+#joyL{left:max(12px,env(safe-area-inset-left))}#joyR{right:max(12px,env(safe-area-inset-right))}.macroHome{position:absolute;bottom:0;width:var(--joy);height:var(--joy);border:1px dashed rgba(0,0,0,.12);border-radius:50%!important;transform:scale(1.62);pointer-events:none;z-index:0}.macroHome:after{content:"";position:absolute;inset:31%;border:1px solid rgba(25,216,193,.10);border-radius:50%!important}#macroHomeL{left:max(12px,env(safe-area-inset-left))}#macroHomeR{right:max(12px,env(safe-area-inset-right))}.joy.macro{border-color:var(--teal);box-shadow:0 0 0 2px rgba(25,216,193,.10)}.joy.step{box-shadow:inset 0 0 0 3px rgba(25,216,193,.16)}.joy.step .inner{border-color:rgba(25,216,193,.55)}
+.joy:before,.joy:after{content:"";position:absolute;background:rgba(0,0,0,.13);pointer-events:none}.joy:before{left:50%;top:10%;bottom:10%;width:1px}.joy:after{top:50%;left:10%;right:10%;height:1px}
+.joy .inner{position:absolute;inset:26%;border:1px solid rgba(0,0,0,.16);border-radius:50%!important;pointer-events:none}
+/* JOYSTICK OF JOYSTICKS: the inner field is distal (hand/wrist).
+   The outer annulus drives a retained proximal vector (shoulder/body support). */
+.joy .supportRing{position:absolute;inset:7%;border:1px dashed rgba(0,0,0,.18);border-radius:50%!important;pointer-events:none}
+.joy .supportRing:after{content:"";position:absolute;inset:16%;border:1px solid rgba(0,0,0,.07);border-radius:50%!important}
+.joy .supportPuck{position:absolute;left:50%;top:50%;width:17%;height:17%;transform:translate(-50%,-50%);border:1.5px solid var(--teal);border-radius:50%!important;background:rgba(255,255,255,.72);pointer-events:none;box-shadow:0 0 0 2px rgba(25,216,193,.08)}
+.joy .supportPuck:after{content:"";position:absolute;left:50%;top:50%;width:22%;height:22%;transform:translate(-50%,-50%);background:var(--teal);border-radius:50%!important}
+.joy.supporting .supportRing{border-color:rgba(25,216,193,.72)}
+.joy.supporting{box-shadow:inset 0 0 0 3px rgba(25,216,193,.09)}
+/* The crescent is the body's frontal shoulder plane. Crossing it with the
+   thumb changes the same surface from lateral placement into depth. */
+.joy .gate{position:absolute;top:16%;bottom:16%;width:31%;pointer-events:none;opacity:.58;transition:opacity .08s}
+#joyL .gate{right:8%;border-left:1.5px solid rgba(0,0,0,.72);border-radius:50% 0 0 50%!important}
+#joyR .gate{left:8%;border-right:1.5px solid rgba(0,0,0,.72);border-radius:0 50% 50% 0!important}
+.joy.front .gate{border-color:var(--teal);opacity:1}
+.joy .depthhalo{position:absolute;left:50%;top:50%;width:48%;height:48%;transform:translate(-50%,-50%) scale(calc(.82 + var(--front,0)*.72));border:1px solid var(--teal);border-radius:50%!important;opacity:calc(var(--front,0)*.64);pointer-events:none}
+.joy .bendmark{position:absolute;left:50%;top:50%;width:11%;height:11%;transform:translate(-50%,-50%) scale(calc(.75 + var(--bend,0)*1.5));background:rgba(25,216,193,.16);border-radius:50%!important;opacity:calc(var(--bend,0)*.9);pointer-events:none}
+.joy .puck{position:absolute;left:50%;top:50%;width:30%;height:30%;transform:translate(-50%,-50%);border:1.5px solid #000;border-radius:50%!important;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.10);pointer-events:none}
+.joy .puck:after{content:"";position:absolute;left:50%;top:50%;width:22%;height:22%;transform:translate(-50%,-50%);border-radius:50%!important;background:#111}
+.joy .ghost{position:absolute;left:50%;top:50%;width:12%;height:12%;transform:translate(-50%,-50%);border:1.5px solid var(--teal);border-radius:50%!important;pointer-events:none;opacity:.9;box-shadow:0 0 0 3px rgba(25,216,193,.10)}
+.joy .ghost:after{content:"";position:absolute;left:50%;top:50%;width:30%;height:30%;transform:translate(-50%,-50%);background:var(--teal);border-radius:50%!important}
+body.no-teacher .joy .ghost{opacity:0}
+.joy.active{border-color:#000}.joy.active .puck{box-shadow:0 0 0 3px rgba(25,216,193,.22)}.joy.active .puck:after{background:var(--teal)}
+#quick{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:grid;grid-template-columns:repeat(4,34px);grid-auto-rows:34px;gap:5px;pointer-events:auto}
+.q{border:1px solid rgba(0,0,0,.36);background:rgba(255,255,255,.86);color:#000;font:700 16px/1 'IBM Plex Mono',monospace;touch-action:manipulation}.q.active{background:#000;color:#fff;border-color:#000}.q.active:after{content:"";position:absolute;width:4px;height:4px;border-radius:50%!important;background:var(--teal);margin:10px 0 0 -2px}.q:active{background:#000;color:#fff}.q.red{color:var(--red)}
+#polemini{position:absolute;left:50%;bottom:108px;width:78px;height:35px;transform:translateX(-50%);pointer-events:none;opacity:.72}
+#polemini:before{content:"";position:absolute;left:8px;right:8px;top:8px;height:2px;background:#000;transform:rotate(var(--mini-roll,0deg));transform-origin:50% 50%}
+#polemini:after{content:"";position:absolute;left:50%;top:8px;width:2px;height:22px;background:#000;transform:translateX(-50%)}
+#polemini i{position:absolute;top:4px;width:10px;height:10px;border:1.5px solid #000;border-radius:50%!important;background:#fff}#polemini i:first-child{left:4px}#polemini i:last-child{right:4px}#polemini.hot i{border-color:var(--teal)}
+#stat,#chips,#legend{display:none!important}
+#glfail{position:fixed;inset:38px 0 0;z-index:1000;background:#fff;padding:18px;display:none;overflow:auto}#glfail.show{display:block}#glfail h1{font-size:13px;letter-spacing:1px}#glfail p{font-size:11px;line-height:1.5;max-width:68ch}
+.touchmark{position:fixed;width:28px;height:28px;margin:-14px 0 0 -14px;border:1.5px solid #000;border-radius:50%!important;z-index:100;pointer-events:none;display:none}.touchmark:after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;background:var(--teal);transform:translate(-50%,-50%);border-radius:50%!important}
+@media(max-width:720px){:root{--joy:min(35vw,190px)}#word{font-size:10px}.bbtn{width:34px}#loads{width:46px;padding:0 6px}.q{width:32px;height:32px}#quick{grid-template-columns:repeat(4,32px);grid-auto-rows:32px;gap:4px}#polemini{bottom:91px}}
+@media(orientation:portrait){:root{--joy:min(40vw,220px)}#thumbdeck{height:calc(var(--joy) + 14px)}#polemini{bottom:calc(var(--joy) * .58)}#quick{bottom:18px}}
+
+/* performance tuning: intentionally hidden until requested */
+#tuneBtn{font-size:15px}
+#tuner{position:fixed;top:38px;right:0;z-index:70;width:min(228px,58vw);padding:8px 9px 9px;background:rgba(255,255,255,.94);border-left:1px solid rgba(0,0,0,.22);border-bottom:1px solid rgba(0,0,0,.22);backdrop-filter:blur(7px);display:none;touch-action:none}
+#tuner.on{display:block}
+.trow{height:26px;display:grid;grid-template-columns:18px 1fr 34px;align-items:center;gap:6px}
+.trow b{font-size:10px;letter-spacing:0;text-align:center}.trow output{font-size:9px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.trow input{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent;touch-action:none}
+.trow input::-webkit-slider-runnable-track{height:2px;background:rgba(0,0,0,.20)}
+.trow input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;margin-top:-5.5px;border:1.5px solid #000;border-radius:50%!important;background:#fff}
+.trow input::-moz-range-track{height:2px;background:rgba(0,0,0,.20)}
+.trow input::-moz-range-thumb{width:11px;height:11px;border:1.5px solid #000;border-radius:50%!important;background:#fff}
+#tuneFoot{height:27px;margin-top:5px;border-top:1px solid rgba(0,0,0,.16);display:flex;justify-content:flex-end;align-items:end;gap:5px}
+.tmini{width:28px;height:22px;border:1px solid rgba(0,0,0,.30);background:#fff;font:700 12px/1 'IBM Plex Mono',monospace}.tmini:active{background:#000;color:#fff}
+#feelDot{position:fixed;z-index:69;width:7px;height:7px;border-radius:50%!important;background:var(--teal);pointer-events:none;opacity:0;transform:translate(-50%,-50%)}
+body.tuning #thumbdeck{opacity:.30}body.tuning #gl{filter:saturate(.85)}
+
+
+/* TELEOPERATION DOJO ------------------------------------------------------ */
+#dojorail{position:fixed;z-index:62;top:45px;left:50%;transform:translateX(-50%);display:flex;height:30px;max-width:calc(100vw - 12px);overflow-x:auto;scrollbar-width:none;background:rgba(255,255,255,.82);border:1px solid rgba(0,0,0,.18);backdrop-filter:blur(5px);pointer-events:auto}#dojorail::-webkit-scrollbar{display:none}
+.dj{width:31px;height:29px;border:0;border-right:1px solid rgba(0,0,0,.15);background:transparent;color:#111;font:700 15px/1 'IBM Plex Mono',monospace;padding:0;touch-action:manipulation}.dj:last-child{border-right:0}.dj.on{background:#111;color:#fff}.dj.on:after{content:"";display:block;width:4px;height:4px;background:var(--teal);border-radius:50%!important;margin:-5px auto 0}.dj:active{background:#111;color:#fff}
+#dojotag{position:fixed;z-index:61;top:78px;left:50%;transform:translateX(-50%);font:700 8px/1 'IBM Plex Mono',monospace;letter-spacing:1.6px;padding:3px 5px;background:rgba(255,255,255,.74);pointer-events:none;min-width:36px;text-align:center}#dojotag.done{color:#0a8f6f}#taskhint{position:fixed;z-index:61;top:91px;left:50%;transform:translateX(-50%);font:700 7px/1 'IBM Plex Mono',monospace;letter-spacing:1px;white-space:nowrap;opacity:.56;pointer-events:none}#taskhint.hot{color:#0a8f6f;opacity:1}
+#dojogrip{position:fixed;z-index:61;top:46px;right:5px;width:7px;height:7px;border:1px solid rgba(0,0,0,.45);border-radius:50%!important;background:#fff;pointer-events:none}#dojogrip.on{background:var(--teal);border-color:var(--teal)}
+@media(max-width:560px){#dojorail{top:42px}.dj{width:29px}#dojotag{top:74px}#taskhint{top:87px}}
+
+
+/* top-swipe control rail: moves all mode/task buttons out of the play space */
+#bar{gap:0;overflow:hidden}
+#word{flex:0 0 auto;min-width:142px;max-width:45vw;overflow:hidden;text-overflow:ellipsis}
+#controlsRail{flex:1;display:flex;align-items:stretch;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;background:transparent}
+#controlsRail::-webkit-scrollbar{display:none}
+#controlsRail .railSep{flex:0 0 8px;border-left:1px solid rgba(0,0,0,.12)}
+#controlsRail .bbtn,#controlsRail .q,#controlsRail .dj{flex:0 0 38px;width:38px;height:100%;min-height:38px;display:grid;place-items:center;border:0;border-left:1px solid rgba(0,0,0,.22);background:transparent;color:#000;font:700 16px/1 'IBM Plex Mono',monospace;scroll-snap-align:start;position:relative}
+#controlsRail .q,#controlsRail .dj{font-size:16px}
+#controlsRail .q.active,#controlsRail .dj.on,#controlsRail .bbtn.on,#controlsRail .bbtn.live{background:#000;color:#fff;border-color:#000}
+#controlsRail .q.active:after{content:"";position:absolute;width:4px;height:4px;border-radius:50%!important;background:var(--teal);bottom:6px;left:50%;transform:translateX(-50%)}
+#controlsRail .bbtn:active,#controlsRail .q:active,#controlsRail .dj:active{background:#000;color:#fff}
+#controlsRail .bbtn#exportBtn{background:#000;color:#fff}
+#controlsRail .bbtn#exportBtn:active{background:#000;color:#fff;filter:invert(1)}
+#thumbdeck #quick{display:none!important}
+#dojorail{display:none!important}
+#dojotag{top:41px;background:rgba(255,255,255,.82);padding:2px 5px}
+#taskhint{top:53px;background:rgba(255,255,255,.7);padding:2px 5px}
+@media(max-width:720px){#word{min-width:118px;max-width:41vw}#controlsRail .bbtn,#controlsRail .q,#controlsRail .dj{flex-basis:34px;width:34px;min-height:38px;font-size:15px}}
+
+
+/* PRISTINE STAGE -----------------------------------------------------------
+   If it is not a control, it does not occupy the stage. Task language lives
+   in the former brand slot; everything else is either the world or an input. */
+#mark,#loads,#polemini,#dojotag,#taskhint,#dojogrip{display:none!important}
+#bar{height:40px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,0,0,.18)}
+#word{flex:0 0 210px;min-width:210px;max-width:210px;padding:0 12px;font-size:10px;letter-spacing:1.15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-right:1px solid rgba(0,0,0,.16)}
+#controlsRail{height:40px;touch-action:pan-x;overscroll-behavior-x:contain}
+#controlsRail .bbtn,#controlsRail .q,#controlsRail .dj{height:40px;min-height:40px;flex-basis:42px;width:42px;touch-action:pan-x;border-left:0;border-right:1px solid rgba(0,0,0,.13)}
+#controlsRail .railSep{flex-basis:6px;border-left:0;border-right:1px solid rgba(0,0,0,.16)}
+#tuner{top:40px}
+#glfail{inset:40px 0 0}
+#thumbdeck{z-index:50}
+@media(max-width:720px){#word{flex-basis:174px;min-width:174px;max-width:174px;font-size:9px;padding:0 9px}#controlsRail .bbtn,#controlsRail .q,#controlsRail .dj{flex-basis:38px;width:38px}}
+@media(max-width:520px){#word{flex-basis:145px;min-width:145px;max-width:145px;font-size:8.5px;letter-spacing:.8px}#controlsRail .bbtn,#controlsRail .q,#controlsRail .dj{flex-basis:36px;width:36px}}
+
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="bar">
+  <div id="mark"><i></i></div>
+  <div id="word">WALL · TOUCH · STAY</div>
+  <div id="loads"><span class="load"><i id="loadL"></i></span><span class="load"><i id="loadR"></i></span></div>
+  <div id="controlsRail" aria-label="top swipe controls"></div>
+  <button class="bbtn" id="teachBtn" aria-label="teacher" title="teacher / auto pilot">▶</button>
+  <button class="bbtn" id="captureBtn" aria-label="record" title="record">●</button>
+  <button class="bbtn" id="styleBtn" aria-label="style" title="style">◐<b id="styleName">WHITE</b></button>
+  <button class="bbtn" id="tuneBtn" aria-label="tune" title="tune">≋</button>
+  <button class="bbtn" id="exportBtn" aria-label="export glb" title="export glb">↓</button>
+</div>
+<div id="tuner" aria-label="performance tuning">
+  <div class="trow" title="body mass"><b>W</b><input data-tune="massKg" type="range" min="30" max="120" step="1"><output></output></div>
+  <div class="trow" title="string tension / stiffness"><b>T</b><input data-tune="tension" type="range" min="0.08" max="0.85" step="0.01"><output></output></div>
+  <div class="trow" title="joint limit strength"><b>J</b><input data-tune="joint" type="range" min="0" max="1" step="0.01"><output></output></div>
+  <div class="trow" title="self collision thickness"><b>C</b><input data-tune="collision" type="range" min="0.65" max="1.45" step="0.01"><output></output></div>
+  <div class="trow" title="motion damping"><b>D</b><input data-tune="damping" type="range" min="0" max="1" step="0.01"><output></output></div>
+  <div class="trow" title="haptic intensity"><b>H</b><input data-tune="haptic" type="range" min="0" max="1" step="0.01"><output></output></div>
+  <div class="trow" title="thumb gain"><b>G</b><input data-tune="gain" type="range" min="0.30" max="1.15" step="0.01"><output></output></div>
+  <div class="trow" title="thumb response curve"><b>E</b><input data-tune="expo" type="range" min="0" max="0.85" step="0.01"><output></output></div>
+  <div class="trow" title="input smoothing"><b>S</b><input data-tune="smooth" type="range" min="0" max="0.90" step="0.01"><output></output></div>
+  <div class="trow" title="whole-body expression coupling"><b>X</b><input data-tune="expression" type="range" min="0.40" max="1.80" step="0.01"><output></output></div>
+  <div class="trow" title="shoulder-gate depth authority"><b>Z</b><input data-tune="depth" type="range" min="0.35" max="1.60" step="0.01"><output></output></div>
+  <div class="trow" title="bend from pressure / rim load"><b>B</b><input data-tune="bend" type="range" min="0" max="1.35" step="0.01"><output></output></div>
+  <div class="trow" title="overshoot recruits shoulder and torso"><b>R</b><input data-tune="recruit" type="range" min="0" max="1.35" step="0.01"><output></output></div>
+  <div class="trow" title="object mass scale"><b>O</b><input data-tune="objectMass" type="range" min="0.35" max="2.20" step="0.01"><output></output></div>
+  <div class="trow" title="grip spring strength"><b>K</b><input data-tune="grip" type="range" min="0.25" max="1.40" step="0.01"><output></output></div>
+  <div id="tuneFoot"><button class="tmini" id="tuneReset" title="reset feel">↺</button><button class="tmini" id="tuneClose" title="close">×</button></div>
+</div>
+<div id="feelDot"></div>
+<div id="thumbdeck">
+  <div class="macroHome" id="macroHomeL"></div><div class="macroHome" id="macroHomeR"></div>
+  <div class="joy" id="joyL" aria-label="left dual vector field"><div class="supportRing"></div><div class="inner"></div><div class="gate"></div><div class="depthhalo"></div><div class="bendmark"></div><div class="ghost"></div><div class="supportPuck"></div><div class="puck"></div></div>
+  <div class="joy" id="joyR" aria-label="right dual vector field"><div class="supportRing"></div><div class="inner"></div><div class="gate"></div><div class="depthhalo"></div><div class="bendmark"></div><div class="ghost"></div><div class="supportPuck"></div><div class="puck"></div></div>
+  <div id="polemini"><i></i><i></i></div>
+  <div id="quick">
+    <button class="q mode active" data-action="LIVE" aria-label="live performance" title="live performance">✦</button>
+    <button class="q mode" data-action="WALK" aria-label="walk demonstration" title="walk demonstration">⇡</button>
+    <button class="q mode" data-action="WAVE" aria-label="wave demonstration" title="wave demonstration">≈</button>
+    <button class="q mode" data-action="SIT" aria-label="sit demonstration" title="sit demonstration">⌑</button>
+    <button class="q mode" data-action="DANCE" aria-label="dance demonstration" title="dance demonstration">∞</button>
+    <button class="q mode" data-action="FREE" aria-label="free puppet" title="free puppet">·</button>
+    <button class="q" id="resetQuick" aria-label="reset" title="reset">↺</button>
+  </div>
+</div>
+
+<div id="dojorail" aria-label="physics dojo">
+  <button class="dj solverDemo on" data-dojo="REACH" title="solver: reach">→</button>
+  <button class="dj solverDemo" data-dojo="STEP" title="solver: step">⇢</button>
+  <button class="dj solverDemo" data-dojo="BRACE" title="solver: brace">⊣</button>
+  <button class="dj solverDemo" data-dojo="GRASP" title="solver: grasp">⌁</button>
+  <button class="dj solverDemo" data-dojo="SHIFT" title="solver: shift">↔</button>
+  <button class="dj" data-dojo="WALL" title="wall">│</button>
+  <button class="dj" data-dojo="BUTTON" title="button">•</button>
+  <button class="dj" data-dojo="DOOR" title="door">╱</button>
+  <button class="dj" data-dojo="DRAWER" title="drawer">▭</button>
+  <button class="dj" data-dojo="CUP" title="cup">∪</button>
+  <button class="dj" data-dojo="TRAY" title="tray">═</button>
+  <button class="dj" data-dojo="BALL" title="ball">○</button>
+  <button class="dj" data-dojo="KICK" title="kick ball">⊙</button>
+  <button class="dj" data-dojo="CLOTH" title="cloth">≈</button>
+  <button class="dj" data-dojo="CHAIR" title="chair">⌑</button>
+  <button class="dj" data-dojo="WEIGHT" title="heavy weight">▰</button>
+  <button class="dj" data-dojo="PROBE" title="resistant probe">⊢</button>
+</div>
+<div id="dojotag">WALL</div><div id="taskhint">TOUCH · STAY</div><div id="dojogrip"></div>
+
+<div id="stat"></div><div id="chips"></div>
+<div id="glfail"><h1>WEBGL CONTEXT REFUSED</h1><p>WebGL could not start. Relaunch the browser/GPU process and reopen this file.</p></div>
+<div class="touchmark"></div><div class="touchmark"></div><div class="touchmark"></div><div class="touchmark"></div><div class="touchmark"></div>
+<script>
+window.addEventListener('DOMContentLoaded',()=>{
+  const rail=document.getElementById('controlsRail'); if(!rail) return;
+  const push=node=>{if(node)rail.appendChild(node)};
+  // Solver proofs first, then real-world dojo tasks.
+  document.querySelectorAll('#dojorail .solverDemo').forEach(push);
+  const solverSep=document.createElement('div');solverSep.className='railSep';rail.appendChild(solverSep);
+  document.querySelectorAll('#dojorail .dj:not(.solverDemo)').forEach(push);
+  const sep1=document.createElement('div');sep1.className='railSep';rail.appendChild(sep1);
+  // How is the body being driven?
+  document.querySelectorAll('#quick .q').forEach(push);
+  const sep2=document.createElement('div');sep2.className='railSep';rail.appendChild(sep2);
+  // Instrument utilities live last, off the stage and reachable by swipe.
+  push(document.getElementById('teachBtn'));
+  push(document.getElementById('captureBtn'));
+  push(document.getElementById('styleBtn'));
+  push(document.getElementById('tuneBtn'));
+  push(document.getElementById('exportBtn'));
+});
+</script>
+
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+// ============================================================
+// EVERYBODY — PERFORMANCE MARIONETTE
+// WebGL renders. A deterministic Verlet constraint body supplies the ragdoll.
+// The controller is a rigid 3D cross; strings are real unilateral rope
+// constraints: slack when short, pulling when their maximum length is exceeded.
+// LIVE is the instrument. Each physical thumb drives TWO simultaneous vector
+// fields: an absolute distal hand/wrist vector plus a retained proximal shoulder/
+// body-support vector. The outer annulus is not "more range": pushing into it
+// ratchets the proximal vector, which remains when the finger returns inward.
+// Two thumbs therefore expose four live joystick states without four fingers.
+// Their bilateral relationship additionally drives torso carriage. WALK /
+// WAVE / SIT / DANCE remain optional demonstrations of the same continuous map.
+// ============================================================
+const canvas = document.getElementById('gl');
+const stat = document.getElementById('stat');
+const glfail = document.getElementById('glfail');
+let renderer;
+try{
+  renderer = new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+}catch(e){ glfail.classList.add('show'); throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = false;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+const camera = new THREE.PerspectiveCamera(41,1,.03,50);
+camera.position.set(.58,1.34,3.28);
+const orbit = new OrbitControls(camera,canvas);
+orbit.target.set(0,1.05,0); orbit.enableDamping=true; orbit.dampingFactor=.075; orbit.minDistance=1.25; orbit.maxDistance=7;
+
+scene.add(new THREE.HemisphereLight(0xffffff,0xd8d8d8,1.45));
+const key = new THREE.DirectionalLight(0xffffff,1.3); key.position.set(2.3,3.5,2.4); scene.add(key);
+
+const floorMat = new THREE.MeshBasicMaterial({color:0xf7f7f7});
+const floor = new THREE.Mesh(new THREE.CircleGeometry(1.05,64),floorMat); floor.rotation.x=-Math.PI/2; floor.position.y=.002; scene.add(floor);
+const floorRing = new THREE.Mesh(new THREE.RingGeometry(.54,.545,72),new THREE.MeshBasicMaterial({color:0x000000,side:THREE.DoubleSide}));
+floorRing.rotation.x=-Math.PI/2; floorRing.position.y=.004; scene.add(floorRing);
+
+const bodyGroup = new THREE.Group(); bodyGroup.name='EVERYBODY'; scene.add(bodyGroup);
+const ghostGroup = new THREE.Group(); scene.add(ghostGroup);
+const stringGroup = new THREE.Group(); scene.add(stringGroup);
+
+const diagGroup = new THREE.Group(); scene.add(diagGroup);
+
+// ---------- instrument feel -------------------------------------------------
+// These are performer parameters, not debug parameters. They persist so the
+// controller can become a learned instrument with a repeatable personal feel.
+const DEFAULT_FEEL={massKg:68,tension:.42,joint:.82,collision:.94,damping:.68,haptic:.55,gain:.76,expo:.42,smooth:.28,expression:1.12,depth:1.02,bend:.72,recruit:.82,objectMass:1.0,grip:.72};
+let FEEL={...DEFAULT_FEEL};
+try{const saved=JSON.parse(localStorage.getItem('EVERYBODY_FEEL_SHOULDER_GATE_1')||'null');if(saved)FEEL={...FEEL,...saved}}catch(_){ }
+function saveFeel(){try{localStorage.setItem('EVERYBODY_FEEL_SHOULDER_GATE_1',JSON.stringify(FEEL))}catch(_){}}
+function shaped(v){const dead=.055,a0=Math.min(1,Math.abs(v));if(a0<=dead)return 0;const a=(a0-dead)/(1-dead),pow=1+FEEL.expo*2.35;return Math.sign(v)*Math.pow(a,pow)*FEEL.gain}
+
+const HAPTIC={last:0,lastTensionL:0,lastTensionR:0,
+  pulse(strength=.5,kind='tick',side=null){
+    if(FEEL.haptic<=.001)return;
+    const now=performance.now(),gap=kind==='limit'?42:kind==='hit'?58:72;if(now-this.last<gap)return;this.last=now;
+    const m=Math.max(.05,Math.min(1,strength*FEEL.haptic));
+    // Touchscreens only expose whole-device vibration. Paired gamepads can
+    // provide richer actuators when present; both paths use the same events.
+    if(navigator.vibrate){const ms=Math.round((kind==='limit'?20:kind==='hit'?14:7)+(kind==='limit'?16:10)*m);try{navigator.vibrate(ms)}catch(_){}}
+    try{
+      const gps=navigator.getGamepads?navigator.getGamepads():[];
+      for(let i=0;i<gps.length;i++){const g=gps[i];if(!g)continue;const a=g.vibrationActuator||g.hapticActuators?.[0];if(!a)continue;
+        if(side && gps.length>1 && ((side==='L'&&i!==0)||(side==='R'&&i!==1)))continue;
+        if(a.playEffect)a.playEffect('dual-rumble',{duration:kind==='limit'?38:24,strongMagnitude:m,weakMagnitude:Math.min(1,m*.72)}).catch(()=>{});
+        else if(a.pulse)a.pulse(m,kind==='limit'?38:24).catch(()=>{});
+      }
+    }catch(_){ }
+  }
+};
+
+
+// ---------- particles ----------
+const V = (x,y,z)=>new THREE.Vector3(x,y,z);
+const REST = {
+  head:V(0,1.66,0), neck:V(0,1.52,0), chest:V(0,1.31,0), pelvis:V(0,1.00,0),
+  lShoulder:V(.19,1.39,0), lElbow:V(.46,1.39,0), lHand:V(.72,1.39,0),
+  rShoulder:V(-.19,1.39,0), rElbow:V(-.46,1.39,0), rHand:V(-.72,1.39,0),
+  lHip:V(.10,.96,0), lKnee:V(.10,.53,0), lFoot:V(.10,.09,.08),
+  rHip:V(-.10,.96,0), rKnee:V(-.10,.53,0), rFoot:V(-.10,.09,.08)
+};
+class Particle{
+  constructor(name,pos,massFrac=.03){this.name=name;this.p=pos.clone();this.prev=pos.clone();this.massFrac=massFrac;this.mass=1;this.invMass=1;this.r=.035}
+  reset(pos){this.p.copy(pos);this.prev.copy(pos)}
+}
+const MASS_FRAC={head:.080,neck:.025,chest:.205,pelvis:.180,lShoulder:.028,rShoulder:.028,lElbow:.022,rElbow:.022,lHand:.012,rHand:.012,lHip:.085,rHip:.085,lKnee:.070,rKnee:.070,lFoot:.038,rFoot:.038};
+const P={}; Object.entries(REST).forEach(([n,p])=>P[n]=new Particle(n,p,MASS_FRAC[n]||.03));
+function applyMass(){for(const p of Object.values(P)){p.mass=Math.max(.08,FEEL.massKg*p.massFrac);p.invMass=1/p.mass}}
+applyMass();
+Object.assign(P.head,{r:.112});Object.assign(P.chest,{r:.115});Object.assign(P.pelvis,{r:.105});
+for(const n of ['lShoulder','rShoulder','lHip','rHip'])P[n].r=.065;
+for(const n of ['lElbow','rElbow','lKnee','rKnee'])P[n].r=.052;
+for(const n of ['lHand','rHand','lFoot','rFoot'])P[n].r=.055;
+
+const constraints=[];
+function dist(a,b,stiff=1){constraints.push({a:P[a],b:P[b],len:REST[a].distanceTo(REST[b]),stiff})}
+// axial skeleton
+dist('head','neck'); dist('neck','chest'); dist('chest','pelvis');
+// shoulder frame
+dist('chest','lShoulder'); dist('chest','rShoulder'); dist('lShoulder','rShoulder',.92);
+dist('lShoulder','lElbow'); dist('lElbow','lHand'); dist('rShoulder','rElbow'); dist('rElbow','rHand');
+// pelvis frame and legs
+dist('pelvis','lHip'); dist('pelvis','rHip'); dist('lHip','rHip',.92);
+dist('lHip','lKnee'); dist('lKnee','lFoot'); dist('rHip','rKnee'); dist('rKnee','rFoot');
+// torso braces stop the body becoming a noodle while retaining ragdoll freedom
+dist('lShoulder','rHip',.72); dist('rShoulder','lHip',.72); dist('lShoulder','lHip',.62); dist('rShoulder','rHip',.62);
+
+// Anatomical stops. The angle is A-B-C, in degrees. Straight is 180.
+// The stops are intentionally soft at first contact and harden with FEEL.joint.
+const angleLimits=[
+  ['head','neck','chest',118,180,.82],
+  ['neck','chest','pelvis',132,180,.72],
+  ['lShoulder','lElbow','lHand',18,178,1],['rShoulder','rElbow','rHand',18,178,1],
+  ['lHip','lKnee','lFoot',20,178,1],['rHip','rKnee','rFoot',20,178,1],
+  ['lElbow','lShoulder','chest',28,176,.62],['rElbow','rShoulder','chest',28,176,.62],
+  ['lKnee','lHip','pelvis',30,176,.58],['rKnee','rHip','pelvis',30,176,.58]
+].map(([a,b,c,min,max,k])=>({a:P[a],b:P[b],c:P[c],min:min*Math.PI/180,max:max*Math.PI/180,k,hit:0}));
+
+// SELF-COLLISION — explicit anatomical pairs only.
+// The previous generic "all non-adjacent segments collide" rule was unstable:
+// the shoulder bar and hip bar geometrically cross the torso, so the solver was
+// continuously ejecting the body from itself. These trimmed capsules collide
+// only where human parts genuinely must not pass through one another.
+function cseg(a,b,r,t0=0,t1=1){return {a:P[a],b:P[b],r,t0,t1,name:a+'-'+b}}
+const C={
+  torso:cseg('chest','pelvis',.105,.08,.92),
+  head:cseg('head','neck',.080,.05,.92),
+  lUA:cseg('lShoulder','lElbow',.047,.38,1), rUA:cseg('rShoulder','rElbow',.047,.38,1),
+  lFA:cseg('lElbow','lHand',.044,0,1),       rFA:cseg('rElbow','rHand',.044,0,1),
+  lTH:cseg('lHip','lKnee',.060,.34,1),       rTH:cseg('rHip','rKnee',.060,.34,1),
+  lSH:cseg('lKnee','lFoot',.052,0,1),        rSH:cseg('rKnee','rFoot',.052,0,1)
+};
+const collisionPairs=[
+  [C.lFA,C.torso],[C.rFA,C.torso],[C.lUA,C.torso],[C.rUA,C.torso],
+  [C.lFA,C.head],[C.rFA,C.head],
+  [C.lFA,C.rFA],[C.lUA,C.rUA],[C.lUA,C.rFA],[C.rUA,C.lFA],
+  [C.lTH,C.rTH],[C.lSH,C.rSH],[C.lTH,C.rSH],[C.rTH,C.lSH],
+  [C.lSH,C.torso],[C.rSH,C.torso]
+];
+
+// ---------- rendered body ----------
+const whiteBands=[0x777777,0xd7d7d7,0x1f1f1f,0xbdbdbd];
+let style='WHITE';
+const bodyMats=[];
+function mat(hex){const m=new THREE.MeshStandardMaterial({color:hex,roughness:1,metalness:0});bodyMats.push(m);return m}
+const segDefs=[
+ ['neck','head',.075,0],['chest','neck',.095,1],['pelvis','chest',.13,0],
+ ['lShoulder','lElbow',.052,2],['lElbow','lHand',.045,1],['rShoulder','rElbow',.052,2],['rElbow','rHand',.045,1],
+ ['lHip','lKnee',.068,1],['lKnee','lFoot',.057,0],['rHip','rKnee',.068,1],['rKnee','rFoot',.057,0],
+ ['lShoulder','rShoulder',.07,0],['lHip','rHip',.085,0]
+];
+const segMeshes=[];
+const cylGeo=new THREE.CylinderGeometry(1,1,1,12,1,false);
+for(const [a,b,r,tone] of segDefs){
+ const mesh=new THREE.Mesh(cylGeo,mat(whiteBands[tone])); mesh.name=`${a}-${b}`; bodyGroup.add(mesh); segMeshes.push({a,b,r,mesh,tone});
+}
+const jointMeshes=[];
+for(const [n,p] of Object.entries(P)){
+  let r=.055; if(n==='head')r=.115; else if(n==='chest')r=.105; else if(n==='pelvis')r=.095; else if(n.includes('Hand'))r=.052; else if(n.includes('Foot'))r=.055;
+  const g=new THREE.SphereGeometry(r,14,10); if(n==='head')g.scale(.92,1.18,.96); if(n.includes('Foot'))g.scale(.8,.6,1.35);
+  const m=mat(n==='head'?0x222222:(n.includes('Hand')||n.includes('Foot')?0x333333:0x9e9e9e));
+  const mesh=new THREE.Mesh(g,m); mesh.name=n; bodyGroup.add(mesh); jointMeshes.push({name:n,mesh});
+}
+const tmpA=new THREE.Vector3(),tmpB=new THREE.Vector3(),tmpC=new THREE.Vector3(),tmpQ=new THREE.Quaternion();
+function placeCylinder(mesh,a,b,r){
+  tmpA.copy(b).sub(a); const len=Math.max(.001,tmpA.length());
+  mesh.position.copy(a).add(b).multiplyScalar(.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tmpA.normalize());
+  mesh.scale.set(r,len,r);
+}
+function syncBody(){
+  for(const s of segMeshes)placeCylinder(s.mesh,P[s.a].p,P[s.b].p,s.r);
+  for(const j of jointMeshes)j.mesh.position.copy(P[j.name].p);
+}
+
+
+// ========================================================================
+// TELEOPERATION DOJO — RAPIER rigid-body tasks + a soft-body cloth test.
+// The puppet remains the learned four-field controller. The room supplies
+// resistance, mass, inertia, friction, hinges, springs, impact, and completion.
+// Rapier is loaded after first render so a network/physics failure can NEVER
+// blank the puppet again.
+// ========================================================================
+const dojoGroup=new THREE.Group();dojoGroup.name='TELEOPERATION-DOJO';scene.add(dojoGroup);
+const dojoInk=new THREE.MeshStandardMaterial({color:0x282828,roughness:.92,metalness:0});
+const dojoMid=new THREE.MeshStandardMaterial({color:0xa9a9a9,roughness:1,metalness:0});
+const dojoPaper=new THREE.MeshStandardMaterial({color:0xefefef,roughness:1,metalness:0});
+const dojoTeal=new THREE.MeshBasicMaterial({color:0x19d8c1});
+const dojoGhost=new THREE.MeshBasicMaterial({color:0x111111,transparent:true,opacity:.09,depthWrite:false,side:THREE.DoubleSide});
+const dojoLine=new THREE.LineBasicMaterial({color:0x111111,transparent:true,opacity:.38});
+const DOJOS=['REACH','STEP','BRACE','GRASP','SHIFT','WALL','BUTTON','DOOR','DRAWER','CUP','TRAY','BALL','KICK','CLOTH','CHAIR','WEIGHT','PROBE'];
+const TASK_HINTS={REACH:'ARM → SHOULDER',STEP:'REACH → STEP',BRACE:'TOUCH → SUPPORT',GRASP:'REACH → HOLD',SHIFT:'LEFT → RIGHT',WALL:'TOUCH · STAY',BUTTON:'PRESS',DOOR:'TURN · PULL',DRAWER:'GRIP · OPEN',CUP:'TAKE → PLACE',TRAY:'TAKE · LEVEL',BALL:'TAKE → THROW',KICK:'STEP → KICK',CLOTH:'TAKE BOTH → FOLD',CHAIR:'SIT · HOLD',WEIGHT:'BRACE → PUSH',PROBE:'TAKE → DRIVE'};
+let activeDojo='REACH',dojoEnabled=true,taskDone=false,taskHold=0,solverDemoStage=0;
+function setTaskText(){const word=document.getElementById('word'),hint=TASK_HINTS[activeDojo]||'';word.textContent=taskDone?(activeDojo+' · ✓'):(activeDojo+(hint?' · '+hint:''));word.title=word.textContent;const tag=document.getElementById('dojotag'),oldHint=document.getElementById('taskhint');if(tag){tag.textContent=activeDojo+(taskDone?' ✓':'');tag.classList.toggle('done',taskDone)}if(oldHint){oldHint.textContent=hint;oldHint.classList.toggle('hot',taskDone)}}
+function completeTask(){if(taskDone)return;taskDone=true;setTaskText();HAPTIC.pulse(.9,'limit');ev('task_complete',{name:activeDojo})}
+function holdToComplete(ok,sec=.55){taskHold=ok?taskHold+DT:0;if(taskHold>sec)completeTask()}
+function dojoFail(e){console.error('DOJO PHYSICS DEGRADED — puppet remains live',e);try{if(typeof PHYS!=='undefined'){PHYS.ready=false;try{PHYS.world?.free()}catch(_){ }PHYS.world=null}document.getElementById('word').textContent=activeDojo+' · PHYS OFF';}catch(_){}}
+const dojoRoots={};
+const mkRoot=n=>{const g=new THREE.Group();g.name='DOJO-'+n;dojoGroup.add(g);dojoRoots[n]=g;return g};
+const mkBox=(g,sx,sy,sz,x,y,z,mat=dojoMid)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);m.position.set(x,y,z);g.add(m);return m};
+const mkSphere=(g,r,x,y,z,mat=dojoInk)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,18,12),mat);m.position.set(x,y,z);g.add(m);return m};
+const mkCyl=(g,rt,rb,h,x,y,z,mat=dojoInk)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,18),mat);m.position.set(x,y,z);g.add(m);return m};
+const handP=side=>P[side==='L'?'lHand':'rHand'];
+const shoulderP=side=>P[side==='L'?'lShoulder':'rShoulder'];
+const handVel=(side,out=new THREE.Vector3())=>{const h=handP(side);return out.copy(h.p).sub(h.prev).multiplyScalar(1/DT)};
+const gripValue=side=>THREE.MathUtils.clamp((thumbs[side].bend-.15)/.60,0,1);
+const gripDown=side=>gripValue(side)>.48,gripRelease=side=>gripValue(side)<.20;
+const dojoHand={L:{held:null},R:{held:null}};
+let dojoContactClock=0;
+function dojoPulse(str=.35,kind='hit',side=null){if(simTime-dojoContactClock<.06)return;dojoContactClock=simTime;HAPTIC.pulse(str,kind,side)}
+function setHeld(side,obj){if(dojoHand[side].held===obj)return;dojoHand[side].held=obj;if(obj)dojoPulse(.32,'tick',side)}
+function clearHeld(side){if(dojoHand[side].held){dojoHand[side].held=null;dojoPulse(.16,'tick',side)}}
+
+// ---------- visual task room ------------------------------------------------
+// Five solver proofs. Each isolates one movement molecule before the larger dojo.
+const reachRoot=mkRoot('REACH');
+const reachTarget=mkSphere(reachRoot,.052,.30,1.27,.53,dojoTeal);
+const reachHalo=new THREE.Mesh(new THREE.TorusGeometry(.095,.008,8,30),dojoGhost);reachHalo.position.copy(reachTarget.position);reachRoot.add(reachHalo);
+
+const stepRoot=mkRoot('STEP');
+const stepTarget=mkSphere(stepRoot,.055,.18,1.22,1.12,dojoTeal);
+const stepHalo=new THREE.Mesh(new THREE.TorusGeometry(.11,.009,8,30),dojoGhost);stepHalo.position.copy(stepTarget.position);stepRoot.add(stepHalo);
+const stepFootMark=new THREE.Mesh(new THREE.RingGeometry(.16,.17,32),dojoTeal);stepFootMark.rotation.x=-Math.PI/2;stepFootMark.position.set(0,.006,.46);stepRoot.add(stepFootMark);
+
+const braceRoot=mkRoot('BRACE');
+mkBox(braceRoot,.82,1.52,.030,0,.81,.50,dojoGhost);
+const braceTarget=new THREE.Mesh(new THREE.RingGeometry(.10,.112,32),dojoTeal);braceTarget.position.set(.18,1.18,.482);braceRoot.add(braceTarget);
+
+const graspRoot=mkRoot('GRASP');addTable(graspRoot);
+const graspCube=mkBox(graspRoot,.15,.15,.15,.20,.81,.42,dojoPaper);
+const graspTarget=new THREE.Mesh(new THREE.RingGeometry(.10,.112,32),dojoTeal);graspTarget.rotation.x=-Math.PI/2;graspTarget.position.set(-.20,.724,.42);graspRoot.add(graspTarget);
+
+const shiftRoot=mkRoot('SHIFT');
+const shiftLeft=new THREE.Mesh(new THREE.RingGeometry(.11,.12,32),dojoTeal);shiftLeft.rotation.x=-Math.PI/2;shiftLeft.position.set(-.20,.006,.05);shiftRoot.add(shiftLeft);
+const shiftRight=shiftLeft.clone();shiftRight.position.x=.20;shiftRoot.add(shiftRight);
+const shiftBar=mkBox(shiftRoot,.42,.012,.018,0,.015,.05,dojoGhost);
+
+const wallRoot=mkRoot('WALL');
+mkBox(wallRoot,1.14,1.72,.025,0,.91,.51,dojoGhost);mkBox(wallRoot,1.16,.018,.035,0,.055,.50,dojoInk);mkBox(wallRoot,1.16,.018,.035,0,1.765,.50,dojoInk);mkBox(wallRoot,.018,1.72,.035,.57,.91,.50,dojoInk);mkBox(wallRoot,.018,1.72,.035,-.57,.91,.50,dojoInk);
+const buttonRoot=mkRoot('BUTTON');mkBox(buttonRoot,.58,.72,.035,-.03,1.08,.54,dojoGhost);const buttonPlunger=mkCyl(buttonRoot,.055,.055,.045,-.03,1.18,.495,dojoInk);buttonPlunger.rotation.x=Math.PI/2;
+const doorRoot=mkRoot('DOOR');const doorHinge=new THREE.Group();doorHinge.position.set(-.48,0,.64);doorRoot.add(doorHinge);mkBox(doorHinge,.80,1.66,.045,.40,.88,0,dojoPaper);mkBox(doorHinge,.028,1.68,.07,.79,.88,0,dojoInk);const doorHandle=mkCyl(doorHinge,.035,.035,.12,.68,1.02,-.055,dojoInk);doorHandle.rotation.x=Math.PI/2;
+const drawerRoot=mkRoot('DRAWER');mkBox(drawerRoot,.74,.74,.56,.26,.47,.57,dojoGhost);mkBox(drawerRoot,.78,.035,.60,.26,.855,.57,dojoInk);mkBox(drawerRoot,.035,.75,.60,-.13,.47,.57,dojoInk);mkBox(drawerRoot,.035,.75,.60,.65,.47,.57,dojoInk);const drawerMove=new THREE.Group();drawerRoot.add(drawerMove);mkBox(drawerMove,.70,.30,.50,.26,.60,.46,dojoPaper);const drawerHandle=mkBox(drawerMove,.18,.035,.035,.26,.61,.195,dojoInk);
+function addTable(root){mkBox(root,.92,.055,.74,0,.69,.43,dojoPaper);mkBox(root,.055,.69,.055,-.40,.345,.18,dojoInk);mkBox(root,.055,.69,.055,.40,.345,.18,dojoInk);mkBox(root,.055,.69,.055,-.40,.345,.68,dojoInk);mkBox(root,.055,.69,.055,.40,.345,.68,dojoInk)}
+const cupRoot=mkRoot('CUP');addTable(cupRoot);const cupMesh=mkCyl(cupRoot,.066,.052,.16,.18,.82,.42,dojoPaper);const cupRim=new THREE.Mesh(new THREE.TorusGeometry(.067,.009,8,20),dojoInk);cupRim.rotation.x=Math.PI/2;cupRoot.add(cupRim);const cupTarget=new THREE.Mesh(new THREE.RingGeometry(.085,.092,36),dojoTeal);cupTarget.rotation.x=-Math.PI/2;cupTarget.position.set(-.22,.724,.42);cupRoot.add(cupTarget);
+const trayRoot=mkRoot('TRAY');addTable(trayRoot);const trayMesh=mkBox(trayRoot,.64,.035,.34,0,.75,.42,dojoPaper);const trayHandleL=mkBox(trayRoot,.10,.025,.025,.29,.77,.42,dojoInk),trayHandleR=mkBox(trayRoot,.10,.025,.025,-.29,.77,.42,dojoInk);
+const ballRoot=mkRoot('BALL');const ballMesh=mkSphere(ballRoot,.075,0,1.28,1.25,dojoInk);const ballTarget=new THREE.Mesh(new THREE.TorusGeometry(.15,.012,8,32),dojoTeal);ballTarget.position.set(.36,1.20,.83);ballRoot.add(ballTarget);
+const kickRoot=mkRoot('KICK');const kickBallMesh=mkSphere(kickRoot,.085,0,.10,.48,dojoInk);const kickGoal=new THREE.Mesh(new THREE.TorusGeometry(.28,.012,8,40),dojoTeal);kickGoal.position.set(0,.30,1.20);kickRoot.add(kickGoal);mkBox(kickRoot,.74,.018,.025,0,.02,1.20,dojoGhost);
+const chairRoot=mkRoot('CHAIR');mkBox(chairRoot,.68,.055,.55,0,.48,.02,dojoPaper);mkBox(chairRoot,.68,.82,.055,0,.88,-.25,dojoPaper);mkBox(chairRoot,.055,.48,.055,-.27,.24,-.16,dojoInk);mkBox(chairRoot,.055,.48,.055,.27,.24,-.16,dojoInk);mkBox(chairRoot,.055,.48,.055,-.27,.24,.20,dojoInk);mkBox(chairRoot,.055,.48,.055,.27,.24,.20,dojoInk);
+const weightRoot=mkRoot('WEIGHT');const weightMesh=mkBox(weightRoot,.38,.38,.38,0,.20,.45,dojoPaper);const weightBand=new THREE.Mesh(new THREE.RingGeometry(.20,.205,40),dojoTeal);weightBand.rotation.x=-Math.PI/2;weightBand.position.set(0,.012,.74);weightRoot.add(weightBand);
+const probeRoot=mkRoot('PROBE');addTable(probeRoot);const probeBlock=mkBox(probeRoot,.42,.42,.18,0,.94,.72,dojoGhost);const probeSocket=mkBox(probeRoot,.15,.15,.045,0,.94,.615,dojoInk);const probeMesh=mkBox(probeRoot,.045,.045,.42,.24,.86,.34,dojoPaper);
+
+// ---------- cloth: XPBD-like constraint sheet --------------------------------
+const clothRoot=mkRoot('CLOTH');addTable(clothRoot);
+const CW=9,CH=6,clothPts=[],clothCons=[];
+const ci=(x,y)=>y*CW+x;
+for(let y=0;y<CH;y++)for(let x=0;x<CW;x++){const p=V(-.33+x*(.66/(CW-1)),.735,.22+y*(.42/(CH-1)));clothPts.push({p:p.clone(),prev:p.clone(),r:.012})}
+function ccon(a,b,k=1){clothCons.push([a,b,clothPts[a].p.distanceTo(clothPts[b].p),k])}
+for(let y=0;y<CH;y++)for(let x=0;x<CW;x++){if(x+1<CW)ccon(ci(x,y),ci(x+1,y),1);if(y+1<CH)ccon(ci(x,y),ci(x,y+1),1);if(x+1<CW&&y+1<CH)ccon(ci(x,y),ci(x+1,y+1),.72);if(x>0&&y+1<CH)ccon(ci(x,y),ci(x-1,y+1),.72);if(x+2<CW)ccon(ci(x,y),ci(x+2,y),.26);if(y+2<CH)ccon(ci(x,y),ci(x,y+2),.26)}
+const clothGeo=new THREE.BufferGeometry();clothGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(CW*CH*3),3));const clothIdx=[];for(let y=0;y<CH-1;y++)for(let x=0;x<CW-1;x++){const a=ci(x,y),b=ci(x+1,y),c=ci(x,y+1),d=ci(x+1,y+1);clothIdx.push(a,c,b,b,c,d)}clothGeo.setIndex(clothIdx);clothGeo.computeVertexNormals();const clothMesh=new THREE.Mesh(clothGeo,new THREE.MeshStandardMaterial({color:0xcfcfcf,roughness:1,side:THREE.DoubleSide,transparent:true,opacity:.94}));clothRoot.add(clothMesh);
+let clothGrab={L:null,R:null},clothHandoff={L:false,R:false};
+function resetCloth(){for(let y=0;y<CH;y++)for(let x=0;x<CW;x++){const p=V(-.33+x*(.66/(CW-1)),.735,.22+y*(.42/(CH-1)));const q=clothPts[ci(x,y)];q.p.copy(p);q.prev.copy(p)}clothGrab.L=clothGrab.R=null;clothHandoff.L=clothHandoff.R=false}
+function nearestCloth(hand){let best=-1,bd=.145;for(let i=0;i<clothPts.length;i++){const d=hand.distanceTo(clothPts[i].p);if(d<bd){bd=d;best=i}}return best}
+function stepCloth(){
+  for(let i=0;i<clothPts.length;i++){if(clothGrab.L===i||clothGrab.R===i)continue;const q=clothPts[i],v=tmpA.copy(q.p).sub(q.prev).multiplyScalar(.986);q.prev.copy(q.p);q.p.add(v);q.p.y-=9.81*DT*DT*.78}
+  for(const side of ['L','R']){if(clothGrab[side]==null&&gripDown(side)){const n=nearestCloth(handP(side).p);if(n>=0){clothGrab[side]=n;setHeld(side,'cloth')}}if(clothGrab[side]!=null){const q=clothPts[clothGrab[side]];if(clothHandoff[side]&&gripDown(side)){clothHandoff[side]=false;dojoPulse(.28,'tick',side)}const mayRelease=!clothHandoff[side]&&gripRelease(side);if(mayRelease){const hv=handVel(side,tmpA);q.prev.copy(q.p).addScaledVector(hv,-DT*.72);clothGrab[side]=null;clearHeld(side)}else{const hp=handP(side).p,err=tmpA.copy(hp).sub(q.p);q.p.addScaledVector(err,.68);q.prev.addScaledVector(err,.60);P[side==='L'?'lHand':'rHand'].p.addScaledVector(err,-.05)}}}
+  for(let k=0;k<12;k++){
+    for(const [ia,ib,L,kc] of clothCons){const a=clothPts[ia],b=clothPts[ib],d=tmpA.copy(b.p).sub(a.p),len=d.length();if(len<1e-6)continue;const corr=(len-L)/len*.5*kc;d.multiplyScalar(corr);const fa=clothGrab.L===ia||clothGrab.R===ia,fb=clothGrab.L===ib||clothGrab.R===ib;if(!fa&&!fb){a.p.add(d);b.p.addScaledVector(d,-1)}else if(!fa)a.p.addScaledVector(d,2);else if(!fb)b.p.addScaledVector(d,-2)}
+    for(const q of clothPts){if(q.p.y<.724&&Math.abs(q.p.x)<.46&&q.p.z>.05&&q.p.z<.81){const vx=q.p.x-q.prev.x,vz=q.p.z-q.prev.z;q.p.y=.724;q.prev.y=.724;q.prev.x=q.p.x-vx*.78;q.prev.z=q.p.z-vz*.78}else if(q.p.y<.02){q.p.y=.02;q.prev.y=.02}}
+  }
+  let fold=0;for(let y=0;y<CH;y++)fold+=clothPts[ci(0,y)].p.distanceTo(clothPts[ci(CW-1,y)].p);fold/=CH;holdToComplete(fold<.115,.45)
+}
+function syncCloth(){const a=clothGeo.attributes.position;for(let i=0;i<clothPts.length;i++){const p=clothPts[i].p;a.setXYZ(i,p.x,p.y,p.z)}a.needsUpdate=true;clothGeo.computeVertexNormals()}
+
+// ---------- Rapier bridge ----------------------------------------------------
+const PHYS={R:null,world:null,ready:false,loading:false,items:{},proxies:[],grabs:{L:null,R:null},handoff:{L:false,R:false},handLoads:{L:0,R:0},caught:false,lifted:false,thrown:false,latch:false,knob:0,knobBase:0,doorAngle:0,buttonDepth:0};
+const rvec=v=>({x:v.x,y:v.y,z:v.z});
+const tq=new THREE.Quaternion(),tv=new THREE.Vector3(),tv2=new THREE.Vector3(),tv3=new THREE.Vector3();
+function rbPos(rb,out=tv){const p=rb.translation();return out.set(p.x,p.y,p.z)}
+function rbQuat(rb,out=tq){const q=rb.rotation();return out.set(q.x,q.y,q.z,q.w)}
+function localToWorld(rb,local,out=new THREE.Vector3()){const p=rb.translation(),q=rb.rotation();return out.copy(local).applyQuaternion(new THREE.Quaternion(q.x,q.y,q.z,q.w)).add(new THREE.Vector3(p.x,p.y,p.z))}
+function worldToLocal(rb,world,out=new THREE.Vector3()){const p=rb.translation(),q=rb.rotation();return out.copy(world).sub(new THREE.Vector3(p.x,p.y,p.z)).applyQuaternion(new THREE.Quaternion(q.x,q.y,q.z,q.w).invert())}
+function massScaled(m){return m*Math.max(.25,FEEL.objectMass||1)}
+function dyn(desc,col,mass,mesh,name){const rb=PHYS.world.createRigidBody(desc.setCcdEnabled(true).setLinearDamping(.20).setAngularDamping(.32));col.setFriction(.75).setRestitution(.08).setMass(massScaled(mass));PHYS.world.createCollider(col,rb);const it={name,rb,mesh,mass:massScaled(mass),grabbable:true};PHYS.items[name]=it;return it}
+function fixedBox(x,y,z,hx,hy,hz,fr=.85){const R=PHYS.R;const rb=PHYS.world.createRigidBody(R.RigidBodyDesc.fixed().setTranslation(x,y,z));PHYS.world.createCollider(R.ColliderDesc.cuboid(hx,hy,hz).setFriction(fr),rb);return rb}
+function makeBodyProxies(){const R=PHYS.R;PHYS.proxies=[];for(const s of segMeshes){if((s.a==='lShoulder'&&s.b==='rShoulder')||(s.a==='lHip'&&s.b==='rHip'))continue;const a=P[s.a].p,b=P[s.b].p,len=a.distanceTo(b),r=s.r*.88,mid=a.clone().add(b).multiplyScalar(.5),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),b.clone().sub(a).normalize());const rb=PHYS.world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased().setTranslation(mid.x,mid.y,mid.z).setRotation({x:q.x,y:q.y,z:q.z,w:q.w}));PHYS.world.createCollider(R.ColliderDesc.capsule(Math.max(.005,len*.5-r),r).setFriction(.85).setRestitution(.03),rb);PHYS.proxies.push({rb,a:s.a,b:s.b,r})}}
+function syncBodyProxies(){for(const x of PHYS.proxies){const a=P[x.a].p,b=P[x.b].p,mid=tv.copy(a).add(b).multiplyScalar(.5),d=tv2.copy(b).sub(a);if(d.lengthSq()<1e-8)continue;const q=tv3;const qq=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());x.rb.setNextKinematicTranslation(rvec(mid));x.rb.setNextKinematicRotation({x:qq.x,y:qq.y,z:qq.z,w:qq.w})}}
+function tablePhysics(){fixedBox(0,.69,.43,.46,.0275,.37);for(const [x,z] of [[-.40,.18],[.40,.18],[-.40,.68],[.40,.68]])fixedBox(x,.345,z,.0275,.345,.0275)}
+function buildPhysicsTask(name){
+  if(!PHYS.ready)return;try{if(PHYS.world)PHYS.world.free()}catch(_){}const R=PHYS.R;PHYS.world=new R.World({x:0,y:-9.81,z:0});PHYS.world.timestep=DT;if(PHYS.world.integrationParameters)PHYS.world.integrationParameters.maxCcdSubsteps=4;PHYS.items={};PHYS.grabs={L:null,R:null};PHYS.handoff={L:false,R:false};PHYS.handLoads.L=PHYS.handLoads.R=0;PHYS.caught=PHYS.lifted=PHYS.thrown=false;PHYS.latch=false;PHYS.knob=0;PHYS.knobBase=0;PHYS.doorAngle=0;PHYS.buttonDepth=0;fixedBox(0,-.05,0,3,.05,3);makeBodyProxies();
+  if(name==='REACH'||name==='STEP'||name==='SHIFT'){ /* ground + body proxies are enough */ }
+  else if(name==='BRACE'){fixedBox(0,.81,.51,.41,.76,.02)}
+  else if(name==='GRASP'){tablePhysics();const d=R.RigidBodyDesc.dynamic().setTranslation(.20,.81,.42).setCcdEnabled(true).setLinearDamping(.45).setAngularDamping(.8);dyn(d,R.ColliderDesc.cuboid(.075,.075,.075),3.2,graspCube,'graspCube');}
+  else if(name==='WALL'){fixedBox(0,.91,.52,.57,.86,.02)}
+  else if(name==='BUTTON'){fixedBox(-.03,1.08,.55,.29,.36,.018);const d=R.RigidBodyDesc.dynamic().setTranslation(-.03,1.18,.495).enabledTranslations(false,false,true).lockRotations().setGravityScale(0).setCcdEnabled(true);dyn(d,R.ColliderDesc.cuboid(.055,.055,.0225),.09,buttonPlunger,'button').grabbable=false;}
+  else if(name==='DOOR'){const frame=PHYS.world.createRigidBody(R.RigidBodyDesc.fixed().setTranslation(-.48,.88,.64));const d=R.RigidBodyDesc.dynamic().setTranslation(-.08,.88,.64).setCcdEnabled(true).setLinearDamping(.22).setAngularDamping(.55);const door=dyn(d,R.ColliderDesc.cuboid(.40,.83,.025),24,null,'door');door.grabbable=false;const jd=R.JointData.revolute({x:0,y:0,z:0},{x:-.40,y:0,z:0},{x:0,y:1,z:0});jd.limitsEnabled=true;jd.limits=[-1.48,.05];PHYS.world.createImpulseJoint(jd,frame,door.rb,true);}
+  else if(name==='DRAWER'){fixedBox(.26,.855,.57,.39,.018,.30);fixedBox(-.13,.47,.57,.018,.375,.30);fixedBox(.65,.47,.57,.018,.375,.30);fixedBox(.26,.47,.86,.39,.375,.018);const d=R.RigidBodyDesc.dynamic().setTranslation(.26,.60,.46).enabledTranslations(false,false,true).lockRotations().setGravityScale(0).setCcdEnabled(true).setLinearDamping(1.5);dyn(d,R.ColliderDesc.cuboid(.35,.15,.25),8,null,'drawer');}
+  else if(name==='CUP'){tablePhysics();const d=R.RigidBodyDesc.dynamic().setTranslation(.18,.80,.42).setCcdEnabled(true);dyn(d,R.ColliderDesc.cylinder(.08,.058),.35,cupMesh,'cup');}
+  else if(name==='TRAY'){tablePhysics();const d=R.RigidBodyDesc.dynamic().setTranslation(0,.75,.42).setCcdEnabled(true);dyn(d,R.ColliderDesc.cuboid(.32,.018,.17),2.4,trayMesh,'tray');}
+  else if(name==='BALL'){const d=R.RigidBodyDesc.dynamic().setTranslation(0,1.30,1.32).setLinvel(0,-.10,-1.35).setCcdEnabled(true);dyn(d,R.ColliderDesc.ball(.075),.45,ballMesh,'ball');}
+  else if(name==='KICK'){const d=R.RigidBodyDesc.dynamic().setTranslation(0,.10,.48).setCcdEnabled(true).setLinearDamping(.10).setAngularDamping(.10);dyn(d,R.ColliderDesc.ball(.085),.48,kickBallMesh,'kickball').grabbable=false;}
+  else if(name==='CHAIR'){fixedBox(0,.48,.02,.34,.0275,.275);fixedBox(0,.88,-.25,.34,.41,.0275)}
+  else if(name==='WEIGHT'){const d=R.RigidBodyDesc.dynamic().setTranslation(0,.20,.45).setCcdEnabled(true).setLinearDamping(.7).setAngularDamping(1.4);dyn(d,R.ColliderDesc.cuboid(.19,.19,.19),28,weightMesh,'weight');}
+  else if(name==='PROBE'){tablePhysics();fixedBox(0,.94,.72,.21,.21,.09);const pd=R.RigidBodyDesc.dynamic().setTranslation(.24,.86,.34).setCcdEnabled(true).setLinearDamping(.16).setAngularDamping(.38);dyn(pd,R.ColliderDesc.cuboid(.0225,.0225,.21),.55,probeMesh,'probe');const sd=R.RigidBodyDesc.dynamic().setTranslation(0,.94,.61).enabledTranslations(false,false,true).lockRotations().setGravityScale(0).setCcdEnabled(true);dyn(sd,R.ColliderDesc.cuboid(.075,.075,.0225),.18,probeSocket,'socket').grabbable=false;}
+}
+async function initDojoPhysics(){if(PHYS.loading||PHYS.ready)return;PHYS.loading=true;document.getElementById('word').textContent=activeDojo+' · PHYS…';try{const mod=await import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.20.0/+esm');const R=mod.default||mod;await R.init();PHYS.R=R;PHYS.ready=true;buildPhysicsTask(activeDojo);autoHandoffTask(activeDojo);setTaskText()}catch(e){dojoFail(e)}finally{PHYS.loading=false}}
+
+// ---------- grasp springs: the object does not teleport to the hand ---------
+function itemAnchorWorld(g,out=tv){return localToWorld(g.item.rb,g.local,out)}
+function beginGrab(side,it,worldPoint){const g={item:it,local:worldToLocal(it.rb,worldPoint,new THREE.Vector3()),roll0:thumbs[side].roll||0};PHYS.grabs[side]=g;setHeld(side,it.name);if(it.name==='ball')PHYS.caught=true}
+function endGrab(side){const g=PHYS.grabs[side];if(!g)return;PHYS.grabs[side]=null;PHYS.handoff[side]=false;clearHeld(side);if(g.item.name==='ball'&&PHYS.caught)PHYS.thrown=true}
+function nearestGrabItem(side){const hp=handP(side).p;let best=null,bd=.17;for(const it of Object.values(PHYS.items)){if(!it.grabbable||it.name==='weight'||it.name==='drawer')continue;let p=rbPos(it.rb,new THREE.Vector3());if(it.name==='tray'){const q=rbQuat(it.rb,new THREE.Quaternion()),off=new THREE.Vector3(side==='L'?.29:-.29,.02,0).applyQuaternion(q);p.add(off)}else if(it.name==='probe'){const q=rbQuat(it.rb,new THREE.Quaternion());p.add(new THREE.Vector3(0,0,-.16).applyQuaternion(q))}const d=hp.distanceTo(p);if(d<bd){bd=d;best={it,p}}}return best}
+function applyReaction(side,force){const h=P[side==='L'?'lHand':'rHand'],sh=P[side==='L'?'lShoulder':'rShoulder'];const k=.075;h.p.addScaledVector(force,-h.invMass*DT*DT*k);h.prev.addScaledVector(force,-h.invMass*DT*DT*k*.72);sh.p.addScaledVector(force,-sh.invMass*DT*DT*k*.14);P.chest.p.addScaledVector(force,-P.chest.invMass*DT*DT*k*.045)}
+function springGrab(side,g){const rb=g.item.rb,hp=handP(side).p,anchor=itemAnchorWorld(g,new THREE.Vector3()),err=tv.copy(hp).sub(anchor),hv=handVel(side,tv2),rv=rb.linvel(),rel=tv3.set(hv.x-rv.x,hv.y-rv.y,hv.z-rv.z);const k=(520+620*(FEEL.grip||.72))*Math.min(1.5,.75+FEEL.tension),m=Math.max(.1,g.item.mass),c=2*Math.sqrt(k*m)*.76;const f=err.multiplyScalar(k).addScaledVector(rel,c);const gv=g.handoff?Math.max(.78,gripValue(side)):gripValue(side);const maxF=220+1050*gv*(FEEL.grip||.72);const mag=f.length();if(mag>maxF)f.multiplyScalar(maxF/mag);rb.addForceAtPoint(rvec(f),rvec(anchor),true);PHYS.handLoads[side]=Math.max(PHYS.handLoads[side],f.length());applyReaction(side,f);if(mag>maxF*1.32){endGrab(side);dojoPulse(.55,'hit',side)}}
+function handleGenericGrabs(){for(const side of ['L','R']){const g=PHYS.grabs[side];if(g?.handoff){if(gripDown(side)){g.handoff=false;PHYS.handoff[side]=false;dojoPulse(.30,'tick',side)}continue}if(g&&gripRelease(side)){endGrab(side);continue}if(!g&&gripDown(side)){const n=nearestGrabItem(side);if(n)beginGrab(side,n.it,n.p)}}}
+function handoffOne(side,it,offset){if(!it)return;const hp=handP(side).p.clone(),center=hp.clone().add(offset||V(0,0,0));it.rb.setTranslation(rvec(center),true);try{it.rb.setLinvel({x:0,y:0,z:0},true);it.rb.setAngvel({x:0,y:0,z:0},true)}catch(_){}beginGrab(side,it,hp);PHYS.grabs[side].handoff=true;PHYS.handoff[side]=true;dojoPulse(.42,'tick',side)}
+function autoHandoffTask(name){if(name==='CLOTH'){clothGrab.L=ci(0,0);clothGrab.R=ci(CW-1,0);clothHandoff.L=clothHandoff.R=true;for(const side of ['L','R']){const i=clothGrab[side],q=clothPts[i],hp=handP(side).p;q.p.copy(hp);q.prev.copy(hp);setHeld(side,'cloth')}return}if(!PHYS.ready)return;if(name==='CUP'){handoffOne('R',PHYS.items.cup,V(0,-.055,0));PHYS.lifted=true}else if(name==='BALL'){handoffOne('R',PHYS.items.ball,V(0,0,0));PHYS.caught=true}else if(name==='PROBE'){handoffOne('R',PHYS.items.probe,V(0,0,.16))}}
+
+// ---------- robust body/world contact for the PBD performer -----------------
+function pointAABBDelta(pos,r,c,h,out=new THREE.Vector3()){const x=pos.x-c.x,y=pos.y-c.y,z=pos.z-c.z;const inside=Math.abs(x)<=h.x&&Math.abs(y)<=h.y&&Math.abs(z)<=h.z;let nx=0,ny=0,nz=0,pen=0;if(inside){const px=h.x-Math.abs(x)+r,py=h.y-Math.abs(y)+r,pz=h.z-Math.abs(z)+r;if(px<=py&&px<=pz){nx=Math.sign(x||1);pen=px}else if(py<=pz){ny=Math.sign(y||1);pen=py}else{nz=Math.sign(z||1);pen=pz}}else{const qx=Math.max(-h.x,Math.min(h.x,x)),qy=Math.max(-h.y,Math.min(h.y,y)),qz=Math.max(-h.z,Math.min(h.z,z)),dx=x-qx,dy=y-qy,dz=z-qz,d=Math.hypot(dx,dy,dz);if(d>=r||d<1e-9)return out.set(0,0,0);nx=dx/d;ny=dy/d;nz=dz/d;pen=r-d}return out.set(nx*pen,ny*pen,nz*pen)}
+function collideParticleAABB(p,c,h){const delta=pointAABBDelta(p.p,p.r,c,h,new THREE.Vector3());if(delta.lengthSq()<1e-12)return false;p.p.add(delta);p.prev.add(delta);collisionActivity=Math.max(collisionActivity,Math.min(1,delta.length()*18));return true}
+function collideParticleOBB(p,rb,half){const pos=rbPos(rb,new THREE.Vector3()),q=rbQuat(rb,new THREE.Quaternion()),inv=q.clone().invert(),lp=p.p.clone().sub(pos).applyQuaternion(inv),d=pointAABBDelta(lp,p.r,new THREE.Vector3(),half,new THREE.Vector3());if(d.lengthSq()<1e-12)return false;d.applyQuaternion(q);p.p.add(d);p.prev.add(d);collisionActivity=Math.max(collisionActivity,Math.min(1,d.length()*18));return true}
+const ENV_SEGS=[['head','neck',.095],['neck','chest',.075],['chest','pelvis',.115],['lShoulder','lElbow',.055],['lElbow','lHand',.050],['rShoulder','rElbow',.055],['rElbow','rHand',.050],['lHip','lKnee',.070],['lKnee','lFoot',.060],['rHip','rKnee',.070],['rKnee','rFoot',.060]];
+// Swept capsule-vs-box contact. The old solver only inspected the CURRENT
+// segment, so a fast thigh could be above the tabletop on one frame and below
+// it on the next without ever occupying the thin slab. We now test each sampled
+// capsule point from its previous position to its current position against the
+// box expanded by the capsule radius. This makes furniture contact continuous.
+function sweepPointAABB(p0,p1,c,h,r,outN=new THREE.Vector3()){
+  const ex=h.x+r,ey=h.y+r,ez=h.z+r;
+  const a=p0.clone().sub(c),d=p1.clone().sub(p0);
+  let t0=0,t1=1,axis=-1,sgn=0;
+  const slab=(p,v,e,ax)=>{
+    if(Math.abs(v)<1e-10){if(p<-e||p>e)return false;return true}
+    let ta=(-e-p)/v,tb=(e-p)/v,ns=-Math.sign(v);
+    if(ta>tb){const q=ta;ta=tb;tb=q;ns=-ns}
+    if(ta>t0){t0=ta;axis=ax;sgn=ns}
+    t1=Math.min(t1,tb);return t0<=t1;
+  };
+  if(!slab(a.x,d.x,ex,0)||!slab(a.y,d.y,ey,1)||!slab(a.z,d.z,ez,2))return -1;
+  if(t0<0||t0>1)return -1;
+  outN.set(0,0,0);if(axis===0)outN.x=sgn;else if(axis===1)outN.y=sgn;else if(axis===2)outN.z=sgn;
+  // Ignore a grazing/exit hit. We only want motion INTO the surface.
+  if(outN.dot(d)>=-1e-8)return -1;
+  return t0;
+}
+function collideSegmentAABB(a,b,r,c,h){
+  let bestT=-1,bestD=new THREE.Vector3(),best2=0;
+  // First resolve ordinary overlap at the current pose.
+  for(let i=0;i<=12;i++){
+    const t=i/12,p=new THREE.Vector3().lerpVectors(a.p,b.p,t),d=pointAABBDelta(p,r,c,h,new THREE.Vector3()),m=d.lengthSq();
+    if(m>best2){best2=m;bestT=t;bestD.copy(d)}
+  }
+  if(bestT>=0){
+    const wa=(1-bestT)*a.invMass,wb=bestT*b.invMass,w=wa+wb||1,da=bestD.clone().multiplyScalar(wa/w),db=bestD.clone().multiplyScalar(wb/w);
+    a.p.add(da);b.p.add(db);a.prev.add(da);b.prev.add(db);
+    collisionActivity=Math.max(collisionActivity,Math.min(1,Math.sqrt(best2)*18));return true;
+  }
+  // Then catch tunnelling between frames.
+  let hit=false,bestSweep=2,bestST=0,bestCorr=new THREE.Vector3(),n=new THREE.Vector3();
+  for(let i=0;i<=12;i++){
+    const st=i/12,prev=new THREE.Vector3().lerpVectors(a.prev,b.prev,st),cur=new THREE.Vector3().lerpVectors(a.p,b.p,st),tt=sweepPointAABB(prev,cur,c,h,r,n);
+    if(tt>=0&&tt<bestSweep){
+      const contact=prev.clone().lerp(cur,tt).addScaledVector(n,.0015),corr=contact.sub(cur);
+      bestSweep=tt;bestST=st;bestCorr.copy(corr);hit=true;
+    }
+  }
+  if(hit){
+    const wa=(1-bestST)*a.invMass,wb=bestST*b.invMass,w=wa+wb||1,da=bestCorr.clone().multiplyScalar(wa/w),db=bestCorr.clone().multiplyScalar(wb/w);
+    a.p.add(da);b.p.add(db);a.prev.add(da);b.prev.add(db);
+    collisionActivity=Math.max(collisionActivity,.62);return true;
+  }
+  return false;
+}
+function collideBodyAABB(c,h){let hit=false;for(const [a,b,r] of ENV_SEGS)hit=collideSegmentAABB(P[a],P[b],r*FEEL.collision,c,h)||hit;return hit}
+function collideBodyOBB(rb,half,excludeHands=false){const pos=rbPos(rb,new THREE.Vector3()),q=rbQuat(rb,new THREE.Quaternion()),inv=q.clone().invert();let hit=false;for(const [an,bn,r] of ENV_SEGS){if(excludeHands&&(an.includes('Hand')||bn.includes('Hand')))continue;const a=P[an],b=P[bn];let bt=-1,bd=new THREE.Vector3(),b2=0;for(let i=0;i<=10;i++){const t=i/10,wp=new THREE.Vector3().lerpVectors(a.p,b.p,t),lp=wp.clone().sub(pos).applyQuaternion(inv),d=pointAABBDelta(lp,r*FEEL.collision,new THREE.Vector3(),half,new THREE.Vector3()),m=d.lengthSq();if(m>b2){b2=m;bt=t;bd.copy(d)}}if(bt>=0){bd.applyQuaternion(q);const wa=(1-bt)*a.invMass,wb=bt*b.invMass,w=wa+wb||1,da=bd.clone().multiplyScalar(wa/w),db=bd.clone().multiplyScalar(wb/w);a.p.add(da);b.p.add(db);a.prev.add(da);b.prev.add(db);hit=true}}return hit}
+function solveTableBody(){const boxes=[[V(0,.69,.43),V(.46,.0275,.37)],[V(-.40,.345,.18),V(.0275,.345,.0275)],[V(.40,.345,.18),V(.0275,.345,.0275)],[V(-.40,.345,.68),V(.0275,.345,.0275)],[V(.40,.345,.68),V(.0275,.345,.0275)]];for(const [c,h] of boxes)collideBodyAABB(c,h)}
+function solveDojoBody(){
+  if(activeDojo==='BRACE')collideBodyAABB(V(0,.81,.50),V(.41,.76,.02));
+  if(activeDojo==='GRASP')solveTableBody();
+  if(activeDojo==='WALL')collideBodyAABB(V(0,.91,.51),V(.57,.86,.02));
+  if(activeDojo==='BUTTON')collideBodyAABB(V(-.03,1.08,.54),V(.29,.36,.018));
+  if(['CUP','TRAY','CLOTH','PROBE'].includes(activeDojo))solveTableBody();
+  if(activeDojo==='DRAWER'){collideBodyAABB(V(.26,.855,.57),V(.39,.018,.30));collideBodyAABB(V(-.13,.47,.57),V(.018,.375,.30));collideBodyAABB(V(.65,.47,.57),V(.018,.375,.30));collideBodyAABB(V(.26,.47,.86),V(.39,.375,.018))}
+  if(activeDojo==='CHAIR'){collideBodyAABB(V(0,.48,.02),V(.34,.0275,.275));collideBodyAABB(V(0,.88,-.25),V(.34,.41,.0275));for(const [x,z] of [[-.27,-.16],[.27,-.16],[-.27,.20],[.27,.20]])collideBodyAABB(V(x,.24,z),V(.0275,.24,.0275))}
+  if(PHYS.ready&&activeDojo==='WEIGHT'&&PHYS.items.weight){const rb=PHYS.items.weight.rb,before=rbPos(rb,new THREE.Vector3());if(collideBodyOBB(rb,V(.19,.19,.19))){const now=rbPos(rb,new THREE.Vector3()),push=now.clone().sub(before).multiplyScalar(-FEEL.massKg*2.2);rb.applyImpulse(rvec(push),true);dojoPulse(.28,'hit')}}
+  if(PHYS.ready&&activeDojo==='DOOR'&&PHYS.items.door)collideBodyOBB(PHYS.items.door.rb,V(.40,.83,.025));
+}
+
+// ---------- task mechanics ---------------------------------------------------
+function yawFromQuat(q){return Math.atan2(2*(q.w*q.y+q.x*q.z),1-2*(q.y*q.y+q.z*q.z))}
+function resetForces(){for(const it of Object.values(PHYS.items)){try{it.rb.resetForces(true);it.rb.resetTorques(true)}catch(_){}}PHYS.handLoads.L=PHYS.handLoads.R=0}
+function stepButtonPhysics(){const it=PHYS.items.button;if(!it)return;const rb=it.rb,p=rb.translation(),v=rb.linvel(),rest=.495;rb.addForce({x:0,y:0,z:(rest-p.z)*190-v.z*10},true);if(p.z<.492){rb.setTranslation({x:-.03,y:1.18,z:.492},true);rb.setLinvel({x:0,y:0,z:Math.max(0,v.z)},true)}if(p.z>.537){rb.setTranslation({x:-.03,y:1.18,z:.537},true);rb.setLinvel({x:0,y:0,z:Math.min(0,v.z)*.1},true)}PHYS.buttonDepth=THREE.MathUtils.clamp((p.z-rest)/.042,0,1);if(PHYS.buttonDepth>.78)completeTask()}
+function stepDoorPhysics(){const it=PHYS.items.door;if(!it)return;const rb=it.rb;const q=rb.rotation();PHYS.doorAngle=yawFromQuat(q);doorHinge.rotation.y=PHYS.doorAngle;doorHinge.updateMatrixWorld(true);const hw=doorHandle.getWorldPosition(new THREE.Vector3());let side=null;for(const s of ['L','R']){if(PHYS.grabs[s]?.item===it){side=s;break}}if(!side){for(const s of ['L','R'])if(gripDown(s)&&handP(s).p.distanceTo(hw)<.16){PHYS.grabs[s]={item:it,local:new THREE.Vector3(.28,.14,-.055),roll0:thumbs[s].roll||0,door:true};setHeld(s,'door');side=s;PHYS.knobBase=thumbs[s].roll||0;break}}if(side&&gripRelease(side)){endGrab(side);side=null}
+  if(side){const g=PHYS.grabs[side],droll=(thumbs[side].roll||0)-g.roll0;PHYS.knob=THREE.MathUtils.clamp(droll*1.15,-1.1,1.1);doorHandle.rotation.z=PHYS.knob;if(Math.abs(PHYS.knob)>.52&&!PHYS.latch){PHYS.latch=true;dojoPulse(.62,'limit',side)}if(PHYS.latch)springGrab(side,g);else{const err=handP(side).p.clone().sub(hw),f=err.multiplyScalar(800);PHYS.handLoads[side]=Math.max(PHYS.handLoads[side],f.length());applyReaction(side,f)}}
+  if(!PHYS.latch){const av=rb.angvel();rb.addTorque({x:0,y:-PHYS.doorAngle*520-av.y*44,z:0},true)}if(PHYS.latch&&Math.abs(PHYS.doorAngle)>.72)completeTask()}
+function stepDrawerPhysics(){const it=PHYS.items.drawer;if(!it)return;const rb=it.rb,p=rb.translation();let side=null;const handle=V(p.x,p.y,p.z-.265);for(const s of ['L','R'])if(PHYS.grabs[s]?.item===it)side=s;if(!side)for(const s of ['L','R'])if(gripDown(s)&&handP(s).p.distanceTo(handle)<.16){PHYS.grabs[s]={item:it,local:V(0,.01,-.265),roll0:thumbs[s].roll||0};setHeld(s,'drawer');side=s;break}if(side&&gripRelease(side)){endGrab(side);side=null}if(side)springGrab(side,PHYS.grabs[side]);const z=rb.translation().z;if(z<.08){rb.setTranslation({x:.26,y:.60,z:.08},true);const v=rb.linvel();rb.setLinvel({x:0,y:0,z:Math.max(0,v.z)},true)}if(z>.46){rb.setTranslation({x:.26,y:.60,z:.46},true);const v=rb.linvel();rb.setLinvel({x:0,y:0,z:Math.min(0,v.z)},true)}drawerMove.position.z=rb.translation().z-.46;if(rb.translation().z<.16)completeTask()}
+function stepCupPhysics(){const it=PHYS.items.cup;if(!it)return;for(const s of ['L','R'])if(PHYS.grabs[s]?.item===it&&rbPos(it.rb,new THREE.Vector3()).y>.94)PHYS.lifted=true;const p=rbPos(it.rb,new THREE.Vector3()),v=it.rb.linvel(),q=rbQuat(it.rb,new THREE.Quaternion()),up=new THREE.Vector3(0,1,0).applyQuaternion(q);if(PHYS.lifted&&!PHYS.grabs.L&&!PHYS.grabs.R&&p.distanceTo(V(-.22,.80,.42))<.10&&Math.hypot(v.x,v.y,v.z)<.16&&up.y>.88)holdToComplete(true,.45);else holdToComplete(false)}
+function stepTrayPhysics(){const it=PHYS.items.tray;if(!it)return;const p=rbPos(it.rb,new THREE.Vector3()),q=rbQuat(it.rb,new THREE.Quaternion()),up=new THREE.Vector3(0,1,0).applyQuaternion(q);const heldBoth=PHYS.grabs.L?.item===it&&PHYS.grabs.R?.item===it;holdToComplete(heldBoth&&p.y>.90&&up.y>.965,.75)}
+function stepBallPhysics(){const it=PHYS.items.ball;if(!it)return;const p=rbPos(it.rb,new THREE.Vector3()),v=it.rb.linvel();if(PHYS.caught&&!PHYS.grabs.L&&!PHYS.grabs.R){const target=V(.36,1.20,.83);if(p.distanceTo(target)<.16&&Math.hypot(v.x,v.y,v.z)>.45)completeTask()}if(p.y<-.2||p.z<-.8||Math.abs(p.x)>2.4){it.rb.setTranslation({x:0,y:1.30,z:1.32},true);it.rb.setLinvel({x:0,y:0,z:0},true);PHYS.caught=PHYS.thrown=false;autoHandoffTask('BALL')}}
+function stepKickPhysics(){const it=PHYS.items.kickball;if(!it)return;const p=rbPos(it.rb,new THREE.Vector3()),v=it.rb.linvel();if(p.z>1.08&&Math.abs(p.x)<.34&&p.y<.72&&Math.hypot(v.x,v.y,v.z)>.35)completeTask();if(p.y<-.15||p.z>2.2||Math.abs(p.x)>1.8){it.rb.setTranslation({x:0,y:.10,z:.48},true);it.rb.setLinvel({x:0,y:0,z:0},true);it.rb.setAngvel({x:0,y:0,z:0},true)}}
+function stepWeightPhysics(){const it=PHYS.items.weight;if(!it)return;const p=rbPos(it.rb,new THREE.Vector3());if(p.z>.68)completeTask()}
+function stepProbePhysics(){const socket=PHYS.items.socket,probe=PHYS.items.probe;if(!socket||!probe)return;const rb=socket.rb,p=rb.translation(),v=rb.linvel(),rest=.61;rb.addForce({x:0,y:0,z:(rest-p.z)*340-v.z*15},true);if(p.z<.608){rb.setTranslation({x:0,y:.94,z:.608},true);rb.setLinvel({x:0,y:0,z:Math.max(0,v.z)},true)}if(p.z>.735){rb.setTranslation({x:0,y:.94,z:.735},true);rb.setLinvel({x:0,y:0,z:Math.min(0,v.z)*.1},true)}if(p.z-rest>.105)completeTask()}
+function stepChairTask(){const pelvis=P.pelvis,vel=pelvis.p.clone().sub(pelvis.prev).length()/DT;holdToComplete(pelvis.p.y<.64&&pelvis.p.z>-.20&&pelvis.p.z<.24&&vel<.45,.7)}
+function stepWallTask(){const touch=(Math.abs(P.lHand.p.z-.445)<.075||Math.abs(P.rHand.p.z-.445)<.075),bodyClear=P.chest.p.z<.47&&P.head.p.z<.50;const feet=Math.abs(P.lFoot.p.y-.09)<.12&&Math.abs(P.rFoot.p.y-.09)<.12;holdToComplete(touch&&bodyClear&&feet,.38)}
+function stepSolverProof(){
+  if(activeDojo==='REACH'){
+    const d=Math.min(P.lHand.p.distanceTo(reachTarget.position),P.rHand.p.distanceTo(reachTarget.position));
+    const shoulder=Math.max(BODY_SOLVER.L.shoulder,BODY_SOLVER.R.shoulder);
+    holdToComplete(d<.085&&shoulder>.08&&Math.abs(BODY_SOLVER.worldZ)<.08,.32);
+  }else if(activeDojo==='STEP'){
+    const d=Math.min(P.lHand.p.distanceTo(stepTarget.position),P.rHand.p.distanceTo(stepTarget.position));
+    holdToComplete(d<.10&&BODY_SOLVER.worldZ>.18,.32);
+  }else if(activeDojo==='BRACE'){
+    const brace=Math.max(BODY_SOLVER.L.brace,BODY_SOLVER.R.brace),feet=Math.abs(P.lFoot.p.y-.09)<.13&&Math.abs(P.rFoot.p.y-.09)<.13;
+    holdToComplete(brace>.62&&feet,.40);
+  }else if(activeDojo==='GRASP'){
+    const it=PHYS.items.graspCube;if(!it)return;const held=(PHYS.grabs.L?.item===it||PHYS.grabs.R?.item===it),p=rbPos(it.rb,new THREE.Vector3());
+    holdToComplete(held&&p.y>.91,.45);
+  }else if(activeDojo==='SHIFT'){
+    const feet=Math.abs(P.lFoot.p.y-.09)<.13&&Math.abs(P.rFoot.p.y-.09)<.13;
+    if(feet&&solverDemoStage===0&&P.pelvis.p.x<-.13){solverDemoStage=1;dojoPulse(.42,'tick','L')}
+    if(feet&&solverDemoStage===1&&P.pelvis.p.x>.13){solverDemoStage=2;completeTask()}
+  }
+}
+function physicsTaskStep(){if(!PHYS.ready||!PHYS.world)return;resetForces();handleGenericGrabs();for(const side of ['L','R'])if(PHYS.grabs[side]&&!PHYS.grabs[side].door&&PHYS.grabs[side].item.name!=='drawer')springGrab(side,PHYS.grabs[side]);syncBodyProxies();if(activeDojo==='BUTTON')stepButtonPhysics();else if(activeDojo==='DOOR')stepDoorPhysics();else if(activeDojo==='DRAWER')stepDrawerPhysics();else if(activeDojo==='PROBE')stepProbePhysics();PHYS.world.step();if(activeDojo==='CUP')stepCupPhysics();else if(activeDojo==='TRAY')stepTrayPhysics();else if(activeDojo==='BALL')stepBallPhysics();else if(activeDojo==='KICK')stepKickPhysics();else if(activeDojo==='WEIGHT')stepWeightPhysics();else if(activeDojo==='CHAIR')stepChairTask();else if(activeDojo==='WALL')stepWallTask();stepSolverProof();syncPhysicsVisuals()}
+function syncPhysicsVisuals(){if(!PHYS.ready)return;for(const it of Object.values(PHYS.items)){if(!it.mesh)continue;const p=it.rb.translation(),q=it.rb.rotation();it.mesh.position.set(p.x,p.y,p.z);it.mesh.quaternion.set(q.x,q.y,q.z,q.w)}if(PHYS.items.cup){cupRim.position.copy(cupMesh.position);cupRim.quaternion.copy(cupMesh.quaternion);cupRim.rotateX(Math.PI/2)}if(PHYS.items.tray){const q=trayMesh.quaternion;trayHandleL.position.copy(trayMesh.position).add(new THREE.Vector3(.29,.02,0).applyQuaternion(q));trayHandleR.position.copy(trayMesh.position).add(new THREE.Vector3(-.29,.02,0).applyQuaternion(q));trayHandleL.quaternion.copy(q);trayHandleR.quaternion.copy(q)}if(PHYS.items.door){doorHinge.rotation.y=PHYS.doorAngle}if(PHYS.items.drawer){drawerMove.position.z=PHYS.items.drawer.rb.translation().z-.46}}
+
+function resetDojo(name=activeDojo){activeDojo=name;taskDone=false;taskHold=0;solverDemoStage=0;resetBodySolver();for(const n of DOJOS)dojoRoots[n].visible=n===name;document.querySelectorAll('.dj').forEach(b=>b.classList.toggle('on',b.dataset.dojo===name));for(const side of ['L','R']){dojoHand[side].held=null;PHYS.grabs[side]=null}clothGrab.L=clothGrab.R=null;doorHinge.rotation.y=0;doorHandle.rotation.z=0;drawerMove.position.z=0;resetCloth();setTaskText();if(PHYS.ready){try{buildPhysicsTask(name);setTimeout(()=>autoHandoffTask(name),0)}catch(e){dojoFail(e)}}else if(!PHYS.loading)setTimeout(()=>initDojoPhysics(),20);else setTimeout(()=>autoHandoffTask(name),40);ev('dojo',{name})}
+for(const b of document.querySelectorAll('.dj'))b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();resetDojo(b.dataset.dojo);HAPTIC.pulse(.24,'tick')});
+function dojoStep(){document.getElementById('dojogrip').classList.toggle('on',gripDown('L')||gripDown('R'));if(activeDojo==='CLOTH')stepCloth();else if(PHYS.ready)physicsTaskStep();else if(activeDojo==='WALL')stepWallTask();else if(activeDojo==='CHAIR')stepChairTask()}
+function updateDojoVisuals(){if(activeDojo==='CLOTH')syncCloth()}
+
+// ---------- physical marionette controller ----------
+const controller=new THREE.Group(); controller.name='MARIONETTE-CROSS'; scene.add(controller);
+const woodMat=new THREE.MeshStandardMaterial({color:0x2c2927,roughness:.9,metalness:0});
+const barX=new THREE.Mesh(new THREE.BoxGeometry(1.52,.055,.075),woodMat); controller.add(barX);
+const barZ=new THREE.Mesh(new THREE.BoxGeometry(.075,.055,.98),woodMat); controller.add(barZ);
+barX.position.y=barZ.position.y=0;
+const studVisualMat=new THREE.MeshBasicMaterial({color:0x000000,depthTest:false,depthWrite:false});
+const studActiveMat=new THREE.MeshBasicMaterial({color:0x19e6c8,depthTest:false,depthWrite:false});
+const studOffMat=new THREE.MeshBasicMaterial({color:0x999999,depthTest:false,depthWrite:false});
+const studGeo=new THREE.SphereGeometry(.052,14,10), hitGeo=new THREE.SphereGeometry(.145,10,8);
+const hitMat=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,depthTest:false});
+const studLocal={C:V(0,.045,0),L:V(.73,.045,0),R:V(-.73,.045,0),F:V(0,.045,.46),B:V(0,.045,-.46)};
+const studs={}; const hitMeshes=[];
+for(const id of ['C','L','R','F','B']){
+  const g=new THREE.Group(); g.position.copy(studLocal[id]); g.userData.id=id; controller.add(g);
+  const v=new THREE.Mesh(studGeo,studVisualMat.clone()); v.renderOrder=100; g.add(v);
+  const h=new THREE.Mesh(hitGeo,hitMat.clone()); h.userData.id=id; h.renderOrder=101; g.add(h); hitMeshes.push(h);
+  studs[id]={group:g,visual:v,active:true};
+}
+let crossBase=V(0,2.28,0), yaw=0, pitch=0, roll=0;
+const reels={L:0,R:0,F:0,B:0};
+const makeThumb=()=>({x:0,y:0,rawX:0,rawY:0,vx:0,vy:0,px:0,py:0,outer:0,front:0,frontTarget:0,recruit:0,bend:0,bendTarget:0,supportX:0,supportY:0,supportVX:0,supportVY:0,supportStage:0,macroX:0,macroZ:0,macroTX:0,macroTZ:0,macroVX:0,macroVZ:0,macroSpeed:0,macroKick:0,macroStage:0,homeCX:0,homeCY:0,roll:0,lastAng:null,active:false,pointer:null,gateStage:0,pressureLive:false,pMin:1,pMax:0,contactBase:1});
+const thumbs={L:makeThumb(),R:makeThumb()};
+
+// ---------- inverse performance / teacher ----------
+const ACTIONS=['LIVE','FREE','WALK','WAVE','SIT','DANCE'];
+let action='LIVE', teacherOn=false, simTime=0, actionClock=0;
+const teacher={L:{x:0,y:0},R:{x:0,y:0}};
+const motorTargets={}; for(const n in REST)motorTargets[n]=REST[n].clone();
+const motorEffort={};
+const LENS={
+  pelvisChest:REST.pelvis.distanceTo(REST.chest), chestNeck:REST.chest.distanceTo(REST.neck), neckHead:REST.neck.distanceTo(REST.head),
+  chestShoulder:REST.chest.distanceTo(REST.lShoulder), pelvisHip:REST.pelvis.distanceTo(REST.lHip),
+  ua:REST.lShoulder.distanceTo(REST.lElbow), fa:REST.lElbow.distanceTo(REST.lHand),
+  thigh:REST.lHip.distanceTo(REST.lKnee), shin:REST.lKnee.distanceTo(REST.lFoot)
+};
+// WHOLE-BODY SOLVER -------------------------------------------------------
+// The thumbs state intention; these molecules supply the unglamorous competence
+// a nervous system normally hides. They never execute a task by themselves.
+// Recruitment is continuous: arm -> shoulder -> torso -> pelvis -> step.
+const MOVEMENT_MOLECULES=Object.freeze({
+  REACH:{order:['hand','elbow','shoulder','chest','pelvis','foot']},
+  STEP:{preserve:['support','balance','collision'],recruit:['pelvis','hip','knee','foot']},
+  BRACE:{contact:true,preserve:['hand_contact','joint_limits','balance']},
+  GRASP:{contact:true,preserve:['object_contact']},
+  SHIFT:{recruit:['pelvis','support_foot']}
+});
+const BODY_SOLVER={
+  worldX:0,worldZ:0,
+  L:{reach:0,shoulder:0,torso:0,step:0,brace:0,goal:0},
+  R:{reach:0,shoulder:0,torso:0,step:0,brace:0,goal:0}
+};
+function solverEase(cur,target,rate=8){return cur+(target-cur)*(1-Math.exp(-DT*rate))}
+function resetBodySolver(){BODY_SOLVER.worldX=BODY_SOLVER.worldZ=0;for(const k of ['L','R'])for(const n of ['reach','shoulder','torso','step','brace','goal'])BODY_SOLVER[k][n]=0}
+const ikA=new THREE.Vector3(),ikB=new THREE.Vector3(),ikC=new THREE.Vector3(),ikD=new THREE.Vector3();
+const torsoQ=new THREE.Quaternion();
+function ease01(v){v=THREE.MathUtils.clamp(v,0,1);return v*v*(3-2*v)}
+function teacherSignals(){
+  const t=actionClock;
+  if(action==='FREE'||action==='LIVE'){teacher.L.x=teacher.L.y=teacher.R.x=teacher.R.y=0;return}
+  if(action==='WALK'){const p=t*3.2;teacher.L.x=.10*Math.sin(p*.5);teacher.L.y=.96;teacher.R.x=.22*Math.sin(p);teacher.R.y=.58+.12*Math.cos(p);return}
+  if(action==='WAVE'){teacher.L.x=-.12;teacher.L.y=.18;teacher.R.x=.92*Math.sin(t*4.6);teacher.R.y=.98;return}
+  if(action==='SIT'){const d=ease01(t/1.8);teacher.L.x=-.05;teacher.R.x=.05;teacher.L.y=teacher.R.y=-.98*d;return}
+  if(action==='DANCE'){const p=t*2.6;teacher.L.x=.88*Math.sin(p);teacher.L.y=.68+.26*Math.cos(p*1.17);teacher.R.x=.88*Math.sin(p+Math.PI);teacher.R.y=.68+.26*Math.cos(p*1.17+1.2);return}
+}
+function renderThumbPucks(){
+  for(const side of ['L','R']){
+    const el=document.getElementById('joy'+side),puck=el.querySelector('.puck'),supportPuck=el.querySelector('.supportPuck'),ghost=el.querySelector('.ghost'),r=el.getBoundingClientRect(),rad=r.width*.34,s=thumbs[side];
+    ghost.style.transform=`translate(calc(-50% + ${teacher[side].x*rad*.72}px),calc(-50% + ${-teacher[side].y*rad*.72}px))`;
+    if(!s.active)puck.style.transform=`translate(calc(-50% + ${s.x*rad*.72}px),calc(-50% + ${-s.y*rad*.72}px))`;
+    supportPuck.style.transform=`translate(calc(-50% + ${s.supportX*rad*.98}px),calc(-50% + ${-s.supportY*rad*.98}px))`;
+    const macroShift=Math.min(r.width*.54,96);el.style.transform=`translate(${s.macroTX*macroShift}px,${-s.macroTZ*macroShift}px)`;el.classList.toggle('macro',Math.hypot(s.macroTX,s.macroTZ)>.055);
+    el.style.setProperty('--front',s.front.toFixed(3));
+    el.style.setProperty('--bend',s.bend.toFixed(3));
+    el.classList.toggle('front',s.front>.035);
+    el.classList.toggle('supporting',s.supportStage>0);
+  }
+}
+function frameVector(x,y,z,q=torsoQ){return new THREE.Vector3(x,y,z).applyQuaternion(q)}
+function reachable(start,target,l1,l2){
+  const out=target.clone(),d=out.sub(start),len=d.length(),lo=Math.abs(l1-l2)+.012,hi=l1+l2-.012;
+  if(len<1e-6)d.set(0,-1,0);else d.multiplyScalar(1/len);
+  return start.clone().addScaledVector(d,THREE.MathUtils.clamp(len,lo,hi));
+}
+function twoBone(start,end,l1,l2,hint,out){
+  const dir=ikA.copy(end).sub(start),d=Math.max(1e-5,dir.length());dir.multiplyScalar(1/d);
+  const x=(l1*l1-l2*l2+d*d)/(2*d),h=Math.sqrt(Math.max(0,l1*l1-x*x));
+  const perp=ikB.copy(hint).addScaledVector(dir,-hint.dot(dir));
+  if(perp.lengthSq()<1e-6)perp.set(0,0,1).addScaledVector(dir,-dir.z);
+  perp.normalize(); out.copy(start).addScaledVector(dir,x).addScaledVector(perp,h); return out;
+}
+function setTorso(root,pitch=0,yaw0=0,roll0=0){
+  torsoQ.setFromEuler(new THREE.Euler(pitch,yaw0,roll0,'YXZ'));
+  motorTargets.pelvis.copy(root);
+  motorTargets.chest.copy(root).add(frameVector(0,LENS.pelvisChest,0));
+  motorTargets.neck.copy(motorTargets.chest).add(frameVector(0,LENS.chestNeck,0));
+  motorTargets.head.copy(motorTargets.neck).add(frameVector(0,LENS.neckHead,0));
+  const shLocal=REST.lShoulder.clone().sub(REST.chest),hipLocal=REST.lHip.clone().sub(REST.pelvis);
+  motorTargets.lShoulder.copy(motorTargets.chest).add(shLocal.clone().applyQuaternion(torsoQ));
+  motorTargets.rShoulder.copy(motorTargets.chest).add(new THREE.Vector3(-shLocal.x,shLocal.y,shLocal.z).applyQuaternion(torsoQ));
+  motorTargets.lHip.copy(root).add(hipLocal.clone().applyQuaternion(torsoQ));
+  motorTargets.rHip.copy(root).add(new THREE.Vector3(-hipLocal.x,hipLocal.y,hipLocal.z).applyQuaternion(torsoQ));
+}
+function setArm(side,target,hint){
+  const sh=motorTargets[side+'Shoulder'],handName=side+'Hand',elbowName=side+'Elbow';
+  const hand=reachable(sh,target,LENS.ua,LENS.fa);motorTargets[handName].copy(hand);twoBone(sh,hand,LENS.ua,LENS.fa,hint,motorTargets[elbowName]);
+}
+function setLeg(side,target,hint){
+  const hip=motorTargets[side+'Hip'],footName=side+'Foot',kneeName=side+'Knee';
+  const foot=reachable(hip,target,LENS.thigh,LENS.shin);motorTargets[footName].copy(foot);twoBone(hip,foot,LENS.thigh,LENS.shin,hint,motorTargets[kneeName]);
+}
+function taskGoalPoint(side,out=new THREE.Vector3()){
+  // Only goals that correspond to a real contact point. This is not autopilot:
+  // the goal is consulted only after the performer makes a large reach gesture.
+  if(activeDojo==='REACH')return out.copy(reachTarget.position);
+  if(activeDojo==='STEP')return out.copy(stepTarget.position);
+  if(activeDojo==='BRACE')return out.set(.18,1.18,.465);
+  if(activeDojo==='GRASP'){if(PHYS.ready&&PHYS.items.graspCube){const q=PHYS.items.graspCube.rb.translation();return out.set(q.x,q.y,q.z)}return out.copy(graspCube.position)}
+  if(activeDojo==='WALL')return out.set(side==='L'?.16:-.16,1.18,.445);
+  if(activeDojo==='BUTTON')return out.set(-.03,1.18,.445);
+  if(activeDojo==='DOOR'){try{return doorHandle.getWorldPosition(out)}catch(_){return null}}
+  if(activeDojo==='DRAWER'){
+    if(PHYS.ready&&PHYS.items.drawer){const q=PHYS.items.drawer.rb.translation();return out.set(q.x,q.y,q.z-.265)}
+    return out.set(.26,.61,.195+drawerMove.position.z);
+  }
+  if(activeDojo==='WEIGHT'){
+    if(PHYS.ready&&PHYS.items.weight){const q=PHYS.items.weight.rb.translation();return out.set(q.x+(side==='L'?.12:-.12),q.y+.05,q.z-.20)}
+    return out.set(side==='L'?.12:-.12,.25,.25);
+  }
+  return null;
+}
+function makeArmIntent(side,s,sgn,X){
+  const outward=(side==='l'?-s.x:s.x),lateral=THREE.MathUtils.clamp(outward,-.38,1);
+  const front=THREE.MathUtils.clamp(s.front*FEEL.depth,0,1.35),aim=ease01((front-.48)/.48),bend=THREE.MathUtils.clamp(s.bend*FEEL.bend,0,1),speed=Math.min(4,Math.hypot(s.vx,s.vy));
+  const offset=new THREE.Vector3(sgn*(.20+lateral*.39*X),-.35+s.y*.48*X+front*.34,.028+front*.60+speed*.012*(1-aim));
+  const full=LENS.ua+LENS.fa-.014,rawLen=offset.length();
+  // "Trying harder" does not stretch the arm. It increases the amount of body
+  // the solver is allowed to recruit.
+  const reach=THREE.MathUtils.clamp((rawLen-full*.72)/(full*.56),0,1);
+  return {side,s,sgn,lateral,front,aim,bend,speed,offset,full,rawLen,reach};
+}
+function updateWholeBodySolver(intents){
+  let driveX=0,driveZ=0,driveW=0,anyBrace=0;
+  for(const I of intents){
+    const key=I.side==='l'?'L':'R',S=BODY_SOLVER[key],thumb=I.s,hand=P[I.side+'Hand'];
+    const largeIntent=Math.max(Math.abs(thumb.x),Math.abs(thumb.y),thumb.front,thumb.outer,thumb.recruit)> .58;
+    const goal=largeIntent?taskGoalPoint(key,new THREE.Vector3()):null;
+    let goalNeed=0;
+    if(goal){
+      const sh=P[I.side+'Shoulder'].p,dist=sh.distanceTo(goal);goalNeed=THREE.MathUtils.clamp((dist-I.full*.88)/.34,0,1);
+    }
+    const cascade=Math.max(I.reach,goalNeed);
+    const shoulder=ease01((cascade-.08)/.38),torso=ease01((cascade-.30)/.42),step=(goal&&!['REACH','GRASP','BRACE'].includes(activeDojo))?ease01((goalNeed-.28)/.52):0;
+    // A hand pressed into the wall is a support, not a failed reach. Continued
+    // input loads that support instead of walking through it.
+    const bracePlane=activeDojo==='BRACE'?.465:.445;const braceNow=['WALL','BRACE'].includes(activeDojo)&&I.front>.16&&Math.abs(hand.p.z-bracePlane)<.085&&Math.abs(hand.p.x)<.61;
+    S.reach=solverEase(S.reach,cascade,10);S.shoulder=solverEase(S.shoulder,shoulder,9);S.torso=solverEase(S.torso,torso,7);S.step=solverEase(S.step,braceNow?0:step,5);S.brace=solverEase(S.brace,braceNow?1:0,12);S.goal=solverEase(S.goal,goalNeed,7);
+    anyBrace=Math.max(anyBrace,S.brace);
+    if(goal&&S.step>.03&&!braceNow){
+      const dx=goal.x-P.pelvis.p.x,dz=goal.z-P.pelvis.p.z,len=Math.hypot(dx,dz)||1,w=S.step;
+      driveX+=dx/len*w;driveZ+=dz/len*w;driveW+=w;
+    }
+  }
+  // STEP is persistent locomotion only when a real task goal remains outside the
+  // current workspace. Once contact is made, BRACE kills the locomotion.
+  if(driveW>0&&anyBrace<.35){
+    const speed=.20;BODY_SOLVER.worldX=THREE.MathUtils.clamp(BODY_SOLVER.worldX+driveX/driveW*speed*DT,-.58,.58);BODY_SOLVER.worldZ=THREE.MathUtils.clamp(BODY_SOLVER.worldZ+driveZ/driveW*speed*DT,-.30,.78);
+  }
+}
+function buildLiveTargets(){
+  const L=thumbs.L,R=thumbs.R,X=FEEL.expression;
+  const avgX=(L.x+R.x)*.5,avgY=(L.y+R.y)*.5,diffX=(R.x-L.x)*.5,diffY=(R.y-L.y)*.5;
+  const avgSX=(L.supportX+R.supportX)*.5,avgSY=(L.supportY+R.supportY)*.5,diffSX=(R.supportX-L.supportX)*.5,diffSY=(R.supportY-L.supportY)*.5;
+  const avgFront=(L.front+R.front)*.5,diffFront=(R.front-L.front)*.5;
+  const avgMX=(L.macroX+R.macroX)*.5,diffMZ=(R.macroZ-L.macroZ)*.5,avgMZ=(L.macroZ+R.macroZ)*.5;
+  const avgRecruit=(L.recruit+R.recruit)*.5,crouch=THREE.MathUtils.clamp(-avgY*.92-avgSY*.42,0,1),rise=THREE.MathUtils.clamp(avgY*.60+avgSY*.55,0,1);
+
+  const intents=[makeArmIntent('l',L,1,X),makeArmIntent('r',R,-1,X)];updateWholeBodySolver(intents);
+  const SL=BODY_SOLVER.L,SR=BODY_SOLVER.R,avgShoulder=(SL.shoulder+SR.shoulder)*.5,avgTorso=(SL.torso+SR.torso)*.5,avgBrace=(SL.brace+SR.brace)*.5;
+  const sideTorso=(SL.torso-SR.torso),sideStep=(SL.step-SR.step);
+
+  const lMacro=Math.min(1,Math.hypot(L.macroX,L.macroZ)),rMacro=Math.min(1,Math.hypot(R.macroX,R.macroZ));
+  const supportShift=(rMacro-lMacro)*.070*X + sideStep*.025;
+  const supportBack=-Math.max(lMacro,rMacro)*.018;
+  // REACH recruits finite body translation before STEP starts translating the
+  // entire performer through the world. BRACE turns that translation back into
+  // resistance once a support contact exists.
+  const solverForward=(avgShoulder*.055+avgTorso*.105)*(1-avgBrace*.75);
+  const root=new THREE.Vector3(BODY_SOLVER.worldX+(avgSX*.18+avgX*.035+avgMX*.16)*X+supportShift,1-.31*crouch+.045*rise,BODY_SOLVER.worldZ+.09*crouch+avgRecruit*.07*FEEL.recruit+avgMZ*.22*X+supportBack+solverForward);
+  setTorso(root,
+    -.14*crouch-.030*rise+avgFront*.12*FEEL.recruit-avgSY*.075+avgTorso*.13,
+    diffSX*.44*X+diffFront*.34*FEEL.recruit+diffX*.10+diffMZ*.16+sideTorso*.16,
+    -avgSX*.18*X+diffSY*.28*X+diffY*.05);
+
+  const shLift=.105*X,hipLift=.042*X;
+  motorTargets.lShoulder.x+=L.supportX*.075*X+SL.shoulder*.035;motorTargets.rShoulder.x+=R.supportX*.075*X-SR.shoulder*.035;
+  motorTargets.lShoulder.y+=L.supportY*shLift+L.y*.018*X;motorTargets.rShoulder.y+=R.supportY*shLift+R.y*.018*X;
+  motorTargets.lShoulder.z+=(L.front*.095+L.recruit*.11*FEEL.recruit+Math.max(0,L.supportY)*.025+SL.shoulder*.11)*X;
+  motorTargets.rShoulder.z+=(R.front*.095+R.recruit*.11*FEEL.recruit+Math.max(0,R.supportY)*.025+SR.shoulder*.11)*X;
+  motorTargets.lHip.x+=L.supportX*.045*X;motorTargets.rHip.x+=R.supportX*.045*X;motorTargets.lHip.y+=L.supportY*hipLift;motorTargets.rHip.y+=R.supportY*hipLift;
+
+  function arm(I){
+    const {side,s,sgn,lateral,front,aim,bend,speed,offset,full}=I,key=side==='l'?'L':'R',S=BODY_SOLVER[key],shoulder=motorTargets[side+'Shoulder'];
+    const hand=shoulder.clone().add(offset);hand.x+=s.vx*.006*X*(1-aim*.7);hand.y+=s.vy*.006*X*(1-aim*.7);
+    // Goal capture is intentionally weak and local: it removes the final
+    // centimeter of Tantalus without stealing the performance.
+    const goal=taskGoalPoint(key,new THREE.Vector3());if(goal&&Math.max(Math.abs(s.x),Math.abs(s.y),s.front,s.outer)>.58){const d=hand.distanceTo(goal);if(d<.28)hand.lerp(goal,(1-d/.28)*(.12+.22*front))}
+    if(S.brace>.3&&['WALL','BRACE'].includes(activeDojo)){hand.z=activeDojo==='BRACE'?.465:.445;hand.x=THREE.MathUtils.clamp(hand.x,-.50,.50);}
+    const ray=hand.clone().sub(shoulder),rayLen=ray.length();if(rayLen>1e-5){const desired=Math.min(rayLen,full-bend*.19);hand.copy(shoulder).addScaledVector(ray.normalize(),Math.max(.18,desired))}
+    const hint=new THREE.Vector3(sgn*(.35+.11*bend+.05*Math.abs(lateral)+.10*Math.abs(s.supportX)),-.17+.22*s.y+.10*bend+.18*s.supportY,.20*(1-aim)+.035+.08*bend+.16*sgn*s.supportX);
+    setArm(side,hand,hint);
+  }
+  arm(intents[0]);arm(intents[1]);
+
+  function leg(side,s,sgn,S){
+    const macroMag=Math.min(1,Math.hypot(s.macroX,s.macroZ)),step=Math.max(s.outer*.42,s.recruit*.45*FEEL.recruit,macroMag*.92,S.step*.72),fore=step*(s.front*.10+s.x*.025)*FEEL.depth;
+    const autoLift=Math.min(.16,.018+macroMag*.055+s.macroSpeed*.026+S.step*.025),kick=s.macroKick,spread=sgn*(.105+step*Math.max(0,(side==='l'?-s.x:s.x))*.035);
+    const kickX=THREE.MathUtils.clamp(s.macroVX*.016,-.10,.10)*kick,kickZ=THREE.MathUtils.clamp(s.macroVZ*.033,-.24,.24)*kick;
+    // STEP molecule: the ipsilateral foot quietly advances under an unreachable
+    // reach; explicit macro movement always wins and can turn the same leg into a kick.
+    const solverStepZ=S.step*.18,solverStepX=sgn*S.step*.018;
+    const foot=new THREE.Vector3(root.x+spread+s.macroX*.29+kickX+solverStepX,.09+Math.max(autoLift,kick*.205),root.z+.08+s.macroZ*.40+fore+kickZ+.12*crouch+solverStepZ);
+    const kneeHint=new THREE.Vector3(sgn*(.07+.05*Math.abs(s.macroX)),.035+.095*kick+.035*S.step,.33+.19*Math.max(0,s.macroZ)+.13*crouch+.08*S.step);setLeg(side,foot,kneeHint);
+  }
+  leg('l',L,1,SL);leg('r',R,-1,SR);
+
+  motorTargets.head.x+=(-avgSX*.038-diffSX*.032-avgX*.010)*X;motorTargets.head.y+=avgSY*.025*X;motorTargets.head.z+=(.018*crouch+avgFront*.055+(L.vx-R.vx)*.002)*X;
+}
+function buildMotorTargets(){
+  for(const n in motorEffort)motorEffort[n]=0;
+  const L=thumbs.L,R=thumbs.R,t=simTime,root=new THREE.Vector3(0,1,0);
+  if(action==='FREE')return;
+  if(action==='LIVE'){ buildLiveTargets(); return; }
+  if(action==='WALK'){
+    const drive=THREE.MathUtils.clamp(L.y,-1,1),mag=Math.abs(drive),dir=Math.sign(drive||1);
+    if(mag>.05)gaitPhase+=DT*(1.6+3.2*mag)*dir;
+    const beat=Math.floor((gaitPhase+Math.PI*.5)/Math.PI);if(beat!==lastWalkBeat&&mag>.18){lastWalkBeat=beat;HAPTIC.pulse(.18,'tick')}
+    const s=Math.sin(gaitPhase),c=Math.cos(gaitPhase),bob=.025+.027*Math.abs(c)*mag;
+    root.set(L.x*.11,1+bob,0);setTorso(root,-.055*drive,R.x*.28,-L.x*.10);
+    const stride=.20*mag, lift=.105*mag;
+    const lLift=Math.max(0,s),rLift=Math.max(0,-s);
+    setLeg('l',new THREE.Vector3(root.x+.10,.09+lift*lLift,.07+stride*s),new THREE.Vector3(0,0,1));
+    setLeg('r',new THREE.Vector3(root.x-.10,.09+lift*rLift,.07-stride*s),new THREE.Vector3(0,0,1));
+    const armRaise=Math.max(0,R.y)*.16;
+    setArm('l',motorTargets.lShoulder.clone().add(new THREE.Vector3(.32,-.38+armRaise,-.18*s*mag)),new THREE.Vector3(.35,-.4,.12));
+    setArm('r',motorTargets.rShoulder.clone().add(new THREE.Vector3(-.32,-.38+armRaise,.18*s*mag)),new THREE.Vector3(-.35,-.4,.12));
+  }else if(action==='WAVE'){
+    root.set(L.x*.08,1-.05*Math.max(0,-L.y),0);setTorso(root,-.03+.08*L.y,R.x*.10,-L.x*.14);
+    setLeg('l',new THREE.Vector3(root.x+.12,.09,.08),new THREE.Vector3(0,0,1));
+    setLeg('r',new THREE.Vector3(root.x-.12,.09,.08),new THREE.Vector3(0,0,1));
+    setArm('l',motorTargets.lShoulder.clone().add(new THREE.Vector3(.28,-.42,.03)),new THREE.Vector3(.4,-.3,.1));
+    const h=.18+.36*Math.max(0,R.y),sway=.20*R.x;
+    setArm('r',motorTargets.rShoulder.clone().add(new THREE.Vector3(-.25+sway,h,.06+.10*Math.sin(actionClock*4.6))),new THREE.Vector3(-.4,.05,.22));
+  }else if(action==='SIT'){
+    const depth=THREE.MathUtils.clamp(-(L.y+R.y)*.62,0,1);
+    root.set((L.x+R.x)*.035,1-.38*depth,.10*depth);setTorso(root,.20*depth,(R.x-L.x)*.12,(L.x+R.x)*-.05);
+    const footZ=.10+.31*depth,kneeHint=new THREE.Vector3(0,0,1);
+    setLeg('l',new THREE.Vector3(root.x+.13,.09,footZ),kneeHint);setLeg('r',new THREE.Vector3(root.x-.13,.09,footZ),kneeHint);
+    const handY=.88-.20*depth,handZ=.12+.23*depth;
+    setArm('l',new THREE.Vector3(root.x+.23,handY,handZ),new THREE.Vector3(.3,-.2,.2));
+    setArm('r',new THREE.Vector3(root.x-.23,handY,handZ),new THREE.Vector3(-.3,-.2,.2));
+  }else if(action==='DANCE'){
+    dancePhase+=DT*(2.2+Math.max(0,(L.y+R.y))*.9);const p=dancePhase;const db=Math.floor(p/Math.PI);if(db!==lastDanceBeat){lastDanceBeat=db;HAPTIC.pulse(.16,'tick')}
+    const sway=(L.x+R.x)*.075+.075*Math.sin(p),bounce=.045*(.5+.5*Math.cos(p*2));
+    root.set(sway,.96+bounce,.025*Math.sin(p*.5));setTorso(root,.08*Math.sin(p*.7),(R.x-L.x)*.35,.16*Math.sin(p));
+    const lStep=Math.max(0,Math.sin(p)),rStep=Math.max(0,-Math.sin(p));
+    setLeg('l',new THREE.Vector3(root.x+.12+.11*Math.sin(p),.09+.10*lStep,.08+.08*Math.cos(p)),new THREE.Vector3(0,0,1));
+    setLeg('r',new THREE.Vector3(root.x-.12+.11*Math.sin(p),.09+.10*rStep,.08-.08*Math.cos(p)),new THREE.Vector3(0,0,1));
+    setArm('l',motorTargets.lShoulder.clone().add(new THREE.Vector3(.30+.12*L.x,-.05+.38*L.y,.18*Math.sin(p+.5))),new THREE.Vector3(.4,.1,.2));
+    setArm('r',motorTargets.rShoulder.clone().add(new THREE.Vector3(-.30-.12*R.x,-.05+.38*R.y,.18*Math.sin(p+Math.PI+.5))),new THREE.Vector3(-.4,.1,.2));
+  }
+}
+let gaitPhase=0,dancePhase=0,lastWalkBeat=-999,lastDanceBeat=-999;
+function solveMotor(){
+  if(action==='FREE')return;
+  const k=.055+.055*FEEL.joint;
+  for(const [n,p] of Object.entries(P)){const target=motorTargets[n];if(!target)continue;const corr=ikC.copy(target).sub(p.p).multiplyScalar(k);motorEffort[n]=Math.max(motorEffort[n]||0,corr.length());p.p.add(corr);p.prev.addScaledVector(corr,.94)}
+}
+function setAction(name,resetClock=true){
+  if(!ACTIONS.includes(name))return;action=name;if(resetClock)actionClock=0;
+  document.querySelectorAll('.q.mode').forEach(b=>b.classList.toggle('active',b.dataset.action===name));
+  if(name!=='FREE'){stringsOn=true;for(const r of ropes)r.active=true}
+  HAPTIC.pulse(.28,'tick');ev('action',{name});
+}
+
+const camRight=new THREE.Vector3();
+function sideForStud(id){return (id==='L'||id==='F')?'L':(id==='R'||id==='B')?'R':null}
+function updateController(){
+  const avg=(reels.L+reels.R+reels.F+reels.B)*.25;
+  // The physical marionette bar follows the retained PROXIMAL fields, not the
+  // hand pucks. This is the essential four-field decoupling.
+  const ax=(thumbs.L.supportX+thumbs.R.supportX)*.5, ay=(thumbs.L.supportY+thumbs.R.supportY)*.5;
+  const dx=(thumbs.R.supportX-thumbs.L.supportX)*.5, dy=(thumbs.R.supportY-thumbs.L.supportY)*.5;
+  // Small-angle controller authority: thumb travel should articulate, not fling.
+  roll=THREE.MathUtils.clamp((reels.R-reels.L)*.24 + dy*.22,-.30,.30);
+  pitch=THREE.MathUtils.clamp((reels.B-reels.F)*.22,-.26,.26);
+  controller.position.copy(crossBase);
+  camera.updateMatrixWorld(); camRight.setFromMatrixColumn(camera.matrixWorld,0); camRight.y=0; if(camRight.lengthSq()<1e-5)camRight.set(1,0,0); else camRight.normalize();
+  controller.position.addScaledVector(camRight,ax*.075); controller.position.y += avg*.12 + ay*.060;
+  controller.rotation.set(pitch,yaw+dx*.16,roll,'YXZ');
+  controller.updateMatrixWorld(true);
+  const pm=document.getElementById('polemini'); if(pm){pm.style.setProperty('--mini-roll',(roll*57.2958).toFixed(1)+'deg');pm.classList.toggle('hot',thumbs.L.active&&thumbs.R.active)}
+}
+updateController();
+function anchor(id,out=new THREE.Vector3()){
+  studs[id].group.getWorldPosition(out);
+  const side=sideForStud(id);
+  if(side){ camera.updateMatrixWorld(); camRight.setFromMatrixColumn(camera.matrixWorld,0); camRight.y=0; if(camRight.lengthSq()>1e-5)camRight.normalize(); else camRight.set(1,0,0); out.addScaledVector(camRight,thumbs[side].supportX*.095); }
+  return out;
+}
+
+// Stable default suspension: five non-competing strings.
+// Two independent head supports keep the skull controllable; two wrist lines
+// give each thumb an expressive limb; one center line carries the pelvis/body.
+// Shoulders and knees are deliberately NOT independently tethered by default —
+// those extra ropes overconstrain a human-sized ragdoll and create spin.
+const ropeDefs=[
+  {id:'headL',stud:'L',joint:'head',slack:.030,stiff:.72},
+  {id:'headR',stud:'R',joint:'head',slack:.030,stiff:.72},
+  {id:'pelvis',stud:'C',joint:'pelvis',slack:.025,stiff:.82},
+  {id:'lh',stud:'L',joint:'lHand',slack:.055,stiff:.60},
+  {id:'rh',stud:'R',joint:'rHand',slack:.055,stiff:.60}
+];
+const ropeMatSlack=new THREE.LineBasicMaterial({color:0x777777,transparent:true,opacity:.48,depthTest:false,depthWrite:false});
+const ropeMatTaut=new THREE.LineBasicMaterial({color:0x000000,transparent:true,opacity:.92,depthTest:false,depthWrite:false});
+const ropeMatHot=new THREE.LineBasicMaterial({color:0xff2e2e,transparent:true,opacity:1,depthTest:false,depthWrite:false});
+const ropes=[];
+function makeRope(r){
+  const a=anchor(r.stud), p=P[r.joint].p;
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(9),3));
+  const line=new THREE.Line(geo,ropeMatSlack.clone()); line.frustumCulled=false; line.renderOrder=80; stringGroup.add(line);
+  const baseLen=a.distanceTo(p)+(r.slack||0);
+  const o={...r,line,baseLen,active:true,tension:0}; ropes.push(o); return o;
+}
+ropeDefs.forEach(makeRope);
+function reelFor(stud){return stud==='C'?0:reels[stud]||0}
+function thumbPullFor(stud){
+  if(stud==='L'||stud==='F')return thumbs.L.y;
+  if(stud==='R'||stud==='B')return thumbs.R.y;
+  return (thumbs.L.y+thumbs.R.y)*.30;
+}
+function effectiveLen(r){if(action!=='FREE')return Math.max(.18,anchor(r.stud,tmpA).distanceTo(P[r.joint].p));return Math.max(.18,r.baseLen-reelFor(r.stud)*.22-thumbPullFor(r.stud)*.115)}
+function updateRopeVisual(r){
+  const a=anchor(r.stud,tmpA), p=P[r.joint].p, d=a.distanceTo(p), L=effectiveLen(r); r.tension=action==='FREE'?Math.max(0,d-L):Math.min(.12,(motorEffort[r.joint]||0)*3.2); r.forceN=r.tension*(1800*FEEL.tension)*(FEEL.massKg/68);
+  const pa=r.line.geometry.attributes.position;
+  const mid=tmpB.copy(a).add(p).multiplyScalar(.5);
+  const slack=Math.max(0,L-d); mid.y-=Math.min(.28,slack*.42);
+  pa.setXYZ(0,a.x,a.y,a.z); pa.setXYZ(1,mid.x,mid.y,mid.z); pa.setXYZ(2,p.x,p.y,p.z); pa.needsUpdate=true;
+  if(!r.active){r.line.visible=false;return}else r.line.visible=true;
+  const hot=r.tension>.09; const taut=r.tension>.003;
+  r.line.material.color.copy((hot?ropeMatHot:taut?ropeMatTaut:ropeMatSlack).color);
+  r.line.material.opacity=hot?1:taut?.92:.48;
+}
+
+// ---------- constraint solver ----------
+let gravityOn=true, stringsOn=true, paused=false;
+const GRAV=V(0,-9.81,0), DT=1/60, GROUND=.008;
+let solverIters=14, collisionActivity=0, limitActivity=0;
+function solveDistance(c){
+  const a=c.a,b=c.b; tmpA.copy(b.p).sub(a.p); const d=tmpA.length(); if(d<1e-8)return;
+  const w=a.invMass+b.invMass; if(w<=0)return;
+  const err=(d-c.len)/d*c.stiff; tmpA.multiplyScalar(err);
+  a.p.addScaledVector(tmpA,a.invMass/w); b.p.addScaledVector(tmpA,-b.invMass/w);
+}
+function solveRope(r){
+  if(action!=='FREE'||!stringsOn||!r.active)return;
+  const a=anchor(r.stud,tmpA), p=P[r.joint]; tmpB.copy(p.p).sub(a); const d=tmpB.length(), L=effectiveLen(r);
+  if(d<=L||d<1e-8)return;
+  const massResponse=Math.sqrt(68/FEEL.massKg);
+  const k=THREE.MathUtils.clamp((.018+FEEL.tension*.052)*massResponse*(r.stiff||1),.010,.085);
+  const corr=tmpB.multiplyScalar(-((d-L)/d)*k);
+  p.p.add(corr);
+  // Carry most of a constraint correction into the previous position. This
+  // prevents the PBD correction itself from becoming an artificial kick.
+  p.prev.addScaledVector(corr,.72);
+}
+function solveAngleLimit(q){
+  const ba=tmpA.copy(q.a.p).sub(q.b.p),bc=tmpB.copy(q.c.p).sub(q.b.p);const la=ba.length(),lb=bc.length();if(la<1e-5||lb<1e-5)return;
+  let theta=Math.acos(THREE.MathUtils.clamp(ba.dot(bc)/(la*lb),-1,1));
+  let target=theta;if(theta<q.min)target=q.min;else if(theta>q.max)target=q.max;else{q.hit=Math.max(0,q.hit-.08);return}
+  const desired=Math.sqrt(Math.max(1e-8,la*la+lb*lb-2*la*lb*Math.cos(target)));
+  const ac=new THREE.Vector3().copy(q.c.p).sub(q.a.p),d=ac.length();if(d<1e-7)return;
+  const wa=q.a.invMass,wc=q.c.invMass,w=wa+wc;if(w<=0)return;
+  const gain=THREE.MathUtils.clamp(FEEL.joint*q.k*.50,0,1),corr=(d-desired)/d*gain;ac.multiplyScalar(corr);
+  const da=ac.clone().multiplyScalar(wa/w), dc=ac.clone().multiplyScalar(-wc/w);
+  q.a.p.add(da);q.c.p.add(dc);q.a.prev.addScaledVector(da,.90);q.c.prev.addScaledVector(dc,.90);
+  q.hit=Math.min(1,q.hit+.12);limitActivity=Math.max(limitActivity,q.hit);
+}
+function closestSegParams(p1,q1,p2,q2){
+  const d1=new THREE.Vector3().subVectors(q1,p1),d2=new THREE.Vector3().subVectors(q2,p2),r=new THREE.Vector3().subVectors(p1,p2);
+  const a=d1.dot(d1),e=d2.dot(d2),f=d2.dot(r);let s=0,t=0;
+  if(a<=1e-8&&e<=1e-8)return[0,0];
+  if(a<=1e-8){t=THREE.MathUtils.clamp(f/e,0,1)}else{const c=d1.dot(r);if(e<=1e-8)s=THREE.MathUtils.clamp(-c/a,0,1);else{const b=d1.dot(d2),den=a*e-b*b;if(den!==0)s=THREE.MathUtils.clamp((b*f-c*e)/den,0,1);t=(b*s+f)/e;if(t<0){t=0;s=THREE.MathUtils.clamp(-c/a,0,1)}else if(t>1){t=1;s=THREE.MathUtils.clamp((b-c)/a,0,1)}}}
+  return[s,t];
+}
+function solveCapsulePair(A,B){
+  const A0=new THREE.Vector3().lerpVectors(A.a.p,A.b.p,A.t0),A1=new THREE.Vector3().lerpVectors(A.a.p,A.b.p,A.t1);
+  const B0=new THREE.Vector3().lerpVectors(B.a.p,B.b.p,B.t0),B1=new THREE.Vector3().lerpVectors(B.a.p,B.b.p,B.t1);
+  const [us,ut]=closestSegParams(A0,A1,B0,B1);
+  const s=A.t0+(A.t1-A.t0)*us,t=B.t0+(B.t1-B.t0)*ut;
+  const c1=new THREE.Vector3().lerpVectors(A.a.p,A.b.p,s),c2=new THREE.Vector3().lerpVectors(B.a.p,B.b.p,t),n=new THREE.Vector3().subVectors(c1,c2);
+  let d=n.length(),minD=(A.r+B.r)*FEEL.collision;if(d>=minD)return;
+  if(d<1e-7){n.set(0,0,1);d=1e-7}else n.multiplyScalar(1/d);
+  const pen=Math.min(.035,(minD-d)*.38);
+  const a0=1-s,a1=s,b0=1-t,b1=t;
+  const w=A.a.invMass*a0*a0+A.b.invMass*a1*a1+B.a.invMass*b0*b0+B.b.invMass*b1*b1;if(w<=0)return;
+  const k=pen/w;
+  const dAa=n.clone().multiplyScalar(k*A.a.invMass*a0),dAb=n.clone().multiplyScalar(k*A.b.invMass*a1);
+  const dBa=n.clone().multiplyScalar(-k*B.a.invMass*b0),dBb=n.clone().multiplyScalar(-k*B.b.invMass*b1);
+  A.a.p.add(dAa);A.b.p.add(dAb);B.a.p.add(dBa);B.b.p.add(dBb);
+  // Collision separation must not become launch velocity.
+  A.a.prev.add(dAa);A.b.prev.add(dAb);B.a.prev.add(dBa);B.b.prev.add(dBb);
+  collisionActivity=Math.max(collisionActivity,THREE.MathUtils.clamp(pen/.025,0,1));
+}
+function collideGround(p){
+  const y0=GROUND+p.r*.72;
+  if(p.p.y<y0){const impact=Math.max(0,p.prev.y-p.p.y);p.p.y=y0;const vx=p.p.x-p.prev.x,vz=p.p.z-p.prev.z;p.prev.x=p.p.x-vx*.78;p.prev.z=p.p.z-vz*.78;p.prev.y=Math.min(p.prev.y,p.p.y);if(impact>.018){collisionActivity=Math.max(collisionActivity,Math.min(1,impact*18))}}
+}
+function updateInputFilter(){
+  teacherSignals();
+  for(const side of ['L','R']){
+    const s=thumbs[side],srcX=s.active?s.rawX:(teacherOn?teacher[side].x:0),srcY=s.active?s.rawY:(teacherOn?teacher[side].y:0);
+    // Inner absolute joystick: hand/wrist. Keep it bounded even while the finger
+    // pushes into the outer shoulder annulus.
+    const rm=Math.hypot(srcX,srcY), core=1.02;
+    let hx=srcX,hy=srcY;if(rm>core){hx*=core/rm;hy*=core/rm}
+    const tx=shaped(hx),ty=shaped(hy),speed=5+(1-FEEL.smooth)*34,alpha=1-Math.exp(-DT*speed);
+    s.px=s.x;s.py=s.y;s.x+=(tx-s.x)*alpha;s.y+=(ty-s.y)*alpha;s.vx=(s.x-s.px)/DT;s.vy=(s.y-s.py)/DT;
+
+    // Outer retained joystick: shoulder/body support. Crossing the annulus turns
+    // continued thumb pressure into VELOCITY of a second vector. It persists
+    // when the finger returns inward, so hand and shoulder can then diverge.
+    const edge= s.active ? THREE.MathUtils.smoothstep(rm,.86,1.48) : 0;
+    const oldSX=s.supportX,oldSY=s.supportY;
+    if(edge>.001){
+      const supportRate=(.54+.50*FEEL.recruit)*DT;
+      s.supportX=THREE.MathUtils.clamp(s.supportX+srcX*edge*supportRate,-1,1);
+      s.supportY=THREE.MathUtils.clamp(s.supportY+srcY*edge*supportRate,-1,1);
+    }
+    s.supportVX=(s.supportX-oldSX)/DT;s.supportVY=(s.supportY-oldSY)/DT;
+    const oldMX=s.macroX,oldMZ=s.macroZ,ma=1-Math.exp(-DT*(7+(1-FEEL.smooth)*18));s.macroX+=(s.macroTX-s.macroX)*ma;s.macroZ+=(s.macroTZ-s.macroZ)*ma;s.macroVX=(s.macroX-oldMX)/DT;s.macroVZ=(s.macroZ-oldMZ)/DT;s.macroSpeed=Math.hypot(s.macroVX,s.macroVZ);s.macroKick=Math.max(s.macroKick*.90,THREE.MathUtils.smoothstep(s.macroSpeed,1.35,5.8));let macroStage=Math.hypot(s.macroTX,s.macroTZ)>.08?1:0;if(macroStage>s.macroStage&&s.active)HAPTIC.pulse(.34,'tick',side);if(s.macroKick>.72&&s.macroStage<2&&s.active){HAPTIC.pulse(.48,'hit',side);macroStage=2}s.macroStage=macroStage;
+    const supportStage=edge>.12?1:0;
+    if(supportStage>s.supportStage&&s.active)HAPTIC.pulse(.30,'tick',side);
+    s.supportStage=supportStage;
+
+    const rn=Math.hypot(s.x,s.y)/Math.max(.01,FEEL.gain),wasOuter=s.outer;s.outer=THREE.MathUtils.smoothstep(rn,.62,.94);
+    const inward=side==='L'?s.rawX:-s.rawX;
+    s.frontTarget=s.active?THREE.MathUtils.smoothstep(inward,.18,1.10):0;
+    const recruitTarget=s.active?THREE.MathUtils.smoothstep(inward,.88,1.50):0;
+    s.front+=(s.frontTarget-s.front)*Math.min(1,alpha*1.45);
+    s.recruit+=(recruitTarget-s.recruit)*Math.min(1,alpha*1.2);
+    s.bend+=(s.bendTarget-s.bend)*Math.min(1,alpha*1.6);
+    const stage=s.recruit>.12?2:s.front>.04?1:0;
+    if(stage>s.gateStage&&s.active)HAPTIC.pulse(stage===2?.42:.24,stage===2?'limit':'tick',side);
+    s.gateStage=stage;
+    const jel=document.getElementById('joy'+side);jel.classList.toggle('step',s.outer>.10);
+    if(wasOuter<.16&&s.outer>=.16&&s.active)HAPTIC.pulse(.22,'tick',side);
+    if(!s.active&&!teacherOn&&Math.abs(s.x)<.001)s.x=0;if(!s.active&&!teacherOn&&Math.abs(s.y)<.001)s.y=0;
+  }
+}
+function integrate(){
+  if(paused)return;simTime+=DT;actionClock+=DT;updateInputFilter();applyMass();updateController();buildMotorTargets();
+  const keep=.994-FEEL.damping*.028;
+  const maxStep=.032+(1-FEEL.damping)*.026;
+  for(const p of Object.values(P)){
+    tmpA.copy(p.p); tmpB.copy(p.p).sub(p.prev).multiplyScalar(keep);
+    if(tmpB.lengthSq()>maxStep*maxStep)tmpB.setLength(maxStep);
+    p.p.add(tmpB); if(gravityOn)p.p.addScaledVector(GRAV,DT*DT); p.prev.copy(tmpA);
+  }
+  collisionActivity*=.78;limitActivity*=.78;
+  for(let k=0;k<solverIters;k++){
+    solveMotor();
+    for(const c of constraints)solveDistance(c);
+    for(const q of angleLimits)solveAngleLimit(q);
+    for(const r of ropes)solveRope(r);
+    if(FEEL.collision>.55)for(const pair of collisionPairs)solveCapsulePair(pair[0],pair[1]);
+    for(const p of Object.values(P))collideGround(p);
+    if(dojoEnabled){try{solveDojoBody()}catch(e){dojoFail(e)}}
+  }
+  if(dojoEnabled){try{dojoStep()}catch(e){dojoFail(e)}}
+  // Absolute runaway guard. A performance controller may swing quickly, but a
+  // single 60 Hz step is never allowed to turn solver error into an explosion.
+  for(const p of Object.values(P)){
+    tmpA.copy(p.p).sub(p.prev);if(tmpA.lengthSq()>maxStep*maxStep)p.prev.copy(p.p).addScaledVector(tmpA.normalize(),-maxStep);
+  }
+}
+
+// ---------- center of mass + support ----------
+const comGeo=new THREE.BufferGeometry(); comGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
+const comLine=new THREE.Line(comGeo,new THREE.LineBasicMaterial({color:0x19e6c8,depthTest:false})); diagGroup.add(comLine);
+const comDot=new THREE.Mesh(new THREE.SphereGeometry(.022,10,8),new THREE.MeshBasicMaterial({color:0x19e6c8,depthTest:false}));diagGroup.add(comDot);
+const supportGeo=new THREE.BufferGeometry(); supportGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
+const supportLine=new THREE.Line(supportGeo,new THREE.LineBasicMaterial({color:0x000000,transparent:true,opacity:.5,depthTest:false}));diagGroup.add(supportLine);
+let diagOn=true;
+function updateDiag(){
+  diagGroup.visible=diagOn;
+  if(!diagOn)return;
+  const weights={head:.08,chest:.23,pelvis:.24,lShoulder:.03,rShoulder:.03,lElbow:.02,rElbow:.02,lHand:.01,rHand:.01,lHip:.08,rHip:.08,lKnee:.06,rKnee:.06,lFoot:.025,rFoot:.025};
+  tmpA.set(0,0,0);let sum=0;for(const [n,w] of Object.entries(weights)){tmpA.addScaledVector(P[n].p,w);sum+=w}tmpA.multiplyScalar(1/sum);comDot.position.copy(tmpA);
+  const ca=comGeo.attributes.position;ca.setXYZ(0,tmpA.x,tmpA.y,tmpA.z);ca.setXYZ(1,tmpA.x,GROUND,tmpA.z);ca.needsUpdate=true;
+  const l=P.lFoot.p,r=P.rFoot.p,sa=supportGeo.attributes.position;sa.setXYZ(0,l.x,GROUND+.003,l.z);sa.setXYZ(1,r.x,GROUND+.003,r.z);sa.needsUpdate=true;
+}
+
+// ---------- dual-thumb continuous controller ----------
+function bindJoystick(side,el){
+  const puck=el.querySelector('.puck'), st=thumbs[side];
+  const move=(e)=>{
+    const r=el.getBoundingClientRect(),rad=r.width*.34,shiftMax=Math.min(r.width*.54,96);let cx=st.homeCX+st.macroTX*shiftMax,cy=st.homeCY-st.macroTZ*shiftMax,dx=e.clientX-cx,dy=e.clientY-cy,mp=Math.hypot(dx,dy),soft=rad*1.08;if(mp>soft){const ex=mp-soft,ux=dx/mp,uy=dy/mp;st.macroTX=THREE.MathUtils.clamp(st.macroTX+ux*ex/shiftMax,-1,1);st.macroTZ=THREE.MathUtils.clamp(st.macroTZ-uy*ex/shiftMax,-1,1);cx=st.homeCX+st.macroTX*shiftMax;cy=st.homeCY-st.macroTZ*shiftMax;dx=e.clientX-cx;dy=e.clientY-cy}
+    let x=dx/rad,y=-dy/rad;
+    const m=Math.hypot(x,y),max=1.55;if(m>max){x*=max/m;y*=max/m}
+    st.rawX=x;st.rawY=y;st.active=true;
+    if(m>.20){const a=Math.atan2(y,x);if(st.lastAng!==null){let da=a-st.lastAng;while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;if(Math.abs(da)<.75)st.roll=THREE.MathUtils.clamp(st.roll+da,-Math.PI*3,Math.PI*3)}st.lastAng=a}
+
+    // Real pressure where hardware provides it. Pointer Events reports a flat
+    // 0.5 on many touchscreens, so contact-area change or rim load is the fallback.
+    const p=Number.isFinite(e.pressure)?e.pressure:.5;
+    st.pMin=Math.min(st.pMin,p);st.pMax=Math.max(st.pMax,p);
+    if(st.pMax-st.pMin>.10)st.pressureLive=true;
+    const contact=Math.max(e.width||1,e.height||1);
+    const contactLoad=THREE.MathUtils.clamp((contact/Math.max(1,st.contactBase)-1)/1.25,0,1);
+    const rimLoad=THREE.MathUtils.smoothstep(m,1.02,1.52);
+    st.bendTarget=st.pressureLive?THREE.MathUtils.clamp(p,0,1):Math.max(contactLoad,rimLoad*.72);
+
+    const pm=Math.min(1.10,m),px=m>1e-5?x*pm/m:0,py=m>1e-5?y*pm/m:0;
+    puck.style.transform=`translate(calc(-50% + ${px*rad*.72}px),calc(-50% + ${-py*rad*.72}px))`;
+    el.classList.add('active');
+  };
+  el.addEventListener('pointerdown',e=>{if(st.pointer!==null)return;e.preventDefault();e.stopPropagation();st.pointer=e.pointerId;st.lastAng=null;st.pMin=1;st.pMax=0;st.pressureLive=false;st.contactBase=Math.max(1,e.width||1,e.height||1);const rr=el.getBoundingClientRect(),sm=Math.min(rr.width*.54,96);st.homeCX=rr.left+rr.width*.5-st.macroTX*sm;st.homeCY=rr.top+rr.height*.5+st.macroTZ*sm;el.setPointerCapture(e.pointerId);orbit.enabled=false;move(e);HAPTIC.pulse(.22,'tick',side);ev('thumb_down',{side});});
+  el.addEventListener('pointermove',e=>{if(st.pointer!==e.pointerId)return;e.preventDefault();e.stopPropagation();move(e);});
+  const end=e=>{if(st.pointer!==e.pointerId)return;e.preventDefault();e.stopPropagation();st.pointer=null;st.rawX=0;st.rawY=0;st.frontTarget=0;st.bendTarget=0;st.active=false;st.lastAng=null;puck.style.transform='translate(-50%,-50%)';el.classList.remove('active','front');if(!thumbs.L.active&&!thumbs.R.active&&activePointers.size===0)orbit.enabled=true;updateController();ev('thumb_up',{side});};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+}
+bindJoystick('L',document.getElementById('joyL'));
+bindJoystick('R',document.getElementById('joyR'));
+
+// ---------- five simultaneous pointers ----------
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+const activePointers=new Map(); const marks=[...document.querySelectorAll('.touchmark')];
+const markByPointer=new Map();
+function setNDC(e){const rect=canvas.getBoundingClientRect();ndc.x=((e.clientX-rect.left)/rect.width)*2-1;ndc.y=-((e.clientY-rect.top)/rect.height)*2+1}
+function hitStud(e){setNDC(e);ray.setFromCamera(ndc,camera);const hits=ray.intersectObjects(hitMeshes,false);return hits.length?hits[0].object.userData.id:null}
+function reserveMark(id,e){let m=marks.find(x=>![...markByPointer.values()].includes(x));if(!m)return;markByPointer.set(id,m);m.style.display='block';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px'}
+function moveMark(id,e){const m=markByPointer.get(id);if(m){m.style.left=e.clientX+'px';m.style.top=e.clientY+'px'}}
+function freeMark(id){const m=markByPointer.get(id);if(m)m.style.display='none';markByPointer.delete(id)}
+function updateStudMaterials(){
+  const touched=new Set([...activePointers.values()].map(x=>x.stud));
+  for(const id of Object.keys(studs))studs[id].visual.material=(touched.has(id)?studActiveMat:studs[id].active?studVisualMat:studOffMat);
+}
+function groupRopes(id){return ropes.filter(r=>r.stud===id)}
+function toggleStud(id){studs[id].active=!studs[id].active;for(const r of groupRopes(id))r.active=studs[id].active;updateStudMaterials()}
+canvas.addEventListener('pointerdown',e=>{
+  const id=hitStud(e); if(!id)return; // empty world remains OrbitControls
+  e.preventDefault();e.stopImmediatePropagation();
+  canvas.setPointerCapture(e.pointerId); orbit.enabled=false;
+  activePointers.set(e.pointerId,{stud:id,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:0,startBase:crossBase.clone(),startYaw:yaw,startReel:reels[id]||0});
+  reserveMark(e.pointerId,e);updateStudMaterials();
+},{capture:true});
+canvas.addEventListener('pointermove',e=>{
+  const a=activePointers.get(e.pointerId);if(!a)return;e.preventDefault();e.stopImmediatePropagation();moveMark(e.pointerId,e);
+  const dx=e.clientX-a.lastX,dy=e.clientY-a.lastY;a.moved+=Math.hypot(dx,dy);a.lastX=e.clientX;a.lastY=e.clientY;
+  if(a.stud==='C'){
+    const distCam=camera.position.distanceTo(orbit.target),scale=.00155*distCam;
+    const right=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,0);const up=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,1);
+    crossBase.addScaledVector(right,dx*scale).addScaledVector(up,-dy*scale);
+    crossBase.y=THREE.MathUtils.clamp(crossBase.y,1.75,3.25);
+  }else{
+    reels[a.stud]=THREE.MathUtils.clamp(reels[a.stud]-dy*.0042,-.55,.55);
+    yaw+=dx*.0025;
+  }
+  updateController();
+},{capture:true});
+function endPointer(e){
+  const a=activePointers.get(e.pointerId);if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.moved<7){toggleStud(a.stud);HAPTIC.pulse(.28,'tick',sideForStud(a.stud));}
+  activePointers.delete(e.pointerId);freeMark(e.pointerId);updateStudMaterials();if(activePointers.size===0&&!thumbs.L.active&&!thumbs.R.active)orbit.enabled=true;
+}
+canvas.addEventListener('pointerup',endPointer,{capture:true});
+canvas.addEventListener('pointercancel',endPointer,{capture:true});
+
+// ---------- ghosts ----------
+function keepGhost(){
+  const g=new THREE.Group();
+  const gm=new THREE.LineBasicMaterial({color:0x3b82f6,transparent:true,opacity:.22,depthTest:false});
+  for(const [a,b] of segDefs.map(x=>[x[0],x[1]])){
+    const geo=new THREE.BufferGeometry().setFromPoints([P[a].p.clone(),P[b].p.clone()]);g.add(new THREE.Line(geo,gm.clone()));
+  }
+  ghostGroup.add(g); while(ghostGroup.children.length>12){const old=ghostGroup.children[0];ghostGroup.remove(old);old.traverse(o=>{o.geometry?.dispose();o.material?.dispose()})}
+}
+
+// ---------- capture: causes + world state ----------
+let capture=false,captureFrames=[],captureEvents=[],captureStart=0,lastCap=0;
+function ev(type,data={}){if(capture)captureEvents.push({t:+((performance.now()-captureStart)/1000).toFixed(3),type,...data})}
+function captureFrame(t){
+  if(!capture||t-lastCap<33)return;lastCap=t;
+  const joints={};for(const [n,p] of Object.entries(P))joints[n]=[+p.p.x.toFixed(4),+p.p.y.toFixed(4),+p.p.z.toFixed(4)];
+  captureFrames.push({t:+((t-captureStart)/1000).toFixed(3),cross:[+controller.position.x.toFixed(4),+controller.position.y.toFixed(4),+controller.position.z.toFixed(4)],rot:[+pitch.toFixed(4),+yaw.toFixed(4),+roll.toFixed(4)],reels:{...reels},thumbs:{L:[+thumbs.L.x.toFixed(3),+thumbs.L.y.toFixed(3),+thumbs.L.supportX.toFixed(3),+thumbs.L.supportY.toFixed(3),+thumbs.L.front.toFixed(3),+thumbs.L.bend.toFixed(3),+thumbs.L.roll.toFixed(3),+thumbs.L.macroX.toFixed(3),+thumbs.L.macroZ.toFixed(3)],R:[+thumbs.R.x.toFixed(3),+thumbs.R.y.toFixed(3),+thumbs.R.supportX.toFixed(3),+thumbs.R.supportY.toFixed(3),+thumbs.R.front.toFixed(3),+thumbs.R.bend.toFixed(3),+thumbs.R.roll.toFixed(3),+thumbs.R.macroX.toFixed(3),+thumbs.R.macroZ.toFixed(3)]},joints});
+  if(captureFrames.length>1800)stopCapture(true);
+}
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function stopCapture(auto=false){
+  if(!capture)return;capture=false;document.getElementById('captureBtn').classList.remove('live');document.getElementById('captureBtn').textContent='●';
+  const data={format:'EVERYBODY-MARIONETTE-2',fps:30,feel:{...FEEL},events:captureEvents,frames:captureFrames};download('everybody-performance.json',new Blob([JSON.stringify(data)],{type:'application/json'}));
+  stat.innerHTML=`performance saved — <span class="ok">${captureFrames.length} frames</span>${auto?' — 60 s ceiling':''}`;
+}
+
+// ---------- tuning surface ----------
+const tuner=document.getElementById('tuner'),tuneBtn=document.getElementById('tuneBtn');
+const tuneFmt={massKg:v=>Math.round(v),tension:v=>(+v).toFixed(2),joint:v=>Math.round(v*100),collision:v=>(+v).toFixed(2),damping:v=>Math.round(v*100),haptic:v=>Math.round(v*100),gain:v=>(+v).toFixed(2),expo:v=>Math.round(v*100),smooth:v=>Math.round(v*100),expression:v=>(+v).toFixed(2)+'×',depth:v=>(+v).toFixed(2)+'×',bend:v=>(+v).toFixed(2)+'×',recruit:v=>(+v).toFixed(2)+'×',objectMass:v=>(+v).toFixed(2)+'×',grip:v=>(+v).toFixed(2)+'×'};
+function syncTune(){for(const input of tuner.querySelectorAll('[data-tune]')){const k=input.dataset.tune;input.value=FEEL[k];input.nextElementSibling.value=tuneFmt[k](FEEL[k])}}
+function setTuner(on){tuner.classList.toggle('on',on);tuneBtn.classList.toggle('on',on);document.body.classList.toggle('tuning',on);if(on)syncTune()}
+tuneBtn.addEventListener('click',e=>{e.stopPropagation();setTuner(!tuner.classList.contains('on'))});
+document.getElementById('tuneClose').addEventListener('click',()=>setTuner(false));
+document.getElementById('tuneReset').addEventListener('click',()=>{Object.assign(FEEL,DEFAULT_FEEL);applyMass();if(PHYS.ready)buildPhysicsTask(activeDojo);saveFeel();syncTune();HAPTIC.pulse(.35,'tick')});
+for(const input of tuner.querySelectorAll('[data-tune]')){input.addEventListener('pointerdown',e=>{e.stopPropagation();orbit.enabled=false});input.addEventListener('input',()=>{const k=input.dataset.tune;FEEL[k]=+input.value;input.nextElementSibling.value=tuneFmt[k](FEEL[k]);if(k==='massKg')applyMass();if(k==='objectMass'&&PHYS.ready)buildPhysicsTask(activeDojo);saveFeel()});const done=()=>{if(activePointers.size===0&&!thumbs.L.active&&!thumbs.R.active)orbit.enabled=true};input.addEventListener('pointerup',done);input.addEventListener('pointercancel',done)}
+syncTune();
+
+// ---------- minimal UI ----------
+function resetBody(){resetBodySolver();
+  for(const [n,p] of Object.entries(P))p.reset(REST[n]);crossBase.set(0,2.28,0);yaw=0;
+  for(const k of Object.keys(reels))reels[k]=0;
+  for(const side of ['L','R']){const q=thumbs[side];q.x=q.y=q.rawX=q.rawY=q.vx=q.vy=q.px=q.py=q.outer=q.front=q.frontTarget=q.recruit=q.bend=q.bendTarget=q.supportX=q.supportY=q.supportVX=q.supportVY=q.macroX=q.macroZ=q.macroTX=q.macroTZ=q.macroVX=q.macroVZ=q.macroSpeed=q.macroKick=q.roll=0;q.gateStage=q.supportStage=q.macroStage=0;q.active=false;q.pointer=null;const el=document.getElementById('joy'+side);el.classList.remove('active','step','front','supporting');el.style.setProperty('--front','0');el.style.setProperty('--bend','0');el.querySelector('.puck').style.transform='translate(-50%,-50%)';el.querySelector('.supportPuck').style.transform='translate(-50%,-50%)';el.style.transform='translate(0,0)'}
+  for(const id of Object.keys(studs))studs[id].active=true;for(const r of ropes)r.active=true
+  stringsOn=true;resetDojo(activeDojo);updateController();updateStudMaterials();ev('reset');
+}
+function takeAll(){HAPTIC.pulse(.34,'tick');stringsOn=true;for(const id in studs)studs[id].active=true;for(const r of ropes)r.active=true;updateStudMaterials();ev('take_all')}
+function dropAll(){HAPTIC.pulse(.52,'hit');stringsOn=false;ev('drop_all')}
+document.getElementById('resetQuick').addEventListener('click',()=>{resetBody();setAction(action,false)});
+document.querySelectorAll('.q.mode').forEach(b=>b.addEventListener('click',()=>{const n=b.dataset.action;if(n==='LIVE'||n==='FREE'){teacherOn=false;teachBtn.classList.remove('on');document.body.classList.add('no-teacher')}else{teacherOn=true;teachBtn.classList.add('on');document.body.classList.remove('no-teacher')}setAction(n)}));
+const teachBtn=document.getElementById('teachBtn');
+teachBtn.addEventListener('click',()=>{teacherOn=!teacherOn;if(teacherOn&&action==='LIVE')setAction('DANCE');teachBtn.classList.toggle('on',teacherOn);document.body.classList.toggle('no-teacher',!teacherOn);HAPTIC.pulse(.25,'tick');ev('teacher',{on:teacherOn})});
+document.getElementById('captureBtn').addEventListener('click',function(){
+  if(capture){stopCapture();return}capture=true;captureFrames=[];captureEvents=[];captureStart=performance.now();lastCap=0;this.classList.add('live');
+});
+
+const styleName=document.getElementById('styleName');
+document.getElementById('styleBtn').addEventListener('click',()=>{
+  style=style==='WHITE'?'INK':'WHITE';styleName.textContent=style;
+  scene.background.set(style==='WHITE'?0xffffff:0x111111);floorMat.color.set(style==='WHITE'?0xf7f7f7:0x111111);floorRing.material.color.set(style==='WHITE'?0x000000:0xffffff);
+  woodMat.color.set(style==='WHITE'?0x2c2927:0xe8e8e8);
+  for(let i=0;i<bodyMats.length;i++){if(style==='INK')bodyMats[i].color.set(0xffffff)}
+  if(style==='WHITE'){
+    for(const s of segMeshes)s.mesh.material.color.set(whiteBands[s.tone]);
+    for(const j of jointMeshes)j.mesh.material.color.set(j.name==='head'?0x222222:(j.name.includes('Hand')||j.name.includes('Foot')?0x333333:0x9e9e9e));
+  }
+});
+
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  // Export the visible current body + cross + strings as a posed GLB artifact.
+  const exportRoot=new THREE.Group();exportRoot.name='EVERYBODY-MARIONETTE';
+  const bodyClone=bodyGroup.clone(true);const ctrlClone=controller.clone(true);const stringsClone=stringGroup.clone(true);exportRoot.add(bodyClone,ctrlClone,stringsClone);
+  new GLTFExporter().parse(exportRoot,glb=>{download('everybody-marionette.glb',new Blob([glb],{type:'model/gltf-binary'}));stat.innerHTML='everybody-marionette.glb — <span class="ok">current physical pose exported</span>'},e=>{stat.innerHTML='<span class="hot">export failed</span> '+e},{binary:true});
+});
+
+// ---------- render loop ----------
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+let acc=0,last=performance.now(),fps=60,fc=0,ft=last;
+function frame(t){
+  requestAnimationFrame(frame);let dt=Math.min(.05,(t-last)/1000);last=t;acc+=dt;
+  while(acc>=DT){integrate();acc-=DT}
+  updateController();syncBody();for(const r of ropes)updateRopeVisual(r);stringGroup.visible=stringsOn;updateDiag();renderThumbPucks();updateDojoVisuals();captureFrame(t);orbit.update();renderer.render(scene,camera);
+  fc++;if(t-ft>500){fps=fc*1000/(t-ft);fc=0;ft=t}
+  const lT=Math.max(0,...ropes.filter(r=>r.stud==='L'||r.stud==='F').map(r=>r.tension));
+  const rT=Math.max(0,...ropes.filter(r=>r.stud==='R'||r.stud==='B').map(r=>r.tension));
+  const lf=Math.max(PHYS.handLoads.L||0,...ropes.filter(r=>r.stud==='L'||r.stud==='F').map(r=>r.forceN||0),0),rf=Math.max(PHYS.handLoads.R||0,...ropes.filter(r=>r.stud==='R'||r.stud==='B').map(r=>r.forceN||0),0);
+  if(thumbs.L.active&&lf>220)HAPTIC.pulse(Math.min(1,lf/1800),'tick','L');
+  if(thumbs.R.active&&rf>220)HAPTIC.pulse(Math.min(1,rf/1800),'tick','R');
+  if(limitActivity>.48)HAPTIC.pulse(limitActivity,'limit');else if(collisionActivity>.48)HAPTIC.pulse(collisionActivity,'hit');
+  document.getElementById('loadL').style.transform=`scaleX(${Math.min(1,.06+lf/1700)})`;
+  document.getElementById('loadR').style.transform=`scaleX(${Math.min(1,.06+rf/1700)})`;
+  if(!capture){const taut=ropes.filter(r=>r.active&&r.tension>.003).length;stat.textContent=`${taut}/${ropes.length} ${fps.toFixed(0)}`;}
+}
+resetDojo('REACH');
+setAction('LIVE',false);document.body.classList.toggle('no-teacher',!teacherOn);syncBody();updateDiag();renderThumbPucks();updateController();for(const r of ropes)updateRopeVisual(r);renderer.render(scene,camera);requestAnimationFrame(frame);setTimeout(()=>initDojoPhysics(),40);
+// Blank-screen guard: if initialization reached this point, the puppet exists.
+// A later exception is surfaced rather than failing silently.
+window.addEventListener('error',e=>{try{console.error('EVERYBODY runtime',e.message||e.error||e)}catch(_){}});
+
+// Public surface for embedding / experiments.
+window.EVERYBODY={THREE,scene,camera,renderer,particles:P,controller,ropes,molecules:MOVEMENT_MOLECULES,bodySolver:BODY_SOLVER,
+  reset:resetBody,action:setAction,actions:ACTIONS.slice(),live:()=>setAction('LIVE'),teacher:v=>{teacherOn=!!v;teachBtn.classList.toggle('on',teacherOn);document.body.classList.toggle('no-teacher',!teacherOn)},drop:()=>{stringsOn=false},take:()=>{stringsOn=true},
+  keep:keepGhost,setGravity:v=>gravityOn=!!v,
+  feel:FEEL,setFeel:(patch)=>{Object.assign(FEEL,patch||{});applyMass();saveFeel();syncTune();return {...FEEL}},
+  haptic:(strength=.5)=>HAPTIC.pulse(strength,'tick'),
+  setReel:(id,v)=>{if(id in reels){reels[id]=THREE.MathUtils.clamp(v,-.55,.55);updateController()}},
+  moveController:(x,y,z)=>{crossBase.set(x,y,z);updateController()},
+  thumb:(side,x,y,z=0,bend=0)=>{if(thumbs[side]){const q=thumbs[side];q.rawX=THREE.MathUtils.clamp(x,-1.55,1.55);q.rawY=THREE.MathUtils.clamp(y,-1.55,1.55);q.frontTarget=THREE.MathUtils.clamp(z,0,1);q.bendTarget=THREE.MathUtils.clamp(bend,0,1);q.active=true}},
+  support:(side,x,y)=>{if(thumbs[side]){thumbs[side].supportX=THREE.MathUtils.clamp(x,-1,1);thumbs[side].supportY=THREE.MathUtils.clamp(y,-1,1)}},
+  macro:(side,x,z)=>{if(thumbs[side]){thumbs[side].macroTX=THREE.MathUtils.clamp(x,-1,1);thumbs[side].macroTZ=THREE.MathUtils.clamp(z,-1,1)}},
+  dojo:(name)=>{if(DOJOS.includes(name))resetDojo(name)},dojos:DOJOS.slice(),solverDemos:['REACH','STEP','BRACE','GRASP','SHIFT'],physics:PHYS
+};
+</script>
+</body>
+</html>
