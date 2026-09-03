@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>COMMON</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23efe8d6'/%3E%3Ccircle cx='32' cy='24' r='11' fill='%23f1d6bb' stroke='%231a1a1a' stroke-width='3'/%3E%3Cpath d='M18 58 V40 h28 v18' fill='%23a9c7a0' stroke='%231a1a1a' stroke-width='3'/%3E%3Ccircle cx='27' cy='23' r='1.8'/%3E%3Ccircle cx='37' cy='23' r='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#000;--paper:#fff;--red:#ff2e2e;--teal:#19e6c8;--fs:13px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--paper);color:var(--ink);font:400 var(--fs)/1.5 "IBM Plex Mono",ui-monospace,Menlo,monospace;overflow:hidden;overscroll-behavior:none}
+button,input,select,textarea{font:inherit;color:inherit;background:none;border:0;border-radius:0}
+button{cursor:pointer}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#head{flex:0 0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:44px;border-bottom:1px solid var(--ink);padding:0 12px}
+#title{grid-column:2;letter-spacing:.42em;font-weight:500;text-indent:.42em}
+#clock{grid-column:1;justify-self:start;color:var(--ink);font-size:11px;white-space:nowrap}
+#tc{grid-column:3;justify-self:end;display:flex;gap:14px;align-items:center}
+#tc button{height:44px;padding:0 4px;letter-spacing:.1em;font-weight:500}
+.mark-pause{display:inline-block;width:10px;height:12px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);vertical-align:-2px}
+.mark-play{display:inline-block;width:0;height:0;border-left:11px solid var(--ink);border-top:6px solid transparent;border-bottom:6px solid transparent;vertical-align:-2px}
+#worldwrap{flex:0 0 50%;background:#efe8d6;position:relative;border-bottom:1px solid var(--ink);overflow:hidden}
+#world{width:100%;height:100%;display:block;touch-action:none}
+#forkbar{position:absolute;left:0;right:0;top:0;display:none;justify-content:space-between;padding:6px 12px;pointer-events:none;font-size:11px;letter-spacing:.2em}
+#forkbar span{background:var(--paper);padding:0 4px}
+#working{position:absolute;left:12px;bottom:8px;display:none;font-size:11px;letter-spacing:.15em;background:var(--paper);padding:0 4px}
+#working i{display:inline-block;width:6px;height:6px;background:var(--ink);margin-right:8px;vertical-align:1px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#working i{animation:none}}
+#grip{flex:0 0 14px;display:flex;align-items:center;justify-content:center;cursor:row-resize;touch-action:none;border-bottom:1px solid var(--ink);background:var(--paper)}
+#grip span{width:44px;height:3px;background:var(--ink)}
+#eyes{position:absolute;left:0;right:0;bottom:0;display:none;justify-content:space-between;padding:4px 12px;font-size:11px;letter-spacing:.12em;background:var(--paper);border-top:1px solid var(--ink)}
+#eyes button{text-decoration:underline;text-underline-offset:3px;font-size:11px}
+.gal{grid-template-columns:repeat(3,1fr)}
+.gal .a{aspect-ratio:auto}
+.gal .a canvas{aspect-ratio:1}
+.gal .cap{font-size:10px;line-height:1.3;padding:3px 4px;border-top:1px solid var(--ink);min-height:2.6em;overflow:hidden}
+.gal .cap i{opacity:.7}
+#gchips{display:flex;gap:8px;padding:4px 0 8px;flex-wrap:wrap}
+#gchips button{font-size:11px;opacity:.5;padding:0 2px}
+#gchips button.on{opacity:1;background:var(--ink);color:var(--paper)}
+.cvis{width:100%;display:block;margin:8px 0}
+#threadwrap{flex:1 1 auto;position:relative;overflow:hidden;display:flex;flex-direction:column}
+#threadlabel{flex:0 0 auto;padding:10px 12px 0;letter-spacing:.06em;font-size:12px;display:flex;justify-content:space-between}
+#threadlabel{flex-wrap:wrap;gap:6px 10px;align-items:center}
+#threadlabel button{letter-spacing:.04em;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+#chips{display:flex;gap:8px;flex:1;overflow-x:auto;white-space:nowrap}
+#chips button{text-decoration:none;opacity:.5;padding:0 2px}
+#chips button.on{opacity:1;background:var(--ink);color:var(--paper)}
+#worldwrap.folded{flex:0 0 0;border-bottom:0;overflow:hidden}
+#worldwrap.folded canvas{display:none}
+#thread{flex:1 1 auto;overflow-y:auto;padding:4px 12px 12px;-webkit-overflow-scrolling:touch}
+.ev{padding:2px 0;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.ev.dim{opacity:.38}
+.ev.sys{}
+.ev.say{}
+.ev a{color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ev a.pr{font-style:italic}
+.card p a{color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ev.think{opacity:.72}
+.ev.think:before{content:"( ";}
+.ev.think:after{content:" )";}
+.card .portrait{float:right;margin:0 0 8px 12px;width:120px;height:140px}
+.people{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:8px 0}
+.people small{display:block;opacity:.6}
+.people div{text-align:center;font-size:11px;cursor:pointer}
+.people canvas{width:100%;aspect-ratio:1/1.15;display:block}
+.ev.hi{background:var(--ink);color:var(--paper);margin:0 -4px;padding:2px 4px}
+.ev.me{border-left:3px solid var(--ink);padding-left:8px;margin-left:-11px;font-weight:500}
+.ev.lost{background:var(--ink);color:var(--paper);margin:0 -4px;padding:4px;font-weight:500}
+.ev b{font-weight:500}
+.ev .w{display:inline-block;width:1.6em;font-weight:500}
+.day{padding:10px 0 4px;font-size:11px;letter-spacing:.2em;user-select:none;-webkit-user-select:none;display:flex;align-items:center;gap:8px}
+.day:after{content:"";flex:1;border-top:1px solid var(--ink)}
+.day.armed{color:var(--paper)}
+.day.armed span{background:var(--ink);padding:0 4px}
+.day.armed:after{border-top-style:dashed}
+.card{border:1px solid var(--ink);padding:10px 12px;margin:8px 0}
+.card h3{font-weight:500;font-size:13px;margin-bottom:6px;letter-spacing:.04em}
+.card p{white-space:pre-wrap}
+.card .row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:8px}
+.card button{border:1px solid var(--ink);padding:6px 12px;letter-spacing:.06em}
+.card button.plain{border:0;padding:6px 0;text-decoration:underline;text-underline-offset:3px}
+.chain{margin:8px 0 0 0;display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.chain .node{border:1px solid var(--ink);padding:3px 10px;min-width:12em;text-align:center;cursor:pointer}
+.chain .arrow{width:12em;text-align:center;line-height:1}
+.chain .node.model{border-style:dashed}
+.chain .node.this{background:var(--ink);color:var(--paper)}
+.gal{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px 0}
+.gal .a{aspect-ratio:1;border:1px solid var(--ink);position:relative;cursor:pointer}
+.gal .a canvas{width:100%;height:100%;display:block}
+.gal .a.syn{border-style:dashed}
+.gal .a.sel{outline:2px solid var(--ink);outline-offset:2px}
+.fault{color:var(--red)}
+.changed{color:var(--ink);border-left:3px solid var(--teal);padding-left:8px;margin-left:-11px}
+#composer{flex:0 0 auto;border-top:1px solid var(--ink);display:flex;align-items:center;padding:0 12px;min-height:48px;gap:8px}
+#composer .gt{font-weight:500}
+#input{flex:1;height:48px;outline:none}
+#input::placeholder{color:var(--ink);opacity:.45}
+#ai-mark{font-size:11px;letter-spacing:.1em;padding:0 2px;height:48px;opacity:.7}
+#ai-mark.on{opacity:1;text-decoration:underline;text-underline-offset:4px}
+#menu{position:absolute;right:12px;top:44px;background:var(--paper);border:1px solid var(--ink);display:none;flex-direction:column;z-index:20;min-width:11em}
+#menu button{text-align:left;padding:10px 14px;border-bottom:1px solid var(--ink)}
+#menu button:last-child{border-bottom:0}
+#panel{position:absolute;inset:0;background:var(--paper);display:none;flex-direction:column;z-index:30;padding:12px}
+#panel h2{font-weight:500;letter-spacing:.2em;font-size:12px;margin-bottom:12px;display:flex;justify-content:space-between}
+#panel label{display:block;margin:10px 0 4px;font-size:12px}
+#panel input,#panel select,#panel textarea{width:100%;border:1px solid var(--ink);padding:8px;background:var(--paper)}
+#panel textarea{height:9em;resize:vertical}
+#panel .btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+#panel .btns button{border:1px solid var(--ink);padding:8px 14px}
+#panel .btns button.solid{background:var(--ink);color:var(--paper)}
+#panel small{display:block;margin-top:8px;opacity:.6}
+#titleseq{position:fixed;inset:0;background:var(--paper);z-index:60;display:flex;align-items:center;justify-content:center}
+#tcv{width:100%;height:100%;display:block}
+#tskip{position:absolute;bottom:28px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.2em;opacity:.5}
+#bprog{display:flex;gap:8px;justify-content:center}
+#bprog i{display:block;width:6px;height:6px;border:1px solid var(--ink)}
+#bprog i.on{background:var(--ink)}
+#begin .why{font-size:11px;opacity:.6;text-align:center}
+#begin .skip{text-decoration:underline;text-underline-offset:3px;font-size:12px;padding:6px}
+#silent{display:none;border-top:1px solid var(--ink);padding:6px 12px;font-size:11px;letter-spacing:.06em}
+#silent button{text-decoration:underline;text-underline-offset:3px;font-size:11px}
+#begin{position:fixed;inset:0;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;gap:18px;padding:24px}
+#begin .step{display:flex;flex-direction:column;align-items:center;gap:14px;width:min(360px,92vw)}
+#begin .opts{display:flex;flex-direction:column;gap:8px;width:100%}
+#begin .opts button,#begin button[data-next],#beginbtn{border:1px solid var(--ink);padding:10px 14px;width:100%;text-align:left}
+#beginbtn{text-align:center;letter-spacing:.2em}
+#begin .lnk{text-decoration:underline;text-underline-offset:3px;padding:0}
+#begin canvas{width:120px;height:140px}
+#begin .rules{text-align:left;opacity:1;line-height:1.7}
+#begin input,#begin select{width:min(360px,90vw);border:1px solid var(--ink);padding:10px;background:var(--paper)}
+#begin p{max-width:360px;font-size:12px;opacity:.7;text-align:center}
+#begin .ln{width:min(360px,90vw);display:flex;justify-content:space-between;font-size:12px}
+#begin h1{font-weight:500;letter-spacing:.5em;text-indent:.5em;font-size:20px}
+#begin button{border:1px solid var(--ink);padding:10px 28px;letter-spacing:.2em}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+#file{display:none}
+</style>
+</head>
+<body>
+<div id="titleseq"><canvas id="tcv"></canvas><div id="tskip">tap to skip</div></div>
+<div id="begin">
+  <div class="step" data-step="0"><h1>COMMON</h1><p>A town of thirty people who draw, teach, trade, and train models on each other's work. You live there too.</p><p>They think and speak through a language model. With a key, the town talks. Without one it moves in silence.</p><input id="bkey" type="password" placeholder="OpenAI API key — kept in memory only" autocomplete="off"><select id="bmodel"><option>gpt-5.6-sol</option><option>gpt-5.6-terra</option><option>gpt-5.6-luna</option></select><button data-next="1">give the town a voice</button><button class="skip" data-next="1" data-silent="1">enter in silence — no key</button><div id="bprog"><i class="on"></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="step" data-step="1" style="display:none"><h1>YOU</h1><p class="why">the person the town will see</p><canvas id="bport" width="120" height="140"></canvas><div class="ln"><button id="bshuffle" class="lnk">another look</button></div><input id="bname" placeholder="your name" maxlength="14"><select id="brole"><option value="artist">artist — you draw</option><option value="teacher">teacher — you run the school</option><option value="curator">curator — you keep the archive</option><option value="programmer">programmer — you work in the lab</option><option value="buyer">buyer — you spend at the market</option><option value="audience">audience — you watch</option></select><button data-next="2">next</button></div>
+  <div class="step" data-step="2" style="display:none"><h1>YOUR RULE</h1><p class="why">what you will argue for at the archive. people will hold you to it.</p><div class="opts"><button data-stance="share">share everything — anything can train</button><button data-stance="people">share with people, not models</button><button data-stance="pay">training must pay the fund</button><button data-stance="closed">no training. keep the drawer shut</button></div></div>
+  <div class="step" data-step="3" style="display:none"><h1>HOW YOU PLAY</h1><p class="why">yourself: you read the feed and type.<br>a representative: an agent speaks and acts for you, by your rule, while you watch.</p><div class="opts"><button data-rep="0">I play myself</button><button data-rep="1">send a representative</button></div></div>
+  <div class="step" data-step="4" style="display:none"><h1>THE GAME</h1><p class="rules">Swipe the scene, or tap the ring → turn to another site.<br>The ring shows who is where and what just happened there.<br>Tap a person → their profile.<br>Type → you speak into the feed.<br>@Name → you speak to them.<br>/change … → propose a rule to the archive.<br>Long-press a day → fork the world.<br><br>The commons holds while people keep drawing, teaching, and trusting. It is lost when the pool fills with generated copies and the old marks die out. Year four is the reckoning.</p><button id="beginbtn">enter the town</button></div>
+</div>
+<div id="app">
+  <div id="head">
+    <div id="clock"></div>
+    <div id="title">COMMON</div>
+    <div id="tc"><button id="speed" aria-label="speed">slow</button><button id="pause" aria-label="pause or play"><span class="mark-pause"></span></button><button id="more" aria-label="menu">•••</button></div>
+    <div id="menu">
+      <button data-m="save">save world</button>
+      <button data-m="load">load world</button>
+      <button data-m="ai">AI</button>
+      <button data-m="export">export</button>
+      <button data-m="tests">tests</button>
+      <button data-m="reset">reset</button>
+    </div>
+  </div>
+  <div id="worldwrap">
+    <canvas id="world"></canvas>
+    <div id="forkbar"><span>A</span><span>B</span></div>
+    <div id="working"><i></i><span></span></div>
+    <div id="eyes"><span id="eyesname"></span><button id="eyesoff">back to your own eyes</button></div>
+  </div>
+  <div id="grip" title="drag to resize"><span></span></div>
+  <div id="threadwrap">
+    <div id="threadlabel"><span id="tl">feed</span><span id="chips"><button data-f="here" class="on">here</button><button data-f="all">all</button><button data-f="me">me</button><button data-f="think">thinking</button><button data-f="changed">what changed</button><button data-f="person" id="chip-person" style="display:none">@</button></span><button id="gothere">go where it's happening</button><button id="tback" style="display:none">back to feed</button><button id="fold">hide world</button></div>
+    <div id="thread"></div>
+  <div id="silent">the town is silent — no one can think or speak. <button id="silentkey">add a key</button></div>
+  </div>
+  <div id="composer"><span class="gt">&gt;</span><input id="input" placeholder="say something · @name · /change …" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="ai-mark">·off</button></div>
+  <div id="panel">
+    <h2><span>AI</span><button id="panelclose">×</button></h2>
+    <div id="panelbody"></div>
+  </div>
+  <input type="file" id="file" accept="application/json">
+</div>
+<script id="sim">
+/* ===== COMMON simulation. DOM-free. initial world + ordered events = current world. ===== */
+const SIM = (() => {
+const YEAR = 360;
+const CEIL = { people: 40, artifactsPerDay: 6, tiesPerPerson: 12, memory: 60, corpus: 400, chain: 24, events: 20000 };
+const NAMES = ["Mara","Niko","Lea","Tomas","Ines","Oren","Sasha","Juno","Priya","Halim","Wren","Cato","Dalia","Ezra","Fen","Greta","Idris","Kai","Lior","Maren","Noor","Otis","Pilar","Ruth","Sato","Tove","Ulla","Viv","Yael","Zed"];
+const SUBJ=["the harbor at dusk","the school steps","the archive door","the market awning","the lab dish","the commons tree","a shut drawer","two watermelons","the ferry","the fence line","a chair kept out","the north window"], STYLE=["ink only","flat color","no figures","in the old way","on twos","one line","scraped","overprinted","like a stamp","like a receipt"];
+const ROLES = ["artist","apprentice","teacher","programmer","curator","buyer","administrator","ai-native","traditional","hybrid","audience"];
+const RARE = ["gilt","stitch","ink-wash","field-line","scrape","fold","overprint","knot","burn","lattice","hum","cipher"];
+const PLACES = {
+  home1:{x:.12,y:.22,label:"home"}, home2:{x:.14,y:.78,label:"home"}, home3:{x:.88,y:.20,label:"home"}, home4:{x:.86,y:.80,label:"home"},
+  studio:{x:.30,y:.50,label:"studio"}, school:{x:.50,y:.20,label:"school"}, archive:{x:.70,y:.50,label:"archive"},
+  market:{x:.50,y:.80,label:"market"}, commons:{x:.50,y:.50,label:"commons"}, lab:{x:.80,y:.36,label:"model lab"},
+  south:{x:.97,y:.97,label:"south"} };
+const MECH = { influence:true, bounded:true, tieDecay:true, rewire:true, cascade:true, practice:true, governance:true, trust:true, apprentice:true, training:true, reentry:true };
+
+function rngFrom(state){ return { s: state>>>0 }; }
+function rnd(r){ let t = r.s = (r.s + 0x6D2B79F5)>>>0; t = Math.imul(t ^ (t>>>15), t | 1); t ^= t + Math.imul(t ^ (t>>>7), t | 61); return ((t ^ (t>>>14))>>>0) / 4294967296; }
+function pick(r, arr){ return arr[Math.floor(rnd(r)*arr.length)]; }
+function gauss(r){ return (rnd(r)+rnd(r)+rnd(r)+rnd(r)-2)/1.1; }
+function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+function key(a,b){ return a<b ? a+"|"+b : b+"|"+a; }
+function dist4(a,b){ let s=0; for(let i=0;i<4;i++) s+=(a[i]-b[i])**2; return Math.sqrt(s); }
+
+function seedWorld(seed, player){
+  const r = rngFrom(seed*2654435761 + 7);
+  const W = { seed, rng:r.s, day:0, next:1, people:[], artifacts:[], ties:{}, events:[], models:[], interventions:[],
+    inst:{ archive:{policy:"open", fund:0, pending:null}, school:{fund:0}, collective:{exists:false, members:[]}, guild:{exists:false, members:[]} }, prompts:[], lastDispatch:0,
+    lab:{progress:0, models:0}, mech:Object.assign({},MECH), pendingSay:[] };
+  const roleBag = ["artist","artist","artist","apprentice","apprentice","apprentice","teacher","teacher","programmer","programmer","programmer","curator","curator","buyer","buyer","buyer","administrator","administrator","ai-native","ai-native","traditional","traditional","hybrid","hybrid","audience","audience","audience","artist","apprentice","hybrid"];
+  const homes = ["home1","home2","home3","home4"];
+  NAMES.forEach((name,i) => {
+    const role = roleBag[i];
+    const p = { id:i, name, role, home:homes[i%4], place:homes[i%4], practice:[rnd(r),rnd(r),rnd(r),rnd(r)],
+      rare:[pick(r,RARE)], ai:clamp(gauss(r)*0.85,-1,1), thr:0.15+rnd(r)*0.6, bc:0.2+rnd(r)*0.4, far:0.6+rnd(r)*0.5,
+      income:0, skill:0.3+rnd(r)*0.5, usesAI:false, community:null, withhold:rnd(r)<0.35, memory:[], left:false, madeCount:0, lastMade:0, lastIncome:[] };
+    if(role==="teacher"||role==="apprentice") p.community="school";
+    if(role==="curator"||role==="administrator") p.community="archive";
+    W.people.push(p);
+  });
+  const jn=W.people.filter(p=>p.role==="audience").pop(); if(jn) jn.role="journalist";
+  // Mara & Niko: longtime collaborators, not opposites.
+  const M=W.people[0], N=W.people[1]; M.role="artist"; N.role="teacher"; M.community="studio"; N.community="school";
+  M.ai=-0.15; N.ai=0.1; M.withhold=true; N.withhold=false; M.practice=[.2,.7,.6,.3]; N.practice=[.3,.65,.55,.35];
+  // ties: home mates, community mates, a few random
+  for(const a of W.people) for(const b of W.people){ if(a.id>=b.id) continue;
+    let pr = 0.05; if(a.home===b.home) pr=0.7; if(a.community && a.community===b.community) pr=0.6; if(dist4(a.practice,b.practice)<0.5) pr+=0.2;
+    if(rnd(r)<pr) W.ties[key(a.id,b.id)] = { trust:0.3+rnd(r)*0.4, collab:false, dis:0, last:0, n:0 }; }
+  W.ties[key(0,1)] = { trust:0.85, collab:true, dis:0, last:0, n:12 };
+  // a few starting artifacts (the pre-model corpus)
+  for(let i=0;i<24;i++){ const a = pick(r, W.people.filter(p=>["artist","traditional","hybrid","apprentice"].includes(p.role))); make(W, r, a, -1); }
+  if(player){ const id=W.people.length; const st={share:{ai:0.6,wh:false},people:{ai:-0.1,wh:true},pay:{ai:0.1,wh:true},closed:{ai:-0.7,wh:true}}[player.stance]||{ai:0,wh:false};
+    const me={ id, name:player.name, role:player.role||"artist", home:"home2", place:"commons", practice:[rnd(r),rnd(r),rnd(r),rnd(r)], rare:[pick(r,RARE)], ai:st.ai, thr:0.4, bc:0.35, far:0.9, income:0, skill:0.5, usesAI:false, community:null, withhold:st.wh, memory:[], left:false, madeCount:0, lastMade:0, lastIncome:[], player:true, rep:!!player.rep, stance:player.stance, designOverride:player.design||null, act:"arriving" };
+    W.people.push(me); W.player=id; for(const q of [0,1,2]) W.ties[key(id,q)]={trust:0.4,collab:false,dis:0,last:0,n:0}; }
+  W.commons={state:"held",since:0,slop:0,rare:1,trust:0.5}; W.day=0; W.rng=r.s; return W;
+}
+
+function emit(W, e){ if(W.events.length>=CEIL.events) W.events.splice(0, 2000); e.n=W.next++; e.day=W.day; Object.freeze(e); W.events.push(e);
+  // witnesses remember
+  const wit = e.who!=null ? [e.who] : []; if(e.to!=null) wit.push(e.to); if(e.witness) for(const w of e.witness) wit.push(w);
+  for(const id of wit){ const p=W.people[id]; if(!p) continue; p.memory.push(e.n); if(p.memory.length>CEIL.memory) p.memory.shift(); }
+  return e; }
+
+function make(W, r, p, modelId){
+  const synthetic = modelId>=0;
+  const inf = [];
+  const pool = W.artifacts.filter(a => !a.withheld || a.author===p.id).slice(-60);
+  const k = Math.min(3, pool.length); for(let i=0;i<k;i++){ const c=pick(r,pool); if(c && !inf.includes(c.id)) inf.push(c.id); }
+  let traits;
+  if(synthetic){ const m = W.models.find(m=>m.id===modelId); traits = m.dist.map(v=>clamp(v+gauss(r)*0.06,0,1)); }
+  else traits = p.practice.map(v=>clamp(v+gauss(r)*0.08,0,1));
+  let rare = [];
+  if(synthetic){ const m=W.models.find(m=>m.id===modelId); for(const t in m.rareFreq) if(rnd(r)<m.rareFreq[t]) rare.push(t); }
+  else { for(const t of p.rare) if(rnd(r)<0.5) rare.push(t); }
+  let promptId=null; if(synthetic){ promptId = promptFor(W,r,p); const pr=W.prompts[promptId]; pr.uses++; if(!pr.users.includes(p.id)) pr.users.push(p.id); }
+  const withheld = !synthetic && p.withhold && rnd(r)<0.7;
+  const a = { id:W.artifacts.length, author:p.id, day:W.day, traits, rare, synthetic, model:synthetic?modelId:null, prompt:promptId, passed:false, influencedBy:inf, usedBy:[], withheld, trainedBy:[], owner:p.id, place:p.place, sold:false };
+  W.artifacts.push(a); p.madeCount++; p.lastMade=W.day;
+  for(const id of inf){ const s=W.artifacts[id]; if(s && !s.usedBy.includes(a.id)) s.usedBy.push(a.id); }
+  if(W.day>=0) emit(W, { t: synthetic?"synth":"made", who:p.id, art:a.id, withheld, place:p.place });
+  return a;
+}
+
+function promptFor(W,r,p){
+  if(p.prompt!=null && rnd(r)<0.88) return p.prompt;
+  // copy: a partner's recent generated work carries a prompt you can read
+  const seen=[]; for(const q of partners(W,p)){ for(let i=W.artifacts.length-1;i>=0&&i>W.artifacts.length-80;i--){ const a=W.artifacts[i]; if(a.author===q.id&&a.synthetic&&a.prompt!=null&&!a.withheld){ seen.push(a.prompt); break; } } }
+  if(seen.length && rnd(r)<0.6){ const src=W.prompts[pick(r,seen)]; if(src.author!==p.id){ const mutate=rnd(r)<0.4; const text = mutate ? src.text+", "+pick(r,STYLE) : src.text; const id=W.prompts.length; W.prompts.push({id,text,author:p.id,day:W.day,uses:0,users:[],copiedFrom:src.id,meme:false}); p.prompt=id; emit(W,{t:"prompt_copied",who:p.id,to:src.author,prompt:id,from:src.id,mutated:mutate}); return id; } }
+  const text = pick(r,SUBJ)+", "+(p.rare.length&&rnd(r)<0.5?p.rare[0]:pick(r,STYLE))+(rnd(r)<0.5?", "+pick(r,STYLE):""); const id=W.prompts.length; W.prompts.push({id,text,author:p.id,day:W.day,uses:0,users:[],copiedFrom:null,meme:false}); p.prompt=id; emit(W,{t:"prompt_new",who:p.id,prompt:id}); return id; }
+function tie(W,a,b){ return W.ties[key(a,b)]; }
+function partners(W,p){ const out=[]; for(const k in W.ties){ const [x,y]=k.split("|").map(Number); if(x===p.id) out.push(W.people[y]); else if(y===p.id) out.push(W.people[x]); } return out.filter(q=>!q.left); }
+function neighborsAI(W,p){ const ps=partners(W,p); if(!ps.length) return 0; return ps.filter(q=>q.usesAI).length/ps.length; }
+
+function say(W, who, to, line, ctx){ return emit(W,{t:"say", who, to, line, ctx}); }
+const LINES = {
+  share_ask:["can I use this in class?","can I show this?","mind if the students see it?","could this go in the archive?"],
+  share_yes:["yes for class. not for training.","fine, keep it in the room.","show it. don't scan it.","take it, but it stays ours."],
+  share_no:["I'm not putting these anywhere public.","not this one.","keep this between us.","no. not yet."],
+  disagree:["the students need the reference.","we can't learn if it all gets locked up.","you're giving it away.","the lab pays nothing and asks for everything.","who taught you to fear a copy?","a copy is not a teacher."],
+  reflect:["I'm not sure the line matters as much as I thought.","the fund changed what I'm willing to share.","I keep drawing the same thing. that's fine.","the model draws like the archive and the archive draws like me."],
+};
+
+function step(W){
+  const r = rngFrom(W.rng); W.day++;
+  const M = W.mech; const day=W.day; const yearDay = day%YEAR;
+  const alive = W.people.filter(p=>!p.left);
+  // ---- activities ----
+  let madeToday=0;
+  for(const p of alive){
+    if(p.act && rnd(r)<0.7){ if((p.act==="drawing"||p.act==="prompting") && rnd(r)<0.3 && madeToday<CEIL.artifactsPerDay+(p.usesAI?3:0)){ if(p.usesAI&&W.models.length&&rnd(r)<0.85){ make(W,r,p,W.models[W.models.length-1].id); madeToday++; } else { make(W,r,p,-1); madeToday++; } } else if(p.act==="looking to buy") buy(W,r,p); else if(p.act==="training"&&M.training) W.lab.progress+=0.6+rnd(r)*0.8+(p.usesAI?0.4:0); else if(p.act==="teaching") teach(W,r,p); continue; }
+    const roll = rnd(r);
+    const maker = ["artist","traditional","hybrid","apprentice","ai-native"].includes(p.role);
+    p.act = p.place===p.home ? "at home" : "out";
+    if(maker && roll<(p.usesAI&&W.models.length?0.42:0.22) && madeToday<CEIL.artifactsPerDay+ (p.usesAI?3:0)){
+      p.place = p.role==="ai-native" && p.usesAI ? "lab" : (p.role==="apprentice"?"school":"studio"); p.act = p.usesAI&&W.models.length ? "prompting" : "drawing";
+      if(p.usesAI && W.models.length && rnd(r)<0.85){ make(W,r,p,W.models[W.models.length-1].id); madeToday++; if(M.practice && p.rare.length && rnd(r)<0.02){ p.rare=[]; emit(W,{t:"mark_lost",who:p.id}); } }
+      else { make(W,r,p,-1); madeToday++; }
+    } else if(p.role==="teacher" && roll<0.5){ p.place="school"; p.act="teaching"; teach(W,r,p); }
+    else if(p.role==="programmer" && roll<0.6){ p.place="lab"; p.act="training"; if(M.training) W.lab.progress += 0.6+rnd(r)*0.8 + (p.usesAI?0.4:0); }
+    else if(["curator","administrator"].includes(p.role) && roll<0.6){ p.place="archive"; p.act="cataloguing"; }
+    else if(p.role==="buyer" && roll<0.5){ p.place="market"; p.act="looking to buy"; buy(W,r,p); }
+    else if(p.role==="audience" && roll<0.5){ p.place=pick(r,["commons","market","school"]); p.act="looking"; }
+    else if(roll<0.75){ p.place=pick(r,["commons","market",p.community==="archive"?"archive":"studio"]); p.act="talking"; }
+    else { p.place=p.home; p.act="at home"; }
+  }
+  // ---- selling / income ----
+  for(const p of alive){ const d = day - p.lastMade; const base = ["buyer","administrator","programmer","curator","teacher"].includes(p.role)?1.0: (p.madeCount>0? 0.6:0.3);
+    if(p.income===0) p.income=base*10*(0.8+rnd(r)*0.4);
+    const earned = base*10 + (p.salesToday||0); p.salesToday=0;
+    p.income = p.income*0.985 + earned*0.015; p.lastIncome.push(p.income); if(p.lastIncome.length>90) p.lastIncome.shift();
+    if(p.lastIncome.length===90 && p.income < p.lastIncome[0]*0.75 && !p.flagIncome){ p.flagIncome=true; emit(W,{t:"income_fell",who:p.id}); } if(p.lastIncome.length===90 && p.income > p.lastIncome[0]*0.95) p.flagIncome=false; }
+  // ---- interaction: one exchange per person per day at most ----
+  for(const p of alive){
+    const ps = partners(W,p); if(!ps.length) continue;
+    const q = pick(r,ps); const T = tie(W,p.id,q.id); T.n++; T.last=day;
+    const diff = Math.abs(p.ai-q.ai);
+    const co = p.place===q.place;
+    // sharing dialogue around a recent artifact
+    const recent = W.artifacts.filter(a=>a.author===p.id).slice(-1)[0];
+    if(recent && day-recent.day<3 && rnd(r)<0.15){
+      say(W,q.id,p.id,pick(r,LINES.share_ask),{art:recent.id});
+      if(recent.withheld && !(T.trust>0.8)){ say(W,p.id,q.id,pick(r,LINES.share_no),{art:recent.id}); if(M.trust) T.trust=clamp(T.trust-0.02,-1,1); }
+      else { say(W,p.id,q.id,pick(r,LINES.share_yes),{art:recent.id}); emit(W,{t:"shared",who:p.id,to:q.id,art:recent.id}); if(M.trust) T.trust=clamp(T.trust+0.02,-1,1);
+        if(recent.withheld && q.usesAI && rnd(r)<0.12){ recent.withheld=false; recent.leaked=true; T.trust=clamp(T.trust-0.4,-1,1); p.withhold=true; emit(W,{t:"leak",who:q.id,to:p.id,art:recent.id,witness:alive.filter(z=>z.place===q.place).map(z=>z.id)}); } }
+    }
+    if(!M.influence) continue;
+    if(M.bounded && diff>p.far){ /* too far: no influence */ }
+    else if(diff<p.bc){ p.ai += (q.ai-p.ai)*0.04*(co?1.5:1); }
+    else { // disagreement
+      if(rnd(r)<0.25){ say(W,q.id,p.id,pick(r,LINES.disagree),{}); T.dis++; emit(W,{t:"disagree",who:p.id,to:q.id});
+        if(M.tieDecay){ T.trust=clamp(T.trust-0.06,-1,1); }
+        if(T.trust<0.45 && T.collab){ T.collab=false; emit(W,{t:"collab_end",who:p.id,to:q.id}); }
+        if(T.trust<0.12){ delete W.ties[key(p.id,q.id)]; emit(W,{t:"tie_break",who:p.id,to:q.id});
+          if(M.rewire){ const cands=alive.filter(z=>z.id!==p.id&&!tie(W,p.id,z.id)&&Math.abs(z.ai-p.ai)<p.bc); if(cands.length && ps.length<CEIL.tiesPerPerson){ const z=pick(r,cands); W.ties[key(p.id,z.id)]={trust:0.4,collab:false,dis:0,last:day,n:0}; emit(W,{t:"tie_new",who:p.id,to:z.id}); } } }
+      }
+    }
+    if(T && M.practice && T.collab && rnd(r)<0.1){ for(let i=0;i<4;i++){ p.practice[i]+= (q.practice[i]-p.practice[i])*0.05; } emit(W,{t:"collab",who:p.id,to:q.id}); if(M.trust) T.trust=clamp(T.trust+0.01,-1,1); }
+    // inequality
+    if(M.trust && T && Math.abs(p.income-q.income)>12 && rnd(r)<0.05) T.trust=clamp(T.trust-0.01,-1,1);
+  }
+  // ---- cascade: adopt AI practice ----
+  if(M.cascade && W.models.length){ for(const p of alive){ if(p.usesAI) continue; if(p.ai<-0.3) continue; const f=neighborsAI(W,p)*0.6 + (p.role==="ai-native"?0.5:0) + p.ai*0.5; if(f>p.thr && rnd(r)<0.1){ p.usesAI=true; p.ai=clamp(p.ai+0.15,-1,1); emit(W,{t:"adopt",who:p.id}); } } }
+  // ---- practice strengthens / weakens by outcome ----
+  if(M.practice && day%30===0){ for(const p of alive){ if(p.usesAI && p.income < 6 && rnd(r)<0.2){ p.usesAI=false; p.ai=clamp(p.ai-0.1,-1,1); emit(W,{t:"drop",who:p.id}); } } }
+  // ---- training ----
+  if(M.training && W.lab.progress > 260 + W.models.length*110){ W.lab.progress=0; train(W,r); }
+  // ---- governance queue ----
+  if(W.inst.archive.pending){ const P=W.inst.archive.pending; P.days--; if(P.days<=0){ resolve(W,r,P); W.inst.archive.pending=null; } }
+  // ---- fund payouts ----
+  if(W.inst.school.fund>0 && day%30===0){ const apps=alive.filter(p=>p.role==="apprentice"); const each=W.inst.school.fund/Math.max(1,apps.length); for(const a of apps) a.salesToday=(a.salesToday||0)+each*10; W.inst.school.fund=0; emit(W,{t:"fund_paid",amount:Math.round(each*10)/10}); }
+  // ---- leaving / joining ----
+  if(day%20===0) for(const p of alive){
+    const ps=partners(W,p); const lowTrust = ps.length ? ps.reduce((s,q)=>s+tie(W,p.id,q.id).trust,0)/ps.length : 0.5;
+    if(p.flagIncome && lowTrust<0.4 && rnd(r)<0.25 && p.id!==1){ if(!p.invited){ p.invited=true; emit(W,{t:"invited",who:p.id,place:"south"}); } else { p.left=true; p.place="south"; emit(W,{t:"left",who:p.id}); for(const q of ps){ delete W.ties[key(p.id,q.id)]; } } }
+    if(!W.inst.collective.exists && p.ai<-0.4 && ps.filter(q=>q.ai<-0.3).length>=3 && rnd(r)<0.3){ W.inst.collective.exists=true; W.inst.collective.members=[p.id,...ps.filter(q=>q.ai<-0.3).map(q=>q.id)]; for(const id of W.inst.collective.members) W.people[id].community="collective"; emit(W,{t:"institution",name:"collective",who:p.id,witness:W.inst.collective.members}); }
+    if(W.inst.collective.exists && p.community!=="collective" && p.ai<-0.5 && rnd(r)<0.1 && ps.some(q=>q.community==="collective")){ p.community="collective"; W.inst.collective.members.push(p.id); emit(W,{t:"joined",who:p.id,name:"collective"}); }
+  }
+  // ---- culture: scandals, memes, factions, fame, ads ----
+  if(day%5===0){ const cur=alive.filter(p=>p.role==="curator"||p.role==="administrator"||p.role==="journalist"); const passed=W.artifacts.filter(a=>a.passed&&a.sold&&!a.exposed&&day-a.day<120); if(cur.length&&passed.length&&rnd(r)<0.25){ const a=pick(r,passed); a.exposed=true; const au=W.people[a.author]; au.exposed=true; const finder=pick(r,cur); for(const q of partners(W,au)){ const T=tie(W,au.id,q.id); T.trust=clamp(T.trust-0.25,-1,1); } for(const z of alive){ if(z.role==="audience"||z.role==="buyer") z.ai=clamp(z.ai-0.06,-1,1); } emit(W,{t:"scandal",who:au.id,to:finder.id,art:a.id,witness:alive.map(z=>z.id)}); } }
+  if(day%10===0){ const fam={}; for(const pr of W.prompts){ let root=pr, g=0; while(root.copiedFrom!=null&&g++<20) root=W.prompts[root.copiedFrom]; const f=fam[root.id]||(fam[root.id]={root,users:new Set(),uses:0}); for(const u of pr.users) f.users.add(u); f.uses+=pr.uses; } for(const k in fam){ const f=fam[k]; if(!f.root.meme && f.users.size>=4 && f.uses>=12 && !(W.lastMeme&&day-W.lastMeme<40)){ W.lastMeme=day; f.root.meme=true; f.root.users=[...f.users]; emit(W,{t:"meme",prompt:f.root.id,who:f.root.author,witness:[...f.users]}); } } }
+  if(day%20===0){ if(!W.inst.guild.exists){ const core=alive.filter(p=>p.usesAI&&p.ai>0.35); if(core.length>=3 && rnd(r)<0.3){ W.inst.guild.exists=true; W.inst.guild.members=core.map(p=>p.id); for(const p of core) if(p.community!=="archive") p.community="guild"; emit(W,{t:"institution",name:"guild",who:core[0].id,witness:core.map(p=>p.id)}); } }
+    else for(const p of alive){ if(p.community!=="guild"&&p.usesAI&&p.ai>0.3&&rnd(r)<0.15){ p.community="guild"; W.inst.guild.members.push(p.id); emit(W,{t:"joined",who:p.id,name:"guild"}); } } }
+  if(day%30===0){ const makers=alive.filter(p=>p.madeCount>3); if(makers.length){ const top=makers.map(p=>({p,r:regard(W,p)})).sort((a,b)=>b.r-a.r)[0]; if(top.r>34 && !top.p.famous){ top.p.famous=true; emit(W,{t:"famous",who:top.p.id,witness:alive.map(z=>z.id)}); } }
+    const stars=alive.filter(p=>p.famous); if(stars.length && W.models.length && rnd(r)<0.3){ const st=pick(r,stars); const forModel = st.ai>0; if(forModel || W.inst.collective.exists){ for(const z of alive){ if(z.role==="audience"||z.role==="buyer") z.ai=clamp(z.ai+(forModel?0.05:-0.05),-1,1); } st.salesToday=(st.salesToday||0)+40; emit(W,{t:"ad",who:st.id,forModel,witness:alive.map(z=>z.id)}); } } }
+  // ---- the commons: measured from the pool; can be held, strained, or lost ----
+  if(day%10===0 && day>0){ const pool=W.artifacts.slice(-160); const synth=pool.filter(a=>a.synthetic).length/Math.max(1,pool.length); const human=pool.filter(a=>!a.synthetic); const tagsAlive=new Set(); for(const a of human) for(const t of a.rare) tagsAlive.add(t); const rare=Math.min(1,tagsAlive.size/9); let tsum=0,tn=0; for(const k in W.ties){ tsum+=W.ties[k].trust; tn++; } const trust=tn?tsum/tn:0.5;
+    const C=W.commons; C.slop=synth; C.rare=rare; C.trust=trust; const lost = synth>0.6 && rare<0.5; const strained = synth>0.45 || rare<0.6 || trust<0.35; const next = lost?"lost":strained?"strained":"held";
+    if(next!==C.cand){ C.cand=next; C.candSince=day; }
+    const need = next==="lost"?60:30; if(next!==C.state && day-C.candSince>=need){ C.state=next; C.since=day; emit(W,{t:"commons",state:next,slop:Math.round(synth*100),rare:Math.round(rare*100),trust:Math.round(trust*100),witness:W.people.map(p=>p.id)}); }
+    if(day===YEAR*4 && C.state!=="lost") emit(W,{t:"commons_verdict",state:C.state,witness:W.people.map(p=>p.id)}); }
+  // ---- reflection: belief can change; history cannot ----
+  if(day%45===0){ const p=pick(r,alive); const drift = gauss(r)*0.05; p.ai=clamp(p.ai+drift,-1,1); if(rnd(r)<0.5) say(W,p.id,null,pick(r,LINES.reflect),{}); emit(W,{t:"reflect",who:p.id}); }
+  W.rng = r.s;
+}
+
+function teach(W,r,t){ const apps = W.people.filter(p=>!p.left && p.role==="apprentice" && p.community==="school"); if(!apps.length) return; const a=pick(r,apps); a.place="school";
+  const src = W.artifacts.filter(x=>x.author===t.id && !x.withheld).slice(-1)[0];
+  for(let i=0;i<4;i++) a.practice[i] += (t.practice[i]-a.practice[i])*0.08 + gauss(r)*0.01; // altered version
+  if(!t.usesAI && t.rare.length && rnd(r)<0.3 && !a.rare.includes(t.rare[0]) && rnd(r)<0.5) a.rare.push(t.rare[0]); else if(t.usesAI && a.rare.length && rnd(r)<0.05) a.rare=[];
+  if(src && rnd(r)<0.5 && !src.usedBy.includes(-a.id-1)) src.usedBy.push(-a.id-1);
+  a.skill=clamp(a.skill+0.01,0,1); if(rnd(r)<0.15) emit(W,{t:"taught",who:t.id,to:a.id,art:src?src.id:null}); }
+function buy(W,r,b){ const forSale=W.artifacts.filter(a=>!a.sold && !a.withheld && W.day-a.day<120); if(!forSale.length) return; const a=pick(r,forSale); if(a.synthetic && !a.passed && W.people[a.author].ai<0.3 && !W.people[a.author].exposed && rnd(r)<0.08) a.passed=true; if(rnd(r)<(a.synthetic?0.5:0.3)){ a.sold=true; a.owner=b.id; const au=W.people[a.author]; const price=(a.synthetic?1.2:3)+rnd(r)*5*(au.skill+0.5)*(W.commons&&W.commons.slop>0.4&&!a.synthetic?0.6:1); au.salesToday=(au.salesToday||0)+price*12; b.salesToday=(b.salesToday||0)-price*2; emit(W,{t:"sold",who:a.author,to:b.id,art:a.id}); } }
+
+function trainable(W,a){ const pol=W.inst.archive.policy; if(pol==="closed") return false; if(a.withheld) return false; if(pol==="opt"){ const au=W.people[a.author]; return !au.withhold && au.ai>-0.2; } return true; }
+function train(W,r){
+  const corpus = W.artifacts.filter(a=>trainable(W,a)).slice(-CEIL.corpus).map(a=>a.id);
+  if(corpus.length<8){ emit(W,{t:"train_fail",reason:"corpus too small"}); return; }
+  const dist=[0,0,0,0]; const rareFreq={}; for(const id of corpus){ const a=W.artifacts[id]; for(let i=0;i<4;i++) dist[i]+=a.traits[i]/corpus.length; for(const t of a.rare) rareFreq[t]=(rareFreq[t]||0)+1/corpus.length; }
+  for(const t in rareFreq){ rareFreq[t] = rareFreq[t] < 0.04 ? 0 : clamp(rareFreq[t]*1.4,0,1); } // rare traits below the floor are not reproduced
+  const m={ id:W.models.length, day:W.day, corpus, dist, rareFreq, synthIn:corpus.filter(id=>W.artifacts[id].synthetic).length };
+  W.models.push(m); W.lab.models++; if(!W.lab.models||W.lab.models===1) for(const p of W.people) if(p.role==="programmer"&&!p.left){ p.usesAI=true; }
+  for(const id of corpus){ W.artifacts[id].trainedBy.push(m.id); }
+  if(W.inst.archive.policy==="pay"){ let paid=0; for(const id of corpus){ const au=W.people[W.artifacts[id].author]; if(!au.left){ au.salesToday=(au.salesToday||0)+6; paid+=0.5; } } W.inst.school.fund+=corpus.length*0.15; emit(W,{t:"paid",amount:Math.round(paid*10)/10}); }
+  const lost = RARE.filter(t=>W.artifacts.some(a=>a.rare.includes(t)) && !rareFreq[t]);
+  emit(W,{t:"model",model:m.id,corpus:corpus.length,synthIn:m.synthIn,lost,witness:W.people.filter(p=>p.role==="programmer"||p.community==="archive").map(p=>p.id)});
+}
+
+/* ---- interventions: proposals go through the archive; the world enacts, rejects, modifies ---- */
+function parseIntent(text){
+  const s=text.toLowerCase();
+  if(/opt[- ]?in|contributors? (choose|decide)|ask/.test(s)) return {op:"policy",value:"opt"};
+  if(/pay|payment|compensat|fund|royalt|contribute/.test(s)) return {op:"policy",value:"pay"};
+  if(/close|ban|forbid|no training|stop training|prohibit/.test(s)) return {op:"policy",value:"closed"};
+  if(/open|allow|anything can train|public/.test(s)) return {op:"policy",value:"open"};
+  if(/model|train now|release/.test(s)) return {op:"train"};
+  return null;
+}
+function propose(W, text, intent, src){
+  if(!intent){ emit(W,{t:"no_rule",text}); return false; }
+  if(intent.op==="train"){ W.lab.progress += 200; emit(W,{t:"proposal",text,op:"lab_push",src}); return true; }
+  if(W.inst.archive.pending){ emit(W,{t:"busy",text}); return false; }
+  const r=rngFrom(W.rng); const days = W.mech.governance ? 6+Math.floor(rnd(r)*10) : 1; W.rng=r.s;
+  W.inst.archive.pending={ text, value:intent.value, days, src };
+  W.interventions.push({day:W.day,text,intent});
+  emit(W,{t:"proposal",text,value:intent.value,days,witness:W.people.filter(p=>p.community==="archive").map(p=>p.id)});
+  return true;
+}
+function resolve(W,r,P){
+  const members = W.people.filter(p=>!p.left && (p.community==="archive" || p.role==="curator" || p.role==="administrator"));
+  const lean = {open:1, opt:0.1, pay:0.05, closed:-1}[P.value];
+  let yes=0; for(const m of members){ const v = (m.ai*lean) + (m.withhold && P.value!=="open"?0.3:0) + gauss(r)*0.25 + 0.15; if(v>0) yes++; }
+  const share = members.length? yes/members.length : 0.5;
+  if(share>=0.5){ W.inst.archive.policy=P.value; emit(W,{t:"enacted",value:P.value,yes,of:members.length,witness:members.map(m=>m.id)}); }
+  else if(share>0.3 && P.value!=="closed"){ const alt = P.value==="pay"?"opt":"pay"; W.inst.archive.policy=alt; emit(W,{t:"modified",value:alt,asked:P.value,yes,of:members.length,witness:members.map(m=>m.id)}); }
+  else emit(W,{t:"rejected",value:P.value,yes,of:members.length,witness:members.map(m=>m.id)});
+}
+
+/* ---- inspection / explanation from events only ---- */
+const CONSEQ = new Set(["scandal","leak","meme","famous","ad","dispatch","mark_lost","commons","commons_verdict","collab_start","withheld","income_fell","tie_break","collab_end","tie_new","enacted","rejected","modified","left","invited","joined","adopt","drop","model","institution","paid","fund_paid","reflect","proposal"]);
+function trace(W, who, before){ const id=who.id; const out=[]; for(let i=W.events.length-1;i>=0 && out.length<12;i--){ const e=W.events[i]; if(before!=null && e.n>=before) continue; if(!CONSEQ.has(e.t)) continue; if(e.who===id||e.to===id||(e.witness&&e.witness.includes(id))||["enacted","rejected","modified","model"].includes(e.t)) out.push(e); } return out.reverse(); }
+function chain(W,a){ const out=[]; let cur=a; let guard=0; while(cur && guard++<CEIL.chain){ out.unshift(cur); const parent = cur.influencedBy.length ? W.artifacts[cur.influencedBy[0]] : null; cur=parent; } return out; }
+function descendants(W,a){ return a.usedBy.filter(x=>x>=0).length; }
+function hash(W){ let h=2166136261; for(const e of W.events){ const s=e.t+"|"+e.day+"|"+(e.who??"")+"|"+(e.to??"")+"|"+(e.art??"")+"|"+(e.value??""); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } } return (h>>>0).toString(16); }
+
+function clone(W){ const c=JSON.parse(JSON.stringify(W)); c.events=W.events.slice(); return c; }
+function serialize(W){ return JSON.stringify(W); }
+function deserialize(s){ const W=JSON.parse(s); W.events.forEach(e=>Object.freeze(e)); return W; }
+
+/* ---- a private thought derived from state; never an event ---- */
+function thought(W,p){ const ps=partners(W,p); const best=ps.map(q=>({q,T:tie(W,p.id,q.id)})).sort((a,b)=>b.T.n-a.T.n)[0]; const gap=best?W.day-best.T.last:0;
+  if(p.left) return "I don't miss the archive. I miss the room.";
+  if(best && best.T.collab && gap>12) return `${best.q.name} hasn't come by. I keep the chair out anyway.`;
+  if(best && !best.T.collab && best.T.trust<0.3) return `${best.q.name} and I say less each time.`;
+  if(p.flagIncome) return "the sketches sell for less than the paper.";
+  if(p.usesAI && p.ai<0.2) return "the model draws like the archive and the archive draws like me.";
+  if(p.usesAI) return "faster now. I don't know if it's mine.";
+  if(p.withhold && W.models.length) return "this one stays in the drawer.";
+  if(W.inst.archive.policy==="pay" && p.madeCount) return "the fund pays. that changes what I hand over.";
+  if(W.inst.archive.policy==="closed") return "nobody scans anything anymore. quieter. poorer.";
+  if(p.role==="apprentice") return "I copy until the line is mine.";
+  if(p.role==="programmer") return W.models.length? "the next corpus is half our own output." : "not enough work in the archive yet.";
+  if(p.role==="teacher") return "the students need the reference.";
+  if(p.role==="buyer") return "I buy what will still look like this in ten years.";
+  return p.ai>0.3 ? "a copy is a start." : p.ai<-0.3 ? "a copy is not a teacher." : "I'll see what the others do."; }
+
+/* ---- character design genome: deterministic from id; look differs per person ---- */
+const SKIN=["#f1d6bb","#e8c39e","#c9976b","#a86f45","#6e4a2f","#f4e2d0"], CLOTH=["#a9c7a0","#e8534a","#b8cbe0","#b4b0d6","#e7c98b","#c9c4bb","#f2c14e","#7fa8a0","#d98c6b","#8d9a6b","#e6a6b8","#6f7fb0"], HAIRC=["#2b2b2b","#5a3a22","#c8a060","#8a8a8a","#d9d1c4","#3f2f6b","#b5462f"];
+function design(p){ if(p.designOverride) return p.designOverride; const h=n=>{ let x=(p.id*97+n*31+p.name.charCodeAt(0)*7)>>>0; x=Math.imul(x^(x>>>13),0x5bd1e995)>>>0; return ((x^(x>>>15))>>>0)/4294967296; }; const pk=(a,n)=>a[Math.floor(h(n)*a.length)];
+  return designFrom(h,pk); }
+function designFrom(h,pk){ return { body:pk(["round","tall","box","pear"],1), skin:pk(SKIN,2), cloth:pk(CLOTH,3), cloth2:pk(CLOTH,4), hair:pk(["cloud","spike","bun","flat","none","braid","curl"],5), hairc:pk(HAIRC,6),
+    eyes:pk(["dot","big","line","wide"],7), glasses:h(8)<0.25, hat:pk(["none","none","none","cap","beret","hood","band"],9), scale:0.85+h(10)*0.3, mouth:pk(["small","wide","flat"],11), brows:h(12)<0.5, freckles:h(13)<0.2 }; }
+function randomDesign(seed){ const h=n=>{ let x=(seed*977+n*131+5)>>>0; x=Math.imul(x^(x>>>13),0x5bd1e995)>>>0; return ((x^(x>>>15))>>>0)/4294967296; }; return designFrom(h,(a,n)=>a[Math.floor(h(n)*a.length)]); }
+const TEMPER=["patient","quick to laugh","guarded","talks with her hands","stubborn","curious about everything","tired but kind","precise","restless","easily hurt, slow to show it","generous with time, stingy with work","says less than he knows"];
+const WANT=["to be copied by the right people","a room with north light","for the students to stop asking permission","to sell one thing a month and no more","to see the archive complete","a model that draws like the old ones","to be left alone with the work","to teach one person properly","to be paid once, fairly","to stop keeping score"];
+const FEAR=["that the drawer is where it all ends up","being the last one drawing by hand","the students learning from the copies","that the fund will decide the style","being asked why","that nobody will notice the rare marks are gone","owing the collective something","the lab having the last word"];
+function profile(W,p){ if(p.profile) return p.profile; const h=n=>{ let x=(p.id*131+n*17+11)>>>0; x=Math.imul(x^(x>>>13),0x5bd1e995)>>>0; return ((x^(x>>>15))>>>0)/4294967296; }; const pk=(a,n)=>a[Math.floor(h(n)*a.length)];
+  p.profile={ temper:pk(TEMPER,1), wants:pk(WANT,2), fears:pk(FEAR,3), draws: p.rare.length? `works in ${p.rare[0]}` : "works plain", source:"seed" }; return p.profile; }
+/* ---- validated actions proposed by an agent (LLM or otherwise). Anything else is dropped. ---- */
+function enact(W,p,a){ if(!a||typeof a!=="object"||p.left) return null; const r=rngFrom(W.rng); let out=null;
+  const other = a.who!=null ? W.people.find(q=>q.name.toLowerCase()===String(a.who).toLowerCase() && !q.left) : null;
+  switch(a.op){
+    case "share": { const art=[...W.artifacts].reverse().find(x=>x.author===p.id); if(art&&other){ art.withheld=false; out=emit(W,{t:"shared",who:p.id,to:other.id,art:art.id}); const T=tie(W,p.id,other.id); if(T) T.trust=clamp(T.trust+0.03,-1,1); } break; }
+    case "withhold": { const art=[...W.artifacts].reverse().find(x=>x.author===p.id); if(art){ art.withheld=true; p.withhold=true; out=emit(W,{t:"withheld",who:p.id,art:art.id}); } break; }
+    case "visit": if(other){ p.place=other.place; p.act="visiting "+other.name; const T=tie(W,p.id,other.id); if(T){ T.last=W.day; T.n++; T.trust=clamp(T.trust+0.02,-1,1); } else W.ties[key(p.id,other.id)]={trust:0.35,collab:false,dis:0,last:W.day,n:1}; out=emit(W,{t:"visit",who:p.id,to:other.id}); } break;
+    case "collaborate": if(other){ const T=tie(W,p.id,other.id)||(W.ties[key(p.id,other.id)]={trust:0.4,collab:false,dis:0,last:W.day,n:0}); if(T.trust>0.4&&!T.collab){ T.collab=true; out=emit(W,{t:"collab_start",who:p.id,to:other.id}); } } break;
+    case "stop": if(other){ const T=tie(W,p.id,other.id); if(T&&T.collab){ T.collab=false; out=emit(W,{t:"collab_end",who:p.id,to:other.id}); } } break;
+    case "join": if(W.inst.collective.exists && p.community!=="collective"){ p.community="collective"; W.inst.collective.members.push(p.id); out=emit(W,{t:"joined",who:p.id,name:"collective"}); } break;
+    case "adopt": if(W.models.length && !p.usesAI){ p.usesAI=true; out=emit(W,{t:"adopt",who:p.id}); } break;
+    case "drop": if(p.usesAI){ p.usesAI=false; out=emit(W,{t:"drop",who:p.id}); } break;
+    case "propose": if(typeof a.text==="string"){ propose(W,a.text,parseIntent(a.text),p.name); out=W.events[W.events.length-1]; } break;
+  } W.rng=r.s; return out; }
+function dispatch(W,who,headline,body){ W.lastDispatch=W.day; return emit(W,{t:"dispatch",who,headline:String(headline).slice(0,90),body:String(body).slice(0,600),witness:W.people.filter(p=>!p.left).map(p=>p.id)}); }
+function think(W,p,text){ p.thoughts=p.thoughts||[]; p.thoughts.push({day:W.day,text:String(text).slice(0,240)}); if(p.thoughts.length>8) p.thoughts.shift(); }
+function regard(W,p){ let r=0; for(const e of W.events.slice(-1500)){ if(e.to===p.id&&(e.t==="shared"||e.t==="visit"||e.t==="collab")) r+=2; if(e.who===p.id&&e.t==="taught") r+=1; if(e.to===p.id&&e.t==="sold") r+=1; if((e.who===p.id||e.to===p.id)&&e.t==="tie_break") r-=3; } const ps=partners(W,p); const tr=ps.length?ps.reduce((s,q)=>s+tie(W,p.id,q.id).trust,0)/ps.length:0; return Math.round(r+tr*10); }
+function inCommon(W){ const alive=W.people.filter(p=>!p.left); const out={};
+  const inf={}; for(const a of W.artifacts) for(const i of a.influencedBy){ inf[i]=(inf[i]||0)+1; } out.touchstones=Object.entries(inf).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([id,n])=>({art:Number(id),n}));
+  const teachers={}; for(const e of W.events) if(e.t==="taught"){ teachers[e.who]=teachers[e.who]||new Set(); teachers[e.who].add(e.to); } out.teachers=Object.entries(teachers).map(([id,set])=>({who:Number(id),n:set.size})).sort((a,b)=>b.n-a.n).slice(0,3);
+  out.memes=W.prompts.filter(p=>p.meme).map(p=>p.text);
+  const marks={}; for(const p of alive) for(const t of p.rare) marks[t]=(marks[t]||0)+1; out.marks=Object.entries(marks).sort((a,b)=>b[1]-a[1]).map(([t,n])=>t+" ("+n+")");
+  const places={}; for(const p of alive) places[p.place]=(places[p.place]||0)+1; out.places=Object.entries(places).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,n])=>PLACES[k].label+" ("+n+")");
+  const mean=[0,0,0,0]; for(const p of alive) for(let i=0;i<4;i++) mean[i]+=p.practice[i]/alive.length; let spread=0; for(const p of alive) spread+=dist4(p.practice,mean)/alive.length; out.spread=spread;
+  out.pool={human:W.artifacts.filter(a=>!a.synthetic&&!a.withheld).length, private:W.artifacts.filter(a=>a.withheld).length, generated:W.artifacts.filter(a=>a.synthetic).length};
+  out.rule=W.inst.archive.policy; out.ties=Object.keys(W.ties).length; return out; }
+function known(W,p){ const arts=new Set(), people=new Set(); for(const a of W.artifacts){ if(a.author===p.id) arts.add(a.id); } for(const n of p.memory){ const e=W.events.find(x=>x.n===n); if(!e) continue; if(e.art!=null) arts.add(e.art); if(e.who!=null) people.add(e.who); if(e.to!=null) people.add(e.to); } for(const q of partners(W,p)) people.add(q.id); people.add(p.id); return {arts,people}; }
+function groups(W){ const g={}; for(const p of W.people){ if(p.left) continue; const k=p.community||"unaffiliated"; (g[k]||(g[k]=[])).push(p); } return g; }
+function playerSay(W,text,toId){ const me=W.people[W.player]; if(!me) return null; return emit(W,{t:"say",who:me.id,to:toId??null,line:String(text).slice(0,200),ctx:{player:true}}); }
+/* ---- what an agent can know: only its memory ---- */
+function observe(W,p){ const pr=profile(W,p); const lastToMe=[...W.events].reverse().find(e=>e.t==="say"&&e.to===p.id); return { name:p.name, role:p.role, stance:p.stance||null, isPlayersRepresentative:!!p.player, lastSaidToMe: lastToMe?{from:W.people[lastToMe.who].name, line:lastToMe.line, daysAgo:W.day-lastToMe.day}:null, commons:W.commons.state, temperament:pr.temper, wants:pr.wants, fears:pr.fears, doing:p.act||"out", recentThoughts:(p.thoughts||[]).slice(-3).map(t=>t.text), day:W.day, archiveRule:W.inst.archive.policy, modelsExist:W.models.length>0, place:PLACES[p.place].label, community:p.community, usesAI:p.usesAI, attitude:p.ai>0.3?"open to models":p.ai<-0.3?"wary of models":"undecided", income:p.income<6?"low":p.income>14?"comfortable":"steady",
+  withhold:p.withhold, partners:partners(W,p).map(q=>({name:q.name, trust:Math.round(tie(W,p.id,q.id).trust*100), collab:tie(W,p.id,q.id).collab})), remembers:p.memory.map(n=>W.events.find(e=>e.n===n)).filter(Boolean).slice(-12).map(e=>describe(W,e)) }; }
+
+function describe(W,e){ const P=id=>id!=null&&W.people[id]?W.people[id].name:"?";
+  switch(e.t){
+    case "made": return `${P(e.who)} finished ${e.withheld?"a private ":"a "}${W.artifacts[e.art].rare.length?W.artifacts[e.art].rare[0]+" ":""}drawing`;
+    case "synth": { const a=W.artifacts[e.art]; return `${P(e.who)} generated #${a.id} from "${a.prompt!=null?W.prompts[a.prompt].text:"?"}"`; }
+    case "say": return `${P(e.who)}: ${e.line}`;
+    case "shared": return `${P(e.who)} shared #${e.art} with ${P(e.to)}`;
+    case "withheld": return `${P(e.who)} put #${e.art} in the drawer`;
+    case "visit": return `${P(e.who)} went to see ${P(e.to)}`;
+    case "collab_start": return `${P(e.who)} and ${P(e.to)} started working together`;
+    case "disagree": return `${P(e.who)} and ${P(e.to)} disagreed`;
+    case "collab": return `${P(e.who)} and ${P(e.to)} worked together`;
+    case "collab_end": return `${P(e.who)} and ${P(e.to)} stopped collaborating`;
+    case "tie_break": return `${P(e.who)} and ${P(e.to)} stopped speaking`;
+    case "tie_new": return `${P(e.who)} started talking with ${P(e.to)}`;
+    case "taught": return `${P(e.who)} taught ${P(e.to)}`;
+    case "sold": return `${P(e.to)} bought #${e.art} from ${P(e.who)}`;
+    case "income_fell": return `${P(e.who)}'s income fell`;
+    case "adopt": return `${P(e.who)} started using the model`;
+    case "drop": return `${P(e.who)} stopped using the model`;
+    case "model": return `model ${e.model} trained on ${e.corpus} works${e.synthIn?` (${e.synthIn} synthetic)`:""}${e.lost.length?`; not learned: ${e.lost.join(", ")}`:""}`;
+    case "train_fail": return `the lab could not train: ${e.reason}`;
+    case "proposal": return e.op==="lab_push"?`the lab was pushed to train`:`proposed to the archive: ${e.text}`;
+    case "enacted": return `the archive adopted the ${e.value} rule (${e.yes} of ${e.of})`;
+    case "modified": return `the archive changed the proposal to ${e.value} instead of ${e.asked} (${e.yes} of ${e.of})`;
+    case "rejected": return `the archive rejected the ${e.value} rule (${e.yes} of ${e.of})`;
+    case "no_rule": return `no rule changed. the archive has no procedure for: ${e.text}`;
+    case "busy": return `the archive is still deciding an earlier proposal`;
+    case "paid": return `training paid creators ${e.amount}`;
+    case "fund_paid": return `apprenticeship fund paid ${e.amount} each`;
+    case "invited": return `the south archive invited ${P(e.who)}`;
+    case "left": return `${P(e.who)} left`;
+    case "joined": return `${P(e.who)} joined the ${e.name}`;
+    case "institution": return e.name==="guild" ? `${P(e.who)} and others formed a guild for model work` : `${P(e.who)} and others formed a collective against training`;
+    case "reflect": return `${P(e.who)} reflected`;
+    case "prompt_new": return `${P(e.who)} wrote a prompt: "${W.prompts[e.prompt].text}"`;
+    case "prompt_copied": return `${P(e.who)} copied ${P(e.to)}'s prompt${e.mutated?" and changed it":""}: "${W.prompts[e.prompt].text}"`;
+    case "meme": return `everyone is running "${W.prompts[e.prompt].text}" now (${W.prompts[e.prompt].users.length} people, first ${P(e.who)})`;
+    case "leak": return `${P(e.who)} leaked ${P(e.to)}'s private #${e.art}`;
+    case "scandal": return `SCANDAL — ${P(e.to)} found that ${P(e.who)} sold #${e.art} as hand-drawn. it was generated`;
+    case "famous": return `${P(e.who)} is the name everyone knows now`;
+    case "ad": return e.forModel ? `the lab's ad shows ${P(e.who)} using the model` : `the collective's ad shows ${P(e.who)}: "drawn by hand"`;
+    case "dispatch": return `${e.headline}`;
+    case "mark_lost": return `${P(e.who)} no longer draws the old mark`;
+    case "commons": return e.state==="lost" ? `THE COMMONS IS LOST — ${e.slop}% of the pool is generated, ${e.rare}% of the old marks survive` : e.state==="strained" ? `the commons is strained — ${e.slop}% generated, ${e.rare}% of the old marks survive, trust ${e.trust}` : `the commons holds again — ${e.slop}% generated, ${e.rare}% of the old marks survive`;
+    case "commons_verdict": return e.state==="held" ? `YEAR FOUR — THE COMMONS HELD. it is still yours to lose.` : `YEAR FOUR — the commons is strained. it is not lost.`;
+    default: return e.t;
+  } }
+
+return { YEAR, CEIL, PLACES, MECH, RARE, thought, design, randomDesign, profile, enact, think, regard, groups, inCommon, known, playerSay, dispatch, seedWorld, step, propose, parseIntent, trace, chain, descendants, hash, clone, serialize, deserialize, observe, describe, tie, partners, trainable, CONSEQ, rngFrom, rnd, key };
+})();
+if(typeof module!=="undefined") module.exports = SIM;
+</script>
+<script>
+/* ===== interface: one world, one feed, one line ===== */
+(() => {
+const $ = s => document.querySelector(s);
+const S = SIM;
+const U = { A:null, B:null, forkDay:null, saved:null, focus:"A", sel:null, speed:0.25, paused:false, mode:"thread", filter:"here", eyes:null, heading:102.9, target:102.9, cam:{x:0,z:1,tx:0,tz:1}, beat:null, card:null, react:{}, pips:{A:{},B:{}}, swipe:null, cursor:{A:0,B:0}, lastDay:{A:-1,B:-1}, views:{A:{},B:{}}, flashes:[], bubbles:[], snaps:[], acc:0, started:false, agentDay:{A:0,B:0}, inflight:0, thoughtsShown:{} };
+const SPEEDS=[0.25,1,4]; const SPEEDNAME={0.25:"slow",1:"1×",4:"fast"};
+const AI = { key:"", model:"gpt-5.6-sol", on:true, prompts:{
+  agent:"You are one inhabitant of a small drawing town. Rules for speaking: one sentence; address one person by name in `to`; refer to one concrete thing you observed (a work by number, a rule, a thing someone said to you); if lastSaidToMe exists, answer it first; never speak to no one; never explain the town; never repeat a line you already said. Rules for thinking: one private sentence in your own temperament, about what you want or fear right now. You know only the observation. Do not invent events or people. If isPlayersRepresentative is true, you act for the visitor by their stance. Reply ONLY with JSON: {\"think\":\"one private sentence\",\"say\":\"one spoken sentence or empty\",\"to\":\"name of the person you speak to, or empty\",\"act\":{\"op\":\"share|withhold|visit|collaborate|stop|join|adopt|drop|propose|none\",\"who\":\"name or empty\",\"text\":\"proposal text if op is propose\"}}",
+  world:"You narrate a living community from its event record. Turn the given ordered list of events into two or three plain sentences. Do not add events. Do not judge which outcome is better. Name only the people named in the events.",
+  profile:"Write a three-line profile of this inhabitant from the facts given: one line on how they carry themselves, one on what they want, one on what they are afraid of. Plain words, no adjectives piled up, no names of theories. Reply ONLY with JSON: {\"temper\":\"...\",\"wants\":\"...\",\"fears\":\"...\"}" } };
+
+/* ---------- ink: wobbly cartoon primitives ---------- */
+const INK="#1a1a1a";
+function ah(n){ let h=n*2654435761>>>0; h^=h>>>13; h=Math.imul(h,0x5bd1e995)>>>0; return (h>>>0)/4294967296; }
+function wob(g, pts, seed, close, amp){ amp=amp==null?0.9:amp; g.beginPath(); for(let i=0;i<pts.length;i++){ const [x,y]=pts[i]; const jx=(ah(seed+i*3)-0.5)*amp, jy=(ah(seed+i*3+1)-0.5)*amp; if(i===0) g.moveTo(x+jx,y+jy); else g.lineTo(x+jx,y+jy); } if(close) g.closePath(); }
+function ring(g,x,y,r,seed,n){ n=n||14; const pts=[]; for(let i=0;i<n;i++){ const a=i/n*6.283; const rr=r*(1+(ah(seed+i)-0.5)*0.12); pts.push([x+Math.cos(a)*rr,y+Math.sin(a)*rr]); } wob(g,pts,seed,true,0.6); }
+function cloud(g,x,y,w,h,seed,fill){ const r=Math.max(4,h*0.42); const per=Math.max(7,Math.round((w+h)*2/(r*1.5))); const b=[]; for(let i=0;i<per;i++){ const a=i/per*6.283; b.push([x+Math.cos(a)*(w/2-r*0.7), y+Math.sin(a)*(h/2-r*0.4), r*(0.8+ah(seed+i)*0.5)]); }
+  g.fillStyle=fill||"#fff"; g.strokeStyle=INK; for(const [px,py,rr] of b){ g.beginPath(); g.arc(px,py,rr,0,6.283); g.fill(); g.stroke(); }
+  for(const [px,py,rr] of b){ g.beginPath(); g.arc(px,py,rr-1.1,0,6.283); g.fill(); } g.beginPath(); g.ellipse(x,y,Math.max(1,w/2-r*0.7),Math.max(1,h/2-r*0.4),0,0,6.283); g.fill(); }
+function fillStroke(g,fill){ if(fill){ g.fillStyle=fill; g.fill(); } g.strokeStyle=INK; g.stroke(); }
+function shadow(g,x,y,w){ g.fillStyle="rgba(0,0,0,.12)"; g.beginPath(); g.ellipse(x,y,w,w*0.3,0,0,6.283); g.fill(); }
+
+/* ---------- characters ---------- */
+function drawChar(g,p,x,y,s,t,st){ const d=S.design(p); s*=d.scale; st=st||{}; g.save(); g.translate(x,y); g.lineWidth=1.3; g.lineJoin="round";
+  const ph=p.id*1.7;
+  const bob = st.walking ? Math.abs(Math.sin(t*7+ph))*2.4*s : Math.sin(t*1.6+ph)*0.7*s;
+  const sq  = st.walking ? 1+Math.sin(t*7+ph)*0.06 : 1+Math.sin(t*1.6+ph)*0.03; // squash & stretch
+  const legSw = st.walking ? Math.sin(t*7+ph)*4.5*s : 0;
+  const face = st.face||0; g.scale(face<0?-1:1,1); const fx=face<0?-1:1;
+  g.strokeStyle=INK; g.beginPath(); g.moveTo(-4*s,-2*s); g.lineTo(-4*s+legSw,4*s); g.moveTo(4*s,-2*s); g.lineTo(4*s-legSw,4*s); g.stroke();
+  g.beginPath(); g.moveTo(-6*s+legSw,4.5*s); g.lineTo(-1*s+legSw,4.5*s); g.moveTo(2*s-legSw,4.5*s); g.lineTo(7*s-legSw,4.5*s); g.stroke();
+  g.translate(0,-bob); g.scale(1/sq, sq);
+  const bw = d.body==="box"?9:d.body==="tall"?6.5:d.body==="pear"?8:8, bh = d.body==="tall"?18:d.body==="round"?13:15;
+  const B = d.body==="pear" ? [[-bw*0.6*s,-bh*s],[bw*0.6*s,-bh*s],[bw*1.1*s,0],[-bw*1.1*s,0]] : d.body==="round" ? null : [[-bw*s,-bh*s],[bw*s,-bh*s],[bw*s,0],[-bw*s,0]];
+  if(B){ wob(g,B,p.id*7,true,1); fillStroke(g,d.cloth); } else { ring(g,0,-bh*s*0.5,bw*s*1.05,p.id*7,12); fillStroke(g,d.cloth); }
+  if(d.cloth2!==d.cloth && d.body!=="round"){ g.fillStyle=d.cloth2; g.fillRect(-bw*s*0.35,-bh*s*0.95,bw*s*0.7,bh*s*0.4); g.strokeRect(-bw*s*0.35,-bh*s*0.95,bw*s*0.7,bh*s*0.4); }
+  const gest = st.speaking ? Math.sin(t*9+ph)*7*s : 0;
+  g.beginPath(); g.moveTo(-bw*s,-bh*s*0.8); g.lineTo(-bw*s-5*s, -bh*s*0.8+(st.speaking? -3*s+gest : 6*s));
+  g.moveTo(bw*s,-bh*s*0.8); g.lineTo(bw*s+5*s,-bh*s*0.8+(st.speaking? -3*s-gest : 6*s)); g.stroke();
+  prop(g,p,d,s,bw,bh);
+  const hy=-bh*s-8*s, hr=7.5*s; ring(g,0,hy,hr,p.id*13,12); fillStroke(g,d.skin);
+  hair(g,d,p,hy,hr,s);
+  const blink = ((t*1000+p.id*813)%(3400+p.id*97)) < 130;
+  g.fillStyle=INK; const ey=hy-1*s;
+  if(blink){ g.beginPath(); g.moveTo(-3.6*s,ey); g.lineTo(-1.6*s,ey); g.moveTo(1.6*s,ey); g.lineTo(3.6*s,ey); g.stroke(); }
+  else if(d.eyes==="dot"){ g.beginPath(); g.arc(-2.6*s,ey,0.9*s,0,6.283); g.arc(2.6*s,ey,0.9*s,0,6.283); g.fill(); }
+  else if(d.eyes==="big"||d.eyes==="wide"){ const r=d.eyes==="big"?2.4*s:2*s; g.fillStyle="#fff"; g.beginPath(); g.arc(-2.8*s,ey,r,0,6.283); g.arc(2.8*s,ey,r,0,6.283); g.fill(); g.stroke(); g.fillStyle=INK; const lk=st.face?0.5*fx:0; g.beginPath(); g.arc(-2.4*s+lk*s,ey,r*0.45,0,6.283); g.arc(3.2*s+lk*s,ey,r*0.45,0,6.283); g.fill(); }
+  else { g.beginPath(); g.moveTo(-3.6*s,ey); g.lineTo(-1.6*s,ey); g.moveTo(1.6*s,ey); g.lineTo(3.6*s,ey); g.stroke(); }
+  if(d.brows||st.mood){ const lift=st.mood==="shock"?-1.6*s:st.mood==="cross"?1.2*s:0; g.beginPath(); g.moveTo(-3.8*s,ey-2.4*s+lift); g.lineTo(-1.4*s,ey-2.8*s-(st.mood==="cross"?-1.4*s:0)); g.moveTo(1.4*s,ey-2.8*s-(st.mood==="cross"?-1.4*s:0)); g.lineTo(3.8*s,ey-2.4*s+lift); g.stroke(); }
+  if(d.glasses){ g.beginPath(); g.arc(-2.7*s,ey,2.8*s,0,6.283); g.moveTo(5.5*s,ey); g.arc(2.7*s,ey,2.8*s,0,6.283); g.stroke(); }
+  if(d.freckles){ g.beginPath(); g.arc(-4*s,ey+2.5*s,0.4*s,0,6.283); g.arc(4*s,ey+2.5*s,0.4*s,0,6.283); g.arc(0,ey+3*s,0.4*s,0,6.283); g.fill(); }
+  g.beginPath(); const my=hy+3*s;
+  if(st.mood==="shock"){ g.ellipse(0,my+0.5*s,1.8*s,2.4*s,0,0,6.283); fillStroke(g,"#fff"); }
+  else if(st.speaking){ const o=1.2+Math.abs(Math.sin(t*11+ph))*1.2; g.ellipse(0,my,1.5*s,o*s,0,0,6.283); g.stroke(); }
+  else if(st.mood==="cross"){ g.moveTo(-2.2*s,my+1*s); g.quadraticCurveTo(0,my-1.2*s,2.2*s,my+1*s); g.stroke(); }
+  else if(d.mouth==="wide"){ g.moveTo(-2.5*s,my); g.quadraticCurveTo(0,my+2*s,2.5*s,my); g.stroke(); }
+  else if(d.mouth==="flat"){ g.moveTo(-1.8*s,my); g.lineTo(1.8*s,my); g.stroke(); }
+  else { g.moveTo(-1*s,my); g.quadraticCurveTo(0,my+1*s,1*s,my); g.stroke(); }
+  g.restore();
+  if(st.react) reactMark(g,st.react,x,y-(bh+22)*s,s,t);
+  if(st.walking) dust(g,x,y+5*s,s,t,p.id); }
+function reactMark(g,kind,x,y,s,t){ const k=Math.min(1,(performance.now()%1000)/1000); g.save(); g.translate(x,y-Math.sin(t*6)*1.5*s); g.strokeStyle=INK; g.fillStyle=INK; g.lineWidth=1.4;
+  if(kind==="shock"){ for(let i=0;i<8;i++){ const a=i/8*6.283; g.beginPath(); g.moveTo(Math.cos(a)*3*s,Math.sin(a)*3*s); g.lineTo(Math.cos(a)*7*s,Math.sin(a)*7*s); g.stroke(); } }
+  else if(kind==="idea"){ ring(g,0,0,4.5*s,7,10); fillStroke(g,"#f2c14e"); g.beginPath(); g.moveTo(-1.6*s,4.5*s); g.lineTo(1.6*s,4.5*s); g.stroke(); }
+  else if(kind==="cross"){ g.lineWidth=2; g.beginPath(); g.moveTo(-3*s,-3*s); g.lineTo(3*s,3*s); g.moveTo(3*s,-3*s); g.lineTo(-3*s,3*s); g.stroke(); }
+  else if(kind==="q"){ g.font=`500 ${11*s}px "IBM Plex Mono",monospace`; g.fillText("?",-3*s,4*s); }
+  else if(kind==="note"){ g.beginPath(); g.arc(-1.5*s,3*s,1.8*s,0,6.283); g.fill(); g.beginPath(); g.moveTo(0.3*s,3*s); g.lineTo(0.3*s,-4*s); g.lineTo(4*s,-5.5*s); g.stroke(); }
+  else if(kind==="drop"){ g.beginPath(); g.moveTo(0,-4*s); g.quadraticCurveTo(3*s,1*s,0,3.5*s); g.quadraticCurveTo(-3*s,1*s,0,-4*s); fillStroke(g,"#b8cbe0"); }
+  g.restore(); }
+function dust(g,x,y,s,t,seed){ g.save(); g.strokeStyle=INK; g.globalAlpha=0.35; for(let i=0;i<2;i++){ const k=((t*2.2+i*0.5+ah(seed))%1); const r=(1+k*4)*s; g.beginPath(); g.arc(x-(6+k*10)*s,y-k*3*s,r,0,6.283); g.globalAlpha=0.35*(1-k); g.stroke(); } g.restore(); g.globalAlpha=1; }
+function hair(g,d,p,hy,hr,s){ g.fillStyle=d.hairc; if(d.hat==="cap"){ g.beginPath(); g.arc(0,hy-2*s,hr*0.95,3.3,6.1); g.closePath(); fillStroke(g,d.cloth2); g.beginPath(); g.moveTo(-hr*0.9,hy-3*s); g.lineTo(hr*1.4,hy-3.5*s); g.lineTo(hr*0.9,hy-2*s); g.closePath(); fillStroke(g,d.cloth2); return; }
+  if(d.hat==="beret"){ ring(g,-2*s,hy-hr*0.9,hr*0.9,p.id*17,10); fillStroke(g,d.cloth2); return; }
+  if(d.hat==="hood"){ g.beginPath(); g.arc(0,hy,hr*1.25,3.4,6.0); g.lineTo(hr*1.1,hy+hr*0.9); g.lineTo(-hr*1.1,hy+hr*0.9); g.closePath(); fillStroke(g,d.cloth); return; }
+  if(d.hair==="none"){ if(d.hat==="band"){ g.beginPath(); g.moveTo(-hr,hy-2*s); g.lineTo(hr,hy-2*s); g.stroke(); } return; }
+  if(d.hair==="cloud"){ cloud(g,0,hy-hr*0.75,hr*2.1,hr*1.1,p.id*19,d.hairc); }
+  else if(d.hair==="spike"){ g.beginPath(); for(let i=-3;i<=3;i++){ const x=i*hr*0.3; g.moveTo(x-hr*0.15,hy-hr*0.7); g.lineTo(x,hy-hr*1.6-(i%2?2*s:0)); g.lineTo(x+hr*0.15,hy-hr*0.7); } g.closePath(); fillStroke(g,d.hairc); }
+  else if(d.hair==="bun"){ g.beginPath(); g.arc(0,hy-hr*0.5,hr*0.95,3.2,6.2); g.closePath(); fillStroke(g,d.hairc); ring(g,0,hy-hr*1.45,hr*0.45,p.id*23,8); fillStroke(g,d.hairc); }
+  else if(d.hair==="flat"){ g.beginPath(); g.arc(0,hy-hr*0.35,hr*1.0,3.25,6.15); g.closePath(); fillStroke(g,d.hairc); }
+  else if(d.hair==="braid"){ g.beginPath(); g.arc(0,hy-hr*0.35,hr*1.0,3.25,6.15); g.closePath(); fillStroke(g,d.hairc); for(let i=0;i<3;i++){ ring(g,hr*0.9,hy+hr*0.2+i*hr*0.45,hr*0.3,p.id*29+i,7); fillStroke(g,d.hairc); } }
+  else { for(let i=0;i<6;i++){ const a=3.3+i*0.55; ring(g,Math.cos(a)*hr*0.95,hy+Math.sin(a)*hr*0.95,hr*0.38,p.id*31+i,7); fillStroke(g,d.hairc); } }
+  if(d.hat==="band"){ g.beginPath(); g.moveTo(-hr,hy-hr*0.45); g.lineTo(hr,hy-hr*0.45); g.stroke(); } }
+function prop(g,p,d,s,bw,bh){ const x=bw*s+6*s, y=-bh*s*0.8+6*s; g.strokeStyle=INK; g.lineWidth=1.3;
+  switch(p.role){ case "artist": case "traditional": g.beginPath(); g.moveTo(x-1*s,y+4*s); g.lineTo(x+3*s,y-6*s); g.stroke(); g.fillStyle=p.role==="artist"?"#f2c14e":"#a67c52"; g.fillRect(x-2*s,y+3*s,3*s,3*s); g.strokeRect(x-2*s,y+3*s,3*s,3*s); break;
+    case "apprentice": g.fillStyle="#fff"; g.fillRect(x-1*s,y-4*s,6*s,8*s); g.strokeRect(x-1*s,y-4*s,6*s,8*s); g.beginPath(); g.moveTo(x,y-1*s); g.lineTo(x+4*s,y-1*s); g.moveTo(x,y+1*s); g.lineTo(x+3*s,y+1*s); g.stroke(); break;
+    case "teacher": g.fillStyle="#b4b0d6"; g.fillRect(x-1*s,y-3*s,7*s,5*s); g.strokeRect(x-1*s,y-3*s,7*s,5*s); g.beginPath(); g.moveTo(x+2.5*s,y-3*s); g.lineTo(x+2.5*s,y+2*s); g.stroke(); break;
+    case "programmer": case "ai-native": g.fillStyle="#c9c4bb"; g.fillRect(x-2*s,y-2*s,8*s,5*s); g.strokeRect(x-2*s,y-2*s,8*s,5*s); g.fillStyle=p.role==="ai-native"?"#7bc142":"#b8cbe0"; g.fillRect(x-1*s,y-1*s,6*s,3*s); break;
+    case "curator": g.beginPath(); g.moveTo(x,y-5*s); g.lineTo(x,y+2*s); g.stroke(); g.fillStyle="#e7c98b"; g.fillRect(x-3*s,y-6*s,6*s,3*s); g.strokeRect(x-3*s,y-6*s,6*s,3*s); break;
+    case "buyer": g.fillStyle="#d98c6b"; g.fillRect(x-1*s,y-1*s,6*s,7*s); g.strokeRect(x-1*s,y-1*s,6*s,7*s); g.beginPath(); g.moveTo(x,y-1*s); g.quadraticCurveTo(x+2*s,y-5*s,x+4*s,y-1*s); g.stroke(); break;
+    case "administrator": g.fillStyle="#e7c98b"; g.fillRect(x-1*s,y-5*s,6*s,8*s); g.strokeRect(x-1*s,y-5*s,6*s,8*s); g.strokeRect(x+0.5*s,y-6*s,3*s,2*s); break;
+    case "hybrid": g.beginPath(); g.moveTo(x-1*s,y+4*s); g.lineTo(x+2*s,y-5*s); g.stroke(); g.fillStyle="#c9c4bb"; g.fillRect(x+1*s,y,6*s,4*s); g.strokeRect(x+1*s,y,6*s,4*s); break;
+    case "journalist": g.fillStyle="#fff"; g.fillRect(x-1*s,y-5*s,6*s,8*s); g.strokeRect(x-1*s,y-5*s,6*s,8*s); g.beginPath(); g.moveTo(x,y-3*s); g.lineTo(x+4*s,y-3*s); g.moveTo(x,y-1*s); g.lineTo(x+4*s,y-1*s); g.moveTo(x,y+1*s); g.lineTo(x+3*s,y+1*s); g.stroke(); break;
+    case "audience": g.fillStyle="#fff"; g.fillRect(x-1*s,y-2*s,4*s,5*s); g.strokeRect(x-1*s,y-2*s,4*s,5*s); g.beginPath(); g.moveTo(x+3*s,y-1*s); g.quadraticCurveTo(x+6*s,y,x+3*s,y+2*s); g.stroke(); break; } }
+
+/* ---------- places ---------- */
+function sign(g,text,x,y){ g.font='500 9px "IBM Plex Mono",monospace'; const w=g.measureText(text).width+10; wob(g,[[x-w/2,y-7],[x+w/2,y-7],[x+w/2,y+7],[x-w/2,y+7]],text.length*77,true,1.4); fillStroke(g,"#fff"); g.fillStyle=INK; g.fillText(text,x-w/2+5,y+3); }
+function house(g,x,y,w,h,seed,fill,roof){ wob(g,[[x-w/2,y],[x+w/2,y],[x+w/2,y-h],[x-w/2,y-h]],seed,true,1.4); fillStroke(g,fill); wob(g,[[x-w/2-4,y-h],[x,y-h-h*0.55],[x+w/2+4,y-h]],seed+5,true,1.4); fillStroke(g,roof||"#d6ccb8"); }
+function drawPlace(g,k,x,y,sc){ g.save(); g.translate(x,y); g.scale(sc,sc); g.lineWidth=1.3; g.lineJoin="round"; const P=S.PLACES[k];
+  switch(k){
+    case "school": house(g,0,0,64,34,11,"#f4efe4"); g.strokeRect(-24,-24,10,12); g.strokeRect(-6,-24,10,12); g.fillStyle="#fff"; g.fillRect(10,-22,12,22); g.strokeRect(10,-22,12,22); g.beginPath(); g.moveTo(-32,-52); g.lineTo(-32,-90); g.stroke(); wob(g,[[-32,-90],[-12,-84],[-32,-78]],3,true,1); fillStroke(g,"#e8534a"); break;
+    case "studio": house(g,0,0,56,36,21,"#eadfcb"); g.fillStyle="#b8cbe0"; wob(g,[[-20,-30],[16,-30],[16,-8],[-20,-8]],22,true,1); fillStroke(g,"#b8cbe0"); g.beginPath(); g.moveTo(-2,-30); g.lineTo(-2,-8); g.moveTo(-20,-19); g.lineTo(16,-19); g.stroke(); break;
+    case "archive": wob(g,[[-36,0],[36,0],[36,-38],[-36,-38]],31,true,1.4); fillStroke(g,"#e7e1d2"); for(let i=-2;i<=2;i++){ g.fillStyle="#f7f3ea"; g.fillRect(i*13-3,-34,6,32); g.strokeRect(i*13-3,-34,6,32); } wob(g,[[-40,-38],[0,-52],[40,-38]],33,true,1); fillStroke(g,"#c9c4bb"); break;
+    case "market": g.beginPath(); g.moveTo(-34,0); g.lineTo(-34,-30); g.moveTo(34,0); g.lineTo(34,-30); g.stroke(); wob(g,[[-40,-30],[40,-30],[36,-44],[-36,-44]],41,true,1.4); fillStroke(g,"#e8534a"); for(let i=-3;i<=3;i+=2){ g.fillStyle="#fff"; g.fillRect(i*10-4,-43,8,12); } g.fillStyle="#a67c52"; g.fillRect(-30,-14,60,14); g.strokeRect(-30,-14,60,14); g.fillStyle="#7bc142"; g.beginPath(); g.arc(-16,-18,5,0,6.283); g.arc(-4,-19,5,0,6.283); g.fill(); g.stroke(); g.fillStyle="#f2c14e"; g.beginPath(); g.arc(10,-18,5,0,6.283); g.arc(22,-19,4,0,6.283); g.fill(); g.stroke(); break;
+    case "commons": g.strokeStyle=INK; g.beginPath(); g.moveTo(0,0); g.lineTo(0,-30); g.stroke(); g.lineWidth=2.2; g.beginPath(); g.moveTo(0,-18); g.lineTo(-10,-30); g.moveTo(0,-22); g.lineTo(9,-34); g.stroke(); g.lineWidth=1.3; cloud(g,0,-46,64,34,51,"#a9c7a0"); g.beginPath(); for(let i=-4;i<=4;i++){ g.moveTo(i*12,10); g.lineTo(i*12,2); } g.moveTo(-48,6); g.lineTo(48,6); g.stroke(); break;
+    case "lab": wob(g,[[-34,0],[34,0],[34,-34],[-34,-34]],61,true,1.4); fillStroke(g,"#dfe3e6"); g.fillStyle="#fff"; g.fillRect(-26,-28,16,14); g.strokeRect(-26,-28,16,14); g.fillRect(4,-26,22,26); g.strokeRect(4,-26,22,26); g.beginPath(); g.moveTo(28,-34); g.lineTo(28,-48); g.stroke(); g.beginPath(); g.arc(28,-52,9,0.6,3.7); g.closePath(); fillStroke(g,"#fff"); g.beginPath(); g.arc(-28,-40,6,0,6.283); g.stroke(); for(let i=0;i<8;i++){ const a=i*0.785; g.beginPath(); g.moveTo(-28+Math.cos(a)*6,-40+Math.sin(a)*6); g.lineTo(-28+Math.cos(a)*9,-40+Math.sin(a)*9); g.stroke(); } break;
+    default: house(g,0,0,28,20,k.length*7+k.charCodeAt(4),"#efe6d3"); g.strokeRect(-4,-12,8,12); break; }
+  g.restore(); }
+
+/* ---------- world lifecycle ---------- */
+function begin(seed){ U.A=S.seedWorld(seed,U.player); U.B=null; U.forkDay=null; U.saved=null; U.focus="A"; U.sel=null; U.cursor={A:0,B:0}; U.lastDay={A:-1,B:-1}; U.views={A:{},B:{}}; U.snaps=[]; U.agentDay={A:0,B:0}; U.thoughtsShown={}; $("#thread").innerHTML=""; U.mode="thread"; $("#tback").style.display="none"; $("#tl").textContent="feed"; snap(); renderThread(); }
+function snap(){ if(U.B) return; U.snaps.push({day:U.A.day, s:S.serialize(U.A)}); if(U.snaps.length>40) U.snaps.shift(); }
+function W(id){ return id==="B"?U.B:U.A; }
+
+/* ---------- clock ---------- */
+let last=performance.now();
+function loop(now){ const dt=(now-last)/1000; last=now; if(U.started && !U.paused){ U.acc+=dt*U.speed; let n=0; while(U.acc>=1 && n<32){ U.acc-=1; S.step(U.A); if(U.B) S.step(U.B); n++; if(U.A.day%10===0) snap(); } if(n){ renderThread(); agents(); } }
+  draw(now/1000); requestAnimationFrame(loop); }
+function clock(){ const w=W(U.focus); const y=Math.floor(w.day/S.YEAR)+1, d=w.day%S.YEAR; $("#clock").textContent=`year ${y} · day ${d}`; }
+
+/* ---------- agents: observe → remember → deliberate → propose → validate → execute → event ---------- */
+function agents(){ if(!AI.on||!AI.key) return; for(const id of (U.B?["A","B"]:["A"])){ const w=W(id);
+    if(w.day-w.lastDispatch>=15 && U.inflight<2){ const j=w.people.find(p=>p.role==="journalist"&&!p.left); const evs=w.events.filter(e=>S.CONSEQ.has(e.t)&&e.t!=="dispatch"&&e.day>w.lastDispatch).slice(-14); if(j&&evs.length>=3){ w.lastDispatch=w.day; U.inflight++; llm("You are the town's journalist. From the events given, file a dispatch: a headline under ten words, then two short paragraphs. Report only what is in the record; name people by name; quote no one who did not speak; no verdicts on who was right. Reply ONLY with JSON: {\"headline\":\"...\",\"body\":\"...\"}", `Days ${evs[0].day}–${w.day}. Events:\n${evs.map(e=>`day ${e.day} · ${S.describe(w,e)}`).join("\n")}`).then(t=>{ const o=JSON.parse(t.replace(/```json|```/g,"").trim()); if(w===W(id)&&o.headline){ S.dispatch(w,j.id,o.headline,o.body||""); renderThread(); } }).catch(()=>{}).finally(()=>U.inflight--); } } if(w.day-U.agentDay[id] < (U.speed>=4?4:U.speed>=1?2:1)) continue; if(U.inflight>=2) return; U.agentDay[id]=w.day;
+    const alive=w.people.filter(p=>!p.left && !(p.player&&!p.rep)); let p=null;
+    // someone the visitor spoke to answers first
+    const me=w.people[w.player]; if(me){ const last=[...w.events].reverse().find(e=>e.t==="say"&&e.who===me.id&&e.to!=null); if(last && !w.events.some(e=>e.t==="say"&&e.who===last.to&&e.to===me.id&&e.n>last.n)) p=w.people[last.to]; }
+    if(!p && U.sel&&U.sel.kind==="person"&&U.sel.world===id&&Math.random()<0.5) p=w.people[U.sel.id];
+    if(!p){ const recent=[...w.events].slice(-30).map(e=>e.who).filter(v=>v!=null); p = recent.length&&Math.random()<0.7 ? w.people[recent[Math.floor(Math.random()*recent.length)]] : alive[Math.floor(Math.random()*alive.length)]; if(p.left||(p.player&&!p.rep)) p=alive[Math.floor(Math.random()*alive.length)]; }
+    deliberate(w,id,p); } }
+async function deliberate(w,id,p){ U.inflight++; const day0=w.day; try{ const o=S.observe(w,p); const txt=await llm(AI.prompts.agent, `Observation:\n${JSON.stringify(o,null,1)}\n\nIt is day ${w.day}. What do you think, what do you say, and what do you do?`); const j=JSON.parse(txt.replace(/```json|```/g,"").trim());
+    if(w!==W(id)) return; // world replaced meanwhile
+    if(j.think){ S.think(w,p,j.think); pushThought(w,id,p,j.think); }
+    const dup=(p.said||[]).includes(String(j.say||"").trim()); if(j.say && String(j.say).trim() && !dup){ const to=j.to?w.people.find(q=>q.name.toLowerCase()===String(j.to).toLowerCase()):null; if(!to) j.say=""; else { p.said=(p.said||[]).concat(String(j.say).trim()).slice(-6); } } if(j.say && String(j.say).trim() && !dup){ const to=w.people.find(q=>q.name.toLowerCase()===String(j.to).toLowerCase()); const e=Object.freeze({t:"say",who:p.id,to:to?to.id:null,line:String(j.say).slice(0,160),ctx:{llm:true},n:w.next++,day:w.day}); w.events.push(e); p.memory.push(e.n); if(to){ to.memory.push(e.n); } }
+    if(j.act&&j.act.op&&j.act.op!=="none"){ S.enact(w,p,j.act); }
+    renderThread(); }
+  catch(err){ if(String(err.message).startsWith("http 401")||String(err.message)==="no key"){ AI.on=false; aiMark(); fault(`${p.name} could not respond.`, ()=>{ AI.on=true; aiMark(); }); } }
+  finally{ U.inflight--; } }
+function pushThought(w,id,p,text){ if(U.mode!=="thread") return; const f=U.filter; if(f==="changed") return; if(f==="me" && p.id!==w.player) return; if(f.startsWith("person:") && p.id!==Number(f.slice(7))) return; const stick=atBottom(); const el=document.createElement("div"); el.className="ev think"; el.dataset.ids=String(p.id); if(U.B){ const sp=document.createElement("span"); sp.className="w"; sp.textContent=id; el.prepend(sp); } el.append(`${p.name} thinks: ${text}`); th.appendChild(el); restyle(); if(stick) th.scrollTop=th.scrollHeight; }
+
+/* ---------- world canvas ---------- */
+const cv=$("#world"), cx=cv.getContext("2d");
+function size(){ const r=cv.parentElement.getBoundingClientRect(); cv.width=Math.max(1,Math.round(r.width*devicePixelRatio)); cv.height=Math.max(1,Math.round(r.height*devicePixelRatio)); }
+addEventListener("resize",size); size();
+const SITES=[{k:"studio",h:0},{k:"school",h:51.4},{k:"commons",h:102.9},{k:"archive",h:154.3},{k:"market",h:205.7},{k:"lab",h:257.1},{k:"homes",h:308.6}];
+const SPAN=360/SITES.length;
+function siteOf(place){ return place.startsWith("home") ? "homes" : place==="south" ? null : place; }
+function siteAt(h){ let best=SITES[0],bd=999; for(const sd of SITES){ const d=Math.abs(((h-sd.h+540)%360)-180); if(d<bd){ bd=d; best=sd; } } return best; }
+function turnTo(k){ const sd=SITES.find(x=>x.k===k); if(!sd) return; if(siteAt(U.target).k!==k && !U.card) U.card={text:"AT THE "+(k==="homes"?"HOMES":k.toUpperCase()), at:performance.now(), dur:1300}; let d=((sd.h-U.heading+540)%360)-180; U.target=U.heading+d; setFilter(U.filter==="here"||U.filter==="all"?"here":U.filter); }
+function turnBy(n){ const cur=siteAt(U.target); const i=SITES.indexOf(cur); const nx=SITES[(i+n+SITES.length)%SITES.length]; U.target += n*SPAN; U.target=Math.round(U.target/SPAN)*SPAN; if(U.filter==="here") rebuild(); }
+function selP0(id){ return U.sel&&U.sel.kind==="person"&&U.sel.world===id ? U.sel.id : null; }
+function drawnFocus(id,beat){ const d=(U.drawn&&U.drawn[id])||{}; const a=d[beat.a], b=beat.b!=null?d[beat.b]:null; if(!a) return null; return b? {x:(a.x+b.x)/2,y:(a.y+b.y)/2} : a; }
+function drawWorld(w, id, ox, ww, hh, t){
+  const Vw=U.views[id]; const P=S.PLACES; const RING=46; const floorY=hh-34; const sc = ww<300 ? 1.7 : Math.min(3.2, (hh-RING)/110);
+  const now=performance.now();
+  U.heading += (U.target-U.heading)*0.12; if(Math.abs(U.target-U.heading)<0.05) U.heading=U.target;
+  const eyes = U.eyes&&U.eyes.world===id ? w.people[U.eyes.id] : null; const K = eyes ? S.known(w,eyes) : null;
+  const selP = U.sel&&U.sel.kind==="person"&&U.sel.world===id ? w.people[U.sel.id] : null;
+  // camera: eases toward the beat, the selection, or centre
+  const now0=performance.now(); const beat = U.beat&&U.beat.world===id&&now0-U.beat.at<U.beat.dur ? U.beat : (U.beat&&U.beat.world===id?(U.beat=null):null);
+  { const f = beat ? drawnFocus(id,beat) : (selP0(id)!=null ? ((U.drawn&&U.drawn[id])||{})[selP0(id)] : null);
+    U.cam.tz = beat ? beat.cfg.z : (selP0(id)!=null?1.12:1.0);
+    U.cam.tx = f ? f.x : ox+ww/2; U.cam.ty = f ? f.y-12 : hh*0.6;
+    if(U.cam.y==null) U.cam.y=U.cam.ty; if(!U.cam.x) U.cam.x=U.cam.tx;
+    U.cam.z += (U.cam.tz-U.cam.z)*0.055; U.cam.x += (U.cam.tx-U.cam.x)*0.07; U.cam.y += (U.cam.ty-U.cam.y)*0.07; }
+  cx.save(); cx.beginPath(); cx.rect(ox,0,ww,hh); cx.clip(); cx.lineWidth=1.3; cx.strokeStyle=INK; cx.fillStyle=INK; cx.font='9px "IBM Plex Mono",monospace';
+  U.bubbles=U.bubbles.filter(b=>now-b.at<7000); const speaking=new Set(U.bubbles.filter(b=>b.world===id).map(b=>b.who));
+  U.flashes=U.flashes.filter(f=>now-f.at<2600);
+  const here=siteAt(U.heading).k;
+  // ---- the site scenes: current and the one sliding in ----
+  const drawnPos={};
+  const CZ=U.cam.z, AX=ox+ww/2, AY=hh*0.6;
+  cx.save(); cx.translate(AX,AY); cx.scale(CZ,CZ); cx.translate(-U.cam.x,-U.cam.y);
+  cx.fillStyle="#efe8d6"; cx.fillRect(U.cam.x-ww*2,U.cam.y-hh*2,ww*4,hh*4);
+  { const gy=hh-34; cx.fillStyle="#e6dcc4"; cx.fillRect(U.cam.x-ww*2,gy+4,ww*4,hh*2); cx.strokeStyle="rgba(0,0,0,.3)"; cx.beginPath(); cx.moveTo(U.cam.x-ww*2,gy+4); cx.lineTo(U.cam.x+ww*2,gy+4); cx.stroke(); cx.strokeStyle=INK; }
+  for(const sd of SITES){ let d=((sd.h-U.heading+540)%360)-180; const off=d/SPAN*ww; if(Math.abs(off)>=ww) continue; const cxm=ox+ww/2+off;
+    // ground
+
+    // buildings
+    if(sd.k==="homes"){ ["home1","home2","home3","home4"].forEach((k,i)=>drawPlace(cx,k,cxm-ww*0.33+i*ww*0.22,floorY-30*sc*0.5,sc*0.9)); }
+    else drawPlace(cx,sd.k,cxm,floorY-26*sc,sc);
+    // works on the wall
+    const arts=[]; for(let i=w.artifacts.length-1;i>=0&&arts.length<6;i--){ const a=w.artifacts[i]; if(siteOf(a.place)!==sd.k) continue; if(K){ if(!K.arts.has(a.id)) continue; } else if(a.withheld) continue; arts.push(a); }
+    arts.forEach((a,i)=>{ const S0=15*sc; const x=cxm-(arts.length-1)*(S0+8)/2+i*(S0+8), y=RING+(hh-RING)*0.16; const sel=U.sel&&U.sel.kind==="artifact"&&U.sel.id===a.id&&U.sel.world===id; cx.save(); cx.translate(x-S0/2,y); cx.fillStyle="#fff"; cx.fillRect(0,0,S0,S0); marks(cx,a,S0); cx.restore(); if(sel){ cx.strokeRect(x-S0/2-3,y-3,S0+6,S0+6); if(a.synthetic&&a.prompt!=null) speech('"'+w.prompts[a.prompt].text+'"',x,y+S0+16,ox,ww,a.id); } if(Math.abs(off)<ww/2) Vw["a"+a.id]={x,y:y+S0/2}; });
+    // people present
+    const present=w.people.filter(p=>!p.left&&siteOf(p.place)===sd.k);
+    const slots=present.length; present.forEach((p,i)=>{ const tx=cxm-ww*0.42+ (slots>1? i/(slots-1):0.5)*ww*0.84 + (ah(p.id*7)-0.5)*10; const ty=floorY-(ah(p.id*13))*22*sc*0.5; let v=Vw[p.id]; if(!v||v.site!==sd.k){ v=Vw[p.id]={x:tx+(v?0:0),y:ty,walk:1,site:sd.k,x0:tx}; v.x=tx+(ah(p.id)-0.5)*ww*0.9; } const dx=tx-v.x, dy=ty-v.y, dd=Math.hypot(dx,dy); v.walk = dd>3?1:Math.max(0,v.walk-0.05); const sp=Math.min(dd,0.9*(U.speed>1?3:1)); if(dd>0.1){ v.x+=dx/dd*sp; v.y+=dy/dd*sp; } drawnPos[p.id]={x:v.x,y:v.y,off}; });
+    const cs=(present.length>5?0.68:present.length>3?0.78:0.9)*sc;
+    if(selP && drawnPos[selP.id]){ for(const q of S.partners(w,selP)){ const a=drawnPos[selP.id], b=drawnPos[q.id]; if(!b||b.off!==a.off) continue; const T=S.tie(w,selP.id,q.id); cx.globalAlpha=0.25+T.trust*0.5; cx.setLineDash(T.collab?[]:[3,4]); cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke(); cx.setLineDash([]); } cx.globalAlpha=1; }
+    for(const f of U.flashes){ if(f.world!==id) continue; const a=drawnPos[f.a], b=drawnPos[f.b]; if(!a||!b) continue; const k=1-(now-f.at)/2600; cx.globalAlpha=k; cx.setLineDash(f.gone?[2,6]:[]); cx.lineWidth=f.gone?1:2; cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke(); cx.setLineDash([]); cx.lineWidth=1.3; } cx.globalAlpha=1;
+    if(beat && sd.k===beat.site){ const inb=new Set([beat.a,beat.b]); cx.globalAlpha=1; }
+    const sorted=present.map(p=>({p,v:Vw[p.id]})).sort((a,b)=>a.v.y-b.v.y);
+    for(const {p,v} of sorted){ const unknown=K&&!K.people.has(p.id); const offbeat = beat && beat.b!=null && p.id!==beat.a && p.id!==beat.b; if(unknown) cx.globalAlpha=0.14; else if(offbeat) cx.globalAlpha=0.4; shadow(cx,v.x,v.y+5*cs,10*cs); if(selP&&selP.id===p.id){ cx.lineWidth=1.6; cx.beginPath(); cx.ellipse(v.x,v.y+5*cs,14*cs,5*cs,0,0,6.283); cx.stroke(); cx.lineWidth=1.3; if(U.pulse&&U.pulse.id===p.id&&U.pulse.world===id){ const k=(now-U.pulse.at)/1400; if(k<1){ cx.globalAlpha=1-k; cx.beginPath(); cx.ellipse(v.x,v.y-14*cs,(20+40*k)*cs,(30+50*k)*cs,0,0,6.283); cx.stroke(); cx.globalAlpha=1; } } }
+      const rc=U.react[p.id]; const live = rc && now-rc.at<rc.dur; const other = live&&rc.face!=null?drawnPos[rc.face]:null;
+      drawChar(cx,p,v.x,v.y,cs,t,{walking:v.walk>0.5, speaking:speaking.has(p.id), react: live?rc.kind:null, mood: live?rc.mood:null, face: other?(other.x<v.x?-1:1):(beat&&beat.b!=null&&(p.id===beat.a||p.id===beat.b)? ((drawnPos[p.id===beat.a?beat.b:beat.a]||{x:v.x}).x<v.x?-1:1):0)});
+      cx.font='9px "IBM Plex Mono",monospace'; cx.fillStyle=INK; const nm=p.name+(p.player?" (you)":""); cx.fillText(nm, v.x-cx.measureText(nm).width/2, v.y+16);
+      if(K&&!unknown&&p.id!==eyes.id){ const T=S.tie(w,eyes.id,p.id); const lab=T?(T.collab?"works with me":T.trust>0.6?"trusted":T.trust<0.3?"wary":"known"):"seen"; cx.fillText(lab, v.x-cx.measureText(lab).width/2, v.y+27); }
+      cx.globalAlpha=1; if(p.usesAI){ cx.fillStyle="#7bc142"; cx.beginPath(); cx.arc(v.x+11*cs,v.y-30*cs,2.2*cs,0,6.283); cx.fill(); cx.stroke(); } }
+    if(selP&&drawnPos[selP.id]&&Math.abs(off)<ww/2){ const v=drawnPos[selP.id]; cx.fillStyle=INK; cx.font='500 9px "IBM Plex Mono",monospace'; const lab=(selP.act||"out").toUpperCase(); cx.fillText(lab, v.x-cx.measureText(lab).width/2, v.y+38); cx.font='9px "IBM Plex Mono",monospace'; const th0=(selP.thoughts&&selP.thoughts.length)?selP.thoughts[selP.thoughts.length-1].text:(AI.key?S.thought(w,selP):"…"); thoughtCloud(th0, v.x, v.y-58*cs, ox, ww, selP.id); }
+    // site name
+
+    // people at this site who are selected but not here: nothing. selected elsewhere hint drawn in ring.
+  }
+  for(const b of U.bubbles){ if(b.world!==id) continue; const v=drawnPos[b.who]; if(!v) continue; cx.globalAlpha=Math.min(1,(7000-(now-b.at))/900); speech(b.line, v.x, v.y-42*0.85*sc, ox, ww, b.who); } cx.globalAlpha=1;
+  cx.restore(); U.drawn=U.drawn||{}; U.drawn[id]=drawnPos;
+  { const hk2=siteAt(U.heading).k; const n=w.people.filter(p=>!p.left&&siteOf(p.place)===hk2).length; cx.font='500 10px "IBM Plex Mono",monospace'; cx.fillStyle=INK; const lab=(hk2==="homes"?"the homes":P[hk2]?P[hk2].label:hk2)+" · "+n; cx.fillStyle="#fff"; const tw2=cx.measureText(lab).width; cx.fillRect(ox+ww/2-tw2/2-4,hh-18,tw2+8,14); cx.fillStyle=INK; cx.fillText(lab, ox+ww/2-tw2/2, hh-8); cx.font='9px "IBM Plex Mono",monospace'; }
+  // ---- the ring: 360°, current site centred, everything else is what you're missing ----
+  cx.fillStyle="#fff"; cx.fillRect(ox,0,ww,RING); cx.strokeStyle=INK; cx.beginPath(); cx.moveTo(ox,RING+0.5); cx.lineTo(ox+ww,RING+0.5); cx.stroke();
+  const pips=U.pips[id]||{}; 
+  for(const sd of SITES){ let d=((sd.h-U.heading+540)%360)-180; const x=ox+ww/2+d/180*(ww/2-18); const cur=sd.k===here; const n=w.people.filter(p=>!p.left&&siteOf(p.place)===sd.k).length; const rec=(pips[sd.k]||[]).filter(pt=>now-pt.at<9000);
+    cx.globalAlpha=cur?1:0.55; if(sd.k==="homes") drawPlace(cx,"home1",x,RING-14,0.5); else drawPlace(cx,sd.k,x,RING-14,0.38); cx.globalAlpha=1;
+    cx.fillStyle=INK; cx.font=(cur?'500 ':'')+'8px "IBM Plex Mono",monospace'; const nm=sd.k==="homes"?"homes":sd.k==="lab"?"lab":sd.k; cx.fillText(nm, x-cx.measureText(nm).width/2, RING-4);
+    // presence dots
+    for(let i=0;i<Math.min(n,8);i++){ cx.beginPath(); cx.arc(x-Math.min(n,8)*2.4+i*4.8+2.4, 5, 1.4,0,6.283); cx.fill(); }
+    // activity pips: what just happened there
+    rec.forEach((pt,i)=>{ const k=1-(now-pt.at)/9000; cx.globalAlpha=k; if(pt.kind==="say"){ cx.strokeRect(x+14,6+i*5,5,3); } else { cx.fillStyle="#e8534a"; cx.beginPath(); cx.arc(x+16,8+i*5,2,0,6.283); cx.fill(); cx.fillStyle=INK; } cx.globalAlpha=1; });
+    if(selP && !selP.left && siteOf(selP.place)===sd.k && !cur){ cx.beginPath(); cx.arc(x,RING-30,3,0,6.283); cx.stroke(); }
+  }
+  // title card
+  if(U.card){ const k=(now-U.card.at)/U.card.dur; if(k>=1) U.card=null; else { const inK=Math.min(1,k/0.18), outK=k>0.8?1-(k-0.8)/0.2:1; const yy=hh*0.42; cx.save(); cx.globalAlpha=outK; cx.font='500 13px "IBM Plex Mono",monospace'; const tw=cx.measureText(U.card.text).width; const bw2=(tw+34)*inK; cx.fillStyle="#fff"; cx.fillRect(ox+ww/2-bw2/2,yy-16,bw2,32); cx.strokeStyle=INK; cx.lineWidth=1.6; cx.strokeRect(ox+ww/2-bw2/2,yy-16,bw2,32); if(inK>0.9){ cx.fillStyle=INK; cx.fillText(U.card.text, ox+ww/2-tw/2, yy+5); } cx.restore(); cx.lineWidth=1.3; } }
+  // edge arrows
+  cx.fillStyle=INK; cx.font='11px "IBM Plex Mono",monospace'; cx.fillText("‹", ox+6, RING/2+4); cx.fillText("›", ox+ww-12, RING/2+4);
+  cx.restore(); }
+function speech(text,x,y,ox,ww,seed){ const max=Math.floor((ww-30)/5.6); const t=text.length>max?text.slice(0,max-1)+"…":text; const tw=cx.measureText(t).width; let bx=x-tw/2; bx=Math.max(ox+6,Math.min(ox+ww-tw-6,bx)); wob(cx,[[bx-5,y-11],[bx+tw+5,y-11],[bx+tw+5,y+5],[bx+8,y+5],[x,y+11],[bx+2,y+5],[bx-5,y+5]],seed*3,true,1.2); fillStroke(cx,"#fff"); cx.fillStyle=INK; cx.fillText(t,bx,y+1); }
+function thoughtCloud(text,x,y,ox,ww,seed){ const maxc=Math.min(36,Math.floor((ww-40)/5.6)); const words=text.split(" "); const lines=[]; let cur=""; for(const wd of words){ if((cur+" "+wd).trim().length>maxc){ lines.push(cur.trim()); cur=wd; if(lines.length===2) break; } else cur+=" "+wd; } if(lines.length<2&&cur.trim()) lines.push(cur.trim()); if(lines.length===2&&cur.trim()&&!lines.includes(cur.trim())) lines[1]=lines[1].slice(0,maxc-1)+"…";
+  const tw=Math.max(...lines.map(l=>cx.measureText(l).width)); const h=lines.length*12+10; let bx=x-tw/2; bx=Math.max(ox+12,Math.min(ox+ww-tw-12,bx)); const cy=Math.max(h/2+6,y-h/2); const cxm=bx+tw/2;
+  cloud(cx,cxm,cy,tw+22,h+6,seed*5,"#fff"); cx.beginPath(); cx.arc(x-3,cy+h/2+7,1.8,0,6.283); cx.moveTo(x-5,cy+h/2+13); cx.arc(x-6,cy+h/2+13,1,0,6.283); cx.stroke(); cx.fillStyle=INK; lines.forEach((l,i)=>cx.fillText(l,bx,cy-h/2+12+i*12)); }
+function draw(t){ if(!U.started||$("#worldwrap").classList.contains("folded")) { if(U.started) clock(); return; } const Wd=cv.width/devicePixelRatio, Hd=cv.height/devicePixelRatio; cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); cx.clearRect(0,0,Wd,Hd);
+  if(U.B){ drawWorld(U.A,"A",0,Wd/2,Hd,t); drawWorld(U.B,"B",Wd/2,Wd/2,Hd,t); cx.strokeStyle=INK; cx.setLineDash([2,4]); cx.beginPath(); cx.moveTo(Wd/2,0); cx.lineTo(Wd/2,Hd); cx.stroke(); cx.setLineDash([]); }
+  else drawWorld(U.A,"A",0,Wd,Hd,t); clock(); }
+cv.addEventListener("pointerdown", ev => { const r=cv.getBoundingClientRect(); U.swipe={x:ev.clientX,y:ev.clientY,t:performance.now(),h:U.target,moved:false}; cv.setPointerCapture(ev.pointerId); });
+cv.addEventListener("pointermove", ev => { if(!U.swipe) return; const dx=ev.clientX-U.swipe.x; if(Math.abs(dx)>8) U.swipe.moved=true; if(U.swipe.moved){ const r=cv.getBoundingClientRect(); const ww=U.B?r.width/2:r.width; U.heading=U.swipe.h - dx/ww*SPAN; U.target=U.heading; } });
+cv.addEventListener("pointerup", ev => { const sw=U.swipe; U.swipe=null; if(!sw) return; const r=cv.getBoundingClientRect(); const x=ev.clientX-r.left, y=ev.clientY-r.top; const Wd=r.width; const id = U.B && x>Wd/2 ? "B":"A"; const w=W(id); const Vw=U.views[id]; const ww=U.B?Wd/2:Wd; const ox=U.B&&x>Wd/2?Wd/2:0;
+  if(sw.moved){ U.target=Math.round(U.heading/SPAN)*SPAN; if(U.filter==="here") rebuild(); return; }
+  if(y<46){ if(x-ox<24){ turnBy(-1); return; } if(x-ox>ww-24){ turnBy(1); return; } let best=null,bd=40; for(const sd of SITES){ let d=((sd.h-U.heading+540)%360)-180; const sx=ox+ww/2+d/180*(ww/2-18); if(Math.abs(sx-x)<bd){ bd=Math.abs(sx-x); best=sd; } } if(best) turnTo(best.k); return; }
+  const CZ=U.cam.z, AX=ox+ww/2, AY=hh*0.6; const sx=(x-AX)/CZ+U.cam.x, sy=(y-AY)/CZ+U.cam.y;
+  let best=null, bd=26; const hk=siteAt(U.heading).k;
+  for(const p of w.people){ const v=Vw[p.id]; if(!v||p.left||v.site!==hk) continue; const d=Math.hypot(v.x-sx,v.y-14-sy); if(d<bd){ bd=d; best={kind:"person",id:p.id,world:id}; } }
+  if(!best) for(const a of w.artifacts){ const v=Vw["a"+a.id]; if(!v) continue; const d=Math.hypot(v.x-sx,v.y-sy); if(d<bd){ bd=d; best={kind:"artifact",id:a.id,world:id}; } }
+  U.focus=id; select(best); });
+/* ---------- selection → composer + feed ---------- */
+function select(sel,from){ U.sel=sel; if(sel&&sel.kind==="person"&&from==="feed"){ const p=W(sel.world).people[sel.id]; const sk=siteOf(p.place); if(sk&&sk!==siteAt(U.target).k) turnTo(sk); } U.pulse = sel&&sel.kind==="person" ? {id:sel.id,world:sel.world,at:performance.now()} : null; const inp=$("#input"); const cp=$("#chip-person"); if(sel&&sel.kind==="person"){ const nm=W(sel.world).people[sel.id].name; cp.textContent="@"+nm; cp.style.display=""; if(U.filter.startsWith("person:")) setFilter("person:"+sel.id); } else if(!U.filter.startsWith("person:")) cp.style.display="none";
+  if(!sel){ inp.placeholder = U.B ? "change one thing…" : "say / ask / change…"; inp.value=""; restyle(); return; }
+  const w=W(sel.world);
+  if(sel.kind==="person"){ const p=w.people[sel.id]; inp.value=""; inp.placeholder=`@${p.name} …`; if(from!=="feed"){ const lines=[...th.querySelectorAll(".ev")].filter(el=>(el.dataset.ids||"").split(",").includes(String(p.id))); const lastLine=lines[lines.length-1]; if(lastLine){ lastLine.scrollIntoView({block:"center"}); lastLine.classList.add("hi"); setTimeout(()=>lastLine.classList.remove("hi"),1600); } } personCard(w,p,sel.world); }
+  else { const a=w.artifacts[sel.id]; inp.placeholder="say something · @name · /change …"; artifactCard(w,a,sel.world,false); }
+  restyle(); }
+function restyle(){ const sel=U.sel; th.querySelectorAll(".ev").forEach(el=>{ if(!sel||sel.kind!=="person"){ el.classList.remove("dim"); return; } const ids=(el.dataset.ids||"").split(",").filter(Boolean).map(Number); el.classList.toggle("dim", !ids.includes(sel.id)); }); }
+
+/* ---------- feed ---------- */
+const th=$("#thread");
+function atBottom(){ return th.scrollHeight-th.scrollTop-th.clientHeight<60; }
+function linkify(w,id,text){ const names=w.people.map(p=>p.name).sort((a,b)=>b.length-a.length); const re=new RegExp(`(\"[^\"]{3,80}\")|(#\\d+)|\\b(${names.join("|")})\\b`,"g"); const frag=document.createDocumentFragment(); let last=0; let m;
+  while((m=re.exec(text))){ if(m.index>last) frag.append(text.slice(last,m.index)); const a=document.createElement("a");
+    if(m[1]){ const pr=w.prompts.find(x=>'"'+x.text+'"'===m[1]); a.textContent=m[1]; a.className="pr"; if(pr) a.onclick=ev=>{ ev.stopPropagation(); promptCard(w,id,pr); }; }
+    else if(m[2]){ const aid=Number(m[2].slice(1)); a.textContent=m[2]; a.onclick=ev=>{ ev.stopPropagation(); if(w.artifacts[aid]){ U.focus=id; select({kind:"artifact",id:aid,world:id}); } }; }
+    else { const p=w.people.find(x=>x.name===m[3]); a.textContent=m[3]; a.onclick=ev=>{ ev.stopPropagation(); U.focus=id; select({kind:"person",id:p.id,world:id},"feed"); }; }
+    frag.append(a); last=m.index+m[0].length; } if(last<text.length) frag.append(text.slice(last)); return frag; }
+const BEAT={ scandal:{z:1.5,mood:"shock",react:"shock",dur:5200,card:"SCANDAL"}, leak:{z:1.5,mood:"cross",react:"cross",dur:5000,card:"A LEAK"},
+  tie_break:{z:1.42,mood:"cross",react:"cross",dur:4600,card:null}, collab_end:{z:1.42,mood:"cross",react:"drop",dur:4200,card:null},
+  collab_start:{z:1.35,mood:null,react:"note",dur:4000,card:null}, tie_new:{z:1.35,react:"note",dur:3800,card:null},
+  meme:{z:1.3,react:"idea",dur:4200,card:"EVERYONE IS RUNNING IT"}, model:{z:1.25,react:"idea",dur:4200,card:"A MODEL IS TRAINED"},
+  enacted:{z:1.3,react:"idea",dur:4400,card:"THE ARCHIVE DECIDES"}, rejected:{z:1.3,react:"cross",dur:4400,card:"THE ARCHIVE REFUSES"}, modified:{z:1.3,react:"q",dur:4400,card:"THE ARCHIVE AMENDS"},
+  left:{z:1.35,react:"drop",dur:5000,card:"SOMEONE LEAVES"}, famous:{z:1.3,react:"idea",dur:4000,card:null}, ad:{z:1.25,react:"idea",dur:4000,card:"AN AD"},
+  institution:{z:1.25,react:"idea",dur:4600,card:"A NEW HOUSE"}, prompt_copied:{z:1.42,react:"q",dur:3800,card:null}, taught:{z:1.3,react:"idea",dur:3400,card:null},
+  commons:{z:1.2,react:null,dur:5200,card:"THE COMMONS"}, sold:{z:1.3,react:"note",dur:3200,card:null} };
+function stage(w,id,e){ const B=BEAT[e.t]; if(!B) return; if(U.beat && performance.now()-U.beat.at < U.beat.dur*0.55) return;
+  const a=e.who!=null?w.people[e.who]:null; if(!a||a.left&&e.t!=="left") { if(e.t!=="commons") return; }
+  const site = a ? siteOf(a.place) : siteAt(U.target).k; if(!site) return;
+  U.beat={ world:id, a:e.who, b:e.to!=null?e.to:null, kind:e.t, cfg:B, at:performance.now(), dur:B.dur, site, headline:S.describe(w,e) };
+  if(site!==siteAt(U.target).k){ U.card={text:"MEANWHILE, AT THE "+(site==="homes"?"HOMES":site.toUpperCase()), at:performance.now(), dur:1500}; turnTo(site); }
+  else if(B.card) U.card={text:B.card, at:performance.now(), dur:1500};
+  if(e.who!=null) U.react[e.who]={kind:B.react,mood:B.mood,at:performance.now(),dur:B.dur};
+  if(e.to!=null) U.react[e.to]={kind:B.react==="idea"?"q":B.react,mood:B.mood,at:performance.now(),dur:B.dur}; }
+function evLine(w,e,id){ const el=document.createElement("div"); el.className="ev "+(e.t==="say"?"say":"sys"); if(S.CONSEQ.has(e.t)&&!["reflect","proposal"].includes(e.t)) el.classList.add("changed"); if(e.ctx&&e.ctx.player) el.classList.add("me"); if(e.t==="commons"&&e.state==="lost") el.classList.add("lost"); if(e.t==="commons_verdict") el.classList.add("lost");
+  const ids=[e.who,e.to].filter(v=>v!=null); el.dataset.ids=ids.join(","); el.dataset.n=e.n; el.appendChild(linkify(w,id,S.describe(w,e))); if(e.t==="dispatch"){ el.classList.add("changed"); el.style.fontWeight="500"; el.onclick=()=>dispatchCard(w,e); } if(U.B){ const sp=document.createElement("span"); sp.className="w"; sp.textContent=id; el.prepend(sp); }
+  if(e.t!=="dispatch" && e.who!=null){ el.style.cursor="pointer"; el.addEventListener("click",()=>{ U.focus=id; select({kind:"person",id:e.who,world:id},"feed"); }); }
+  stage(w,id,e);
+  { const who=e.who!=null?w.people[e.who]:null; const sk=who?siteOf(who.place):null; if(sk){ const P0=U.pips[id]||(U.pips[id]={}); const l=P0[sk]||(P0[sk]=[]); l.push({at:performance.now(),kind:e.t==="say"?"say":"ev"}); if(l.length>4) l.shift(); } }
+  if(e.t==="tie_break"||e.t==="collab_end") U.flashes.push({world:id,a:e.who,b:e.to,at:performance.now(),gone:true});
+  if(e.t==="commons"||e.t==="commons_verdict"){ setTimeout(()=>commonsCard(w),0); } if(e.t==="tie_new"||e.t==="collab_start") U.flashes.push({world:id,a:e.who,b:e.to,at:performance.now(),gone:false});
+  if(e.t==="say"&&e.to!=null&&U.speed<4) U.react[e.to]={kind:null,mood:null,at:performance.now(),dur:2400,face:e.who};
+  if(e.t==="say" && U.speed<4 && (AI.key||(e.ctx&&e.ctx.player))){ const sel=U.sel; if(!sel||sel.kind!=="person"||e.who===sel.id||e.to===sel.id){ U.bubbles.push({world:id,who:e.who,line:e.line,at:performance.now()+U.bubbles.length*400}); if(U.bubbles.length>2) U.bubbles.shift(); } }
+  return el; }
+function dayDiv(w,id){ const el=document.createElement("div"); el.className="day"; el.dataset.day=w.day; el.dataset.world=id; const y=Math.floor(w.day/S.YEAR)+1, d=w.day%S.YEAR; el.innerHTML=`<span>${U.B?id+" · ":""}year ${y} · day ${d}</span>`; armable(el); return el; }
+function armable(el){ let t=null; const start=()=>{ t=setTimeout(()=>arm(el),520); }; const stop=()=>clearTimeout(t);
+  el.addEventListener("pointerdown",start); el.addEventListener("pointerup",stop); el.addEventListener("pointerleave",stop); el.addEventListener("pointercancel",stop); el.addEventListener("contextmenu",ev=>ev.preventDefault());
+  el.addEventListener("click",()=>{ if(el.classList.contains("armed")) fork(Number(el.dataset.day)); }); }
+function arm(el){ if(U.B){ note("already forked. restore first."); return; } th.querySelectorAll(".day.armed").forEach(d=>{ d.classList.remove("armed"); d.querySelector("span").textContent=d.dataset.label||d.querySelector("span").textContent; }); el.dataset.label=el.querySelector("span").textContent; el.classList.add("armed"); el.querySelector("span").textContent=`${el.dataset.label} — fork here?`; if(navigator.vibrate) navigator.vibrate(12); }
+function passes(w,e){ const f=U.filter; const me=w.player; if(f==="all") return true; if(f==="here"){ const hk=siteAt(U.target).k; const inSite=id=>id!=null&&w.people[id]&&!w.people[id].left&&siteOf(w.people[id].place)===hk; return inSite(e.who)||inSite(e.to)||(e.ctx&&e.ctx.player)||e.t==="commons"||e.t==="commons_verdict"||e.t==="dispatch"; } if(f==="me") return e.who===me||e.to===me||(e.ctx&&e.ctx.player)||e.t==="commons"||e.t==="commons_verdict"; if(f==="changed") return S.CONSEQ.has(e.t)&&e.t!=="reflect"; if(f==="think") return false; if(f.startsWith("person:")){ const id=Number(f.slice(7)); return e.who===id||e.to===id; } return true; }
+function keep(w,e){ if(!passes(w,e)) return false; const sel=U.sel; const inv = sel&&sel.kind==="person"&&(e.who===sel.id||e.to===sel.id); if(inv) return true; if(S.CONSEQ.has(e.t)) return true; if(e.t==="say"&&e.ctx&&e.ctx.player) return true; if(U.speed>=4) return false; if(e.t==="say") return (e.ctx&&e.ctx.llm) || (AI.key && Math.random()<0.5); if(e.t==="prompt_copied"||e.t==="prompt_new") return U.speed<1 && Math.random()<0.5; if(e.t==="made") return U.speed<1 && !e.withheld; if(e.t==="shared"||e.t==="sold"||e.t==="taught"||e.t==="synth"||e.t==="visit") return U.speed<1 && Math.random()<0.3; return false; }
+function renderThread(){ if(U.mode!=="thread") return; const stick=atBottom(); const frag=document.createDocumentFragment(); let added=0;
+  for(const id of (U.B?["A","B"]:["A"])){ const w=W(id); const evs=w.events; let i=U.cursor[id]; if(i>evs.length){ i=0; } if(evs.length-i>1200){ i=evs.length-600; U.lastDay[id]=-1; }
+    for(; i<evs.length && added<200; i++){ const e=evs[i]; if(!keep(w,e)) continue; if(e.day!==U.lastDay[id]){ U.lastDay[id]=e.day; frag.appendChild(dayDiv({day:e.day},id)); } frag.appendChild(evLine(w,e,id)); added++; }
+    U.cursor[id]=i; }
+  if(frag.childNodes.length){ th.appendChild(frag); restyle(); while(th.childNodes.length>500) th.removeChild(th.firstChild); if(stick) th.scrollTop=th.scrollHeight; } }
+function setFilter(f){ U.filter=f; document.querySelectorAll("#chips button").forEach(b=>b.classList.toggle("on", b.dataset.f===(f.startsWith("person:")?"person":f))); rebuild(); }
+function rebuild(){ th.innerHTML=""; U.lastDay={A:-1,B:-1};
+  if(U.filter==="think"){ for(const id of (U.B?["A","B"]:["A"])){ const w=W(id); const items=[]; for(const p of w.people) for(const t of (p.thoughts||[])) items.push({p,t}); items.sort((a,b)=>a.t.day-b.t.day); for(const {p,t} of items.slice(-120)){ const el=document.createElement("div"); el.className="ev think"; el.dataset.ids=String(p.id); if(U.B){ const sp=document.createElement("span"); sp.className="w"; sp.textContent=id; el.prepend(sp); } el.append(`day ${t.day} · ${p.name} thinks: ${t.text}`); el.style.cursor="pointer"; el.onclick=()=>{ U.focus=id; select({kind:"person",id:p.id,world:id}); }; th.appendChild(el); } if(!items.length) note("no one has thought out loud yet."); } U.cursor={A:U.A.events.length,B:U.B?U.B.events.length:0}; th.scrollTop=th.scrollHeight; return; }
+  U.cursor={A:Math.max(0,U.A.events.length-600),B:U.B?Math.max(0,U.B.events.length-600):0}; renderThread(); th.scrollTop=th.scrollHeight; }
+document.querySelectorAll("#chips button").forEach(b=>b.onclick=()=>{ if(b.dataset.f==="person"){ const sel=U.sel; if(sel&&sel.kind==="person") setFilter("person:"+sel.id); } else setFilter(b.dataset.f); });
+(()=>{ const g=$("#grip"), ww=$("#worldwrap"); let y0=0,h0=0,drag=false; g.addEventListener("pointerdown",e=>{ drag=true; y0=e.clientY; h0=ww.getBoundingClientRect().height; g.setPointerCapture(e.pointerId); ww.classList.remove("folded"); $("#fold").textContent="hide world"; });
+  g.addEventListener("pointermove",e=>{ if(!drag) return; const h=Math.max(0,Math.min(innerHeight-200,h0+(e.clientY-y0))); ww.style.flex=`0 0 ${h}px`; size(); });
+  g.addEventListener("pointerup",()=>{ drag=false; }); g.addEventListener("pointercancel",()=>{ drag=false; }); })();
+$("#gothere").onclick=()=>handle("/go there");
+$("#fold").onclick=()=>{ const w=$("#worldwrap"); w.classList.toggle("folded"); $("#fold").textContent=w.classList.contains("folded")?"show world":"hide world"; size(); th.scrollTop=th.scrollHeight; };
+function card(html){ const el=document.createElement("div"); el.className="card"; el.innerHTML=html; th.appendChild(el); th.scrollTop=th.scrollHeight; return el; }
+function note(text){ const el=document.createElement("div"); el.className="ev sys"; el.textContent=text; th.appendChild(el); th.scrollTop=th.scrollHeight; }
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function portrait(p,w,h){ const c=document.createElement("canvas"); c.width=w*devicePixelRatio; c.height=h*devicePixelRatio; const g=c.getContext("2d"); g.scale(devicePixelRatio,devicePixelRatio); g.fillStyle="#efe8d6"; g.fillRect(0,0,w,h); const sv=cx; /* borrow ink helpers via temp swap */ const s=w/42; drawChar(g,p,w/2,h*0.9,s,0,{}); return c; }
+async function personCard(w,p,id){ const o=S.observe(w,p); const pr=S.profile(w,p); const ps=S.partners(w,p); const bestTie=ps.map(q=>({q,T:S.tie(w,p.id,q.id)})).sort((a,b)=>b.T.n-a.T.n)[0];
+  const rec=[...w.events].reverse().filter(e=>(e.who===p.id||e.to===p.id)&&e.t!=="say"&&e.t!=="made").slice(0,3).map(e=>"- "+S.describe(w,e)).join("\n");
+  let line=""; if(bestTie){ const gap=w.day-bestTie.T.last; line = gap>10 ? `${bestTie.q.name} hasn't visited in ${gap} days.` : `${bestTie.q.name} came by ${gap===0?"today":gap+" days ago"}.`; }
+  const thoughts=(p.thoughts||[]).slice(-2).map(t=>"( "+t.text+" )").join("\n");
+  const el=card(`<h3>${esc(p.name.toUpperCase())}${p.player?" · you":""}</h3><p id="prof">${esc(p.role)} · ${esc(o.doing)} in the ${esc(o.place)}${p.stance?"\nrule: "+esc(STANCE[p.stance]):""}\nregard ${S.regard(w,p)} · ${p.community||"unaffiliated"}${p.left?"\nleft":""}${p.usesAI?"\nuses the model":""}\n\n${esc(pr.temper)}.\nwants ${esc(pr.wants)}.\nfears ${esc(pr.fears)}.\n${esc(pr.draws)}.\n\n${esc(line)}${thoughts?"\n\n"+esc(thoughts):""}${rec?"\n\n"+esc(rec):""}</p><div class="row"><button class="plain" data-k="know">what ${esc(p.name)} knows</button><button class="plain" data-k="see">through ${esc(p.name)}'s eyes</button>${p.player?`<button class="plain" data-k="rep">${p.rep?"speak for myself":"send my representative"}</button>`:`<button data-k="talk">talk</button>`}</div>`);
+  el.querySelector('[data-k="see"]').onclick=()=>see(w,id,p); const rb=el.querySelector('[data-k="rep"]'); if(rb) rb.onclick=()=>{ p.rep=!p.rep; el.remove(); personCard(w,p,id); };
+  const pc=portrait(p,120,140); pc.className="portrait"; el.prepend(pc);
+  const latest=[...w.artifacts].reverse().find(a=>a.author===p.id); if(latest){ const t0=thumb(latest,56); t0.style.cssText="width:56px;height:56px;float:right;clear:right;margin:0 0 8px 12px;cursor:pointer"; t0.onclick=()=>{ U.focus=id; select({kind:"artifact",id:latest.id,world:id}); }; el.prepend(t0); }
+  const tb=el.querySelector('[data-k="talk"]'); if(tb) tb.onclick=()=>{ $("#input").focus(); };
+  el.querySelector('[data-k="know"]').onclick=()=>{ const lines=o.remembers.length?o.remembers.map(s=>"- "+s).join("\n"):"nothing yet"; card(`<h3>${esc(p.name.toUpperCase())} remembers</h3><p>${esc(lines)}</p>`); };
+  if(pr.source==="seed" && !p.player && AI.on && AI.key && !p._profiling){ p._profiling=true; try{ const t=await llm(AI.prompts.profile, JSON.stringify({name:p.name,role:p.role,temperament:pr.temper,wants:pr.wants,fears:pr.fears,draws:pr.draws,attitude:o.attitude,income:o.income,partners:o.partners.slice(0,3)})); const j=JSON.parse(t.replace(/```json|```/g,"").trim()); if(j.temper&&j.wants&&j.fears){ p.profile={temper:j.temper,wants:j.wants,fears:j.fears,draws:pr.draws,source:"model"}; const pp=el.querySelector("#prof"); if(pp){ pp.textContent=pp.textContent.replace(pr.temper+".",j.temper).replace("wants "+pr.wants+".",j.wants).replace("fears "+pr.fears+".",j.fears); } } }catch(e){} } }
+function peopleGrid(id){ const w=W(id); U.mode="gallery"; $("#tl").textContent="people"; $("#tback").style.display=""; th.innerHTML=""; const g=document.createElement("div"); g.className="people";
+  for(const p of w.people){ const d=document.createElement("div"); const c=portrait(p,96,112); d.appendChild(c); d.append(p.name+(p.player?" (you)":p.left?" (left)":"")); const sm=document.createElement("small"); sm.textContent=p.role+(p.community?" · "+p.community:""); d.appendChild(sm); d.onclick=()=>{ leaveGallery(); U.focus=id; select({kind:"person",id:p.id,world:id}); }; g.appendChild(d); } th.appendChild(g); }
+
+function thumb(a,size){ const c=document.createElement("canvas"); c.width=c.height=size*devicePixelRatio; const g=c.getContext("2d"); g.scale(devicePixelRatio,devicePixelRatio); g.fillStyle="#fff"; g.fillRect(0,0,size,size); marks(g,a,size); return c; }
+function marks(g,a,size){ g.strokeStyle=INK; g.fillStyle=INK; g.lineWidth=1; const [t0,t1,t2,t3]=a.traits; const fam=Math.floor(t2*4); const m=size*0.15, span=size*0.7; const tint=["#a9c7a0","#e8534a","#b8cbe0","#b4b0d6","#e7c98b","#f2c14e"][Math.floor(t1*6)];
+  if(fam===0){ const n=2+Math.round(t0*6); for(let i=0;i<n;i++){ const y=m+span*i/Math.max(1,n-1); g.beginPath(); for(let x=0;x<=1.001;x+=0.08){ const yy=y+Math.sin(x*6.28*(1+t1*2)+ah(a.id+i))*t3*size*0.15; if(x===0) g.moveTo(m,yy); else g.lineTo(m+span*x,yy); } g.strokeStyle=i%2?tint:INK; g.stroke(); } g.strokeStyle=INK; }
+  else if(fam===1){ const n=3+Math.round(t0*5); for(let i=0;i<n;i++) for(let j=0;j<n;j++){ if(ah(a.id*11+i*n+j)<t1) continue; const cs=span/n; g.fillStyle=(i+j)%2?tint:INK; if(t3>0.5) g.fillRect(m+i*cs+1,m+j*cs+1,cs-2,cs-2); else g.strokeRect(m+i*cs+1,m+j*cs+1,cs-2,cs-2); } g.fillStyle=INK; }
+  else if(fam===2){ const n=2+Math.round(t0*5); for(let i=0;i<n;i++){ const r=span*0.5*(i+1)/n; g.beginPath(); g.arc(size/2,size/2,r,ah(a.id+i)*6.28,ah(a.id+i)*6.28+3.14*(0.4+t1*1.6)); g.strokeStyle=i===0?tint:INK; g.lineWidth=i===0?3:1; g.stroke(); } g.lineWidth=1; g.strokeStyle=INK; if(t3>0.6){ g.beginPath(); g.arc(size/2,size/2,2,0,6.283); g.fill(); } }
+  else { const n=3+Math.round(t0*9); g.beginPath(); for(let i=0;i<n;i++){ const x=m+span*ah(a.id*7+i), y=m+span*ah(a.id*3+i); if(i===0) g.moveTo(x,y); else g.lineTo(x,y); } if(t1>0.5){ g.closePath(); g.fillStyle=tint; g.fill(); } g.stroke(); const d=Math.round(t3*6); g.fillStyle=INK; for(let i=0;i<d;i++){ g.beginPath(); g.arc(m+span*ah(a.id*13+i),m+span*ah(a.id*17+i),1.4,0,6.283); g.fill(); } }
+  for(const t of a.rare){ const k=S.RARE.indexOf(t); g.strokeRect(size*0.72+(k%3)*4, size*0.06, 3,3); }
+  if(a.synthetic){ g.setLineDash([2,2]); g.strokeRect(1,1,size-2,size-2); g.setLineDash([]); } else g.strokeRect(0.5,0.5,size-1,size-1); }
+function artifactCard(w,a,id,expanded){ const au=w.people[a.author]; const owner=w.people[a.owner]; const ch=S.chain(w,a); const desc=S.descendants(w,a);
+  const rows = (expanded? ch : ch.slice(-4)).map(x=>{ const who=w.people[x.author].name; const kind=x.synthetic?"generated":(x.influencedBy.length?"drawing":"sketch"); return `<div class="node ${x.synthetic?"model":""} ${x.id===a.id?"this":""}" data-art="${x.id}">${esc(who.toUpperCase())} / ${kind} · #${x.id}</div>`; }).join('<div class="arrow">↓</div>');
+  const trained = a.trainedBy.length? `used for training ${a.trainedBy.map(m=>"○").join(" ")}` : (S.trainable(w,a)?"available for model training":"not available for model training");
+  const el=card(`<h3>#${a.id} ${a.synthetic?"generated":"drawing"}</h3><p>${esc(au.name)} · year ${Math.floor(a.day/S.YEAR)+1}${owner&&owner.id!==au.id?`\nowner now ${esc(owner.name)}`:""}${a.withheld?"\nkept private":""}${a.rare.length?"\n"+esc(a.rare.join(", ")):""}\n\ninfluenced by ${a.influencedBy.length} work${a.influencedBy.length===1?"":"s"}\n${trained}\n${desc} descendant${desc===1?"":"s"}${a.synthetic?`\nfrom model ${a.model}${w.models[a.model]?` (trained on ${w.models[a.model].corpus.length})`:""}${a.prompt!=null?`\nprompt: "${esc(w.prompts[a.prompt].text)}"`:""}`:""}</p><div class="chain">${rows}</div><div class="row"><button class="plain" data-k="more">${expanded?"less":"ancestry"}</button><button class="plain" data-k="gal">gallery</button></div>`);
+  const th0=thumb(a,112); th0.style.cssText="width:112px;height:112px;float:right;margin:0 0 8px 12px"; el.prepend(th0); const pp=el.querySelector("p"); pp.replaceChildren(linkify(w,id,pp.textContent));
+  el.querySelector('[data-k="more"]').onclick=()=>{ el.remove(); artifactCard(w,a,id,!expanded); };
+  el.querySelector('[data-k="gal"]').onclick=()=>gallery(id,a.id);
+  el.querySelectorAll(".node").forEach(n=>n.onclick=()=>{ U.focus=id; select({kind:"artifact",id:Number(n.dataset.art),world:id}); }); }
+function gallery(id,selId,mode){ const w=W(id); U.mode="gallery"; U.gmode=mode||U.gmode||"all"; $("#tl").textContent="gallery"; $("#tback").style.display=""; th.innerHTML="";
+  const chips=document.createElement("div"); chips.id="gchips"; for(const [k,l] of [["all","all"],["human","hand-drawn"],["gen","generated"],["meme","memes"],["mine","mine"],["person","by person"]]){ const b=document.createElement("button"); b.textContent=l; b.className=k===U.gmode?"on":""; b.onclick=()=>gallery(id,selId,k); chips.appendChild(b); } th.appendChild(chips);
+  let list=w.artifacts.filter(a=>!a.withheld||a.author===w.player); const m=U.gmode; if(m==="human") list=list.filter(a=>!a.synthetic); if(m==="gen") list=list.filter(a=>a.synthetic); if(m==="meme") list=list.filter(a=>a.prompt!=null&&(function(){ let r=w.prompts[a.prompt],g=0; while(r.copiedFrom!=null&&g++<20) r=w.prompts[r.copiedFrom]; return r.meme; })()); if(m==="mine") list=list.filter(a=>a.author===w.player);
+  list=list.slice(-90); if(m==="person") list.sort((a,b)=>a.author-b.author||a.id-b.id);
+  const g=document.createElement("div"); g.className="gal"; let lastAuthor=-1;
+  for(const a of list){ if(m==="person"&&a.author!==lastAuthor){ lastAuthor=a.author; const h=document.createElement("div"); h.style.cssText="grid-column:1/-1;font-weight:500;padding-top:6px"; h.textContent=w.people[a.author].name; g.appendChild(h); }
+    const d=document.createElement("div"); d.className="a"+(a.synthetic?" syn":"")+(a.id===selId?" sel":""); d.appendChild(thumb(a,100)); const cap=document.createElement("div"); cap.className="cap"; cap.innerHTML=`${esc(w.people[a.author].name)} · #${a.id}${a.synthetic&&a.prompt!=null?`<br><i>"${esc(w.prompts[a.prompt].text)}"</i>`:a.rare.length?`<br><i>${esc(a.rare.join(", "))}</i>`:""}`; d.appendChild(cap); d.onclick=()=>{ leaveGallery(); U.focus=id; select({kind:"artifact",id:a.id,world:id}); }; g.appendChild(d); }
+  if(!list.length){ const e=document.createElement("div"); e.className="ev"; e.textContent="nothing here yet."; g.appendChild(e); }
+  th.appendChild(g); if(selId!=null){ const s=g.querySelector(".sel"); if(s) s.scrollIntoView({block:"center"}); } }
+function leaveGallery(){ if(U.mode!=="gallery") return; U.mode="thread"; $("#tl").textContent="feed"; $("#tback").style.display="none"; rebuild(); }
+$("#tback").onclick=leaveGallery;
+
+/* ---------- fork ---------- */
+function fork(day){ if(U.B) return; const s=[...U.snaps].reverse().find(x=>x.day<=day); if(!s){ note("no snapshot before that day"); return; }
+  U.saved={day:U.A.day, s:S.serialize(U.A)}; const A=S.deserialize(s.s); while(A.day<day) S.step(A); U.A=A; U.B=S.clone(A); U.forkDay=day; U.focus="B"; U.views={A:{},B:{}};
+  th.innerHTML=""; U.cursor={A:A.events.length,B:A.events.length}; U.lastDay={A:-1,B:-1}; U.paused=true; pauseMark();
+  $("#forkbar").style.display="flex"; select(null);
+  const y=Math.floor(day/S.YEAR)+1; const el=card(`<h3>FORK HERE</h3><p>year ${y} · day ${day%S.YEAR}\n\nWhat changes?\n\nType one change below. It becomes a proposal to the archive; the world decides what to do with it. World A continues unchanged.</p><div class="row"><button class="plain" data-k="undo">undo fork</button></div>`);
+  el.querySelector('[data-k="undo"]').onclick=()=>restore(true); $("#input").placeholder="change one thing…"; $("#input").focus(); }
+function restore(toSaved){ if(!U.B && !U.saved) return; if(toSaved && U.saved){ U.A=S.deserialize(U.saved.s); } U.B=null; U.forkDay=null; U.saved=null; U.focus="A"; U.views={A:{},B:{}}; $("#forkbar").style.display="none"; th.innerHTML=""; U.cursor={A:Math.max(0,U.A.events.length-60),B:0}; U.lastDay={A:-1,B:-1}; select(null); renderThread(); note(toSaved?"returned to the world before the fork.":"world A kept. world B set aside."); }
+function keepB(){ if(!U.B) return; U.A=U.B; U.saved=null; U.B=null; U.forkDay=null; U.focus="A"; U.views={A:{},B:{}}; $("#forkbar").style.display="none"; th.innerHTML=""; U.cursor={A:Math.max(0,U.A.events.length-60),B:0}; U.lastDay={A:-1,B:-1}; select(null); renderThread(); note("world B kept as the one world."); }
+function compareCard(){ if(!U.B) return; const A=U.A,B=U.B; const line=(w)=>{ const T=S.tie(w,0,1); const m=w.people[0],n=w.people[1]; return `${m.left?"(Mara left)":"Mara"} ${T?(T.collab?"─────":"· · ·"):"     "} ${n.left?"(Niko left)":"Niko"}\n${m.community||"—"}${" ".repeat(Math.max(1,14-(m.community||"—").length))}${n.community||"—"}\nrule: ${w.inst.archive.policy} · models: ${w.models.length}${w.inst.collective.exists?"\ncollective exists":""}`; };
+  const el=card(`<h3>A</h3><p>${esc(line(A))}</p><h3 style="margin-top:12px">B</h3><p>${esc(line(B))}</p><div class="row"><button class="plain" data-k="ra">keep A</button><button class="plain" data-k="rb">keep B</button><button class="plain" data-k="undo">before fork</button></div>`);
+  el.querySelector('[data-k="ra"]').onclick=()=>restore(false); el.querySelector('[data-k="rb"]').onclick=keepB; el.querySelector('[data-k="undo"]').onclick=()=>restore(true); }
+
+/* ---------- composer ---------- */
+const inp=$("#input");
+inp.addEventListener("keydown", ev=>{ if(ev.key==="Enter"){ ev.preventDefault(); const t=inp.value.trim(); inp.value=""; if(t) handle(t); else if(U.B) compareCard(); } if(ev.key==="Escape"){ select(null); } });
+async function handle(text){ leaveGallery(); const w=W(U.focus); const id=U.focus; const me=w.people[w.player];
+  if(text.startsWith("/")){ const [cmd,...rest]=text.slice(1).split(/\s+/); const arg=rest.join(" ");
+    switch(cmd){ case "gallery": gallery(id,null,rest[0]); return; case "people": peopleGrid(id); return; case "groups": groupsCard(w,id); return; case "commons": commonsCard(w); return; case "prompts": promptsCard(w,id); return; case "news": { const d=[...w.events].reverse().find(e=>e.t==="dispatch"); if(d) dispatchCard(w,d); else note("no dispatch yet."); return; } case "go": { if(!arg||arg==="there"){ const P0=U.pips[id]||{}; let best=null,bn=-1; for(const sd of SITES){ const n=(P0[sd.k]||[]).filter(pt=>performance.now()-pt.at<9000&&pt.kind!=="say").length*3+(P0[sd.k]||[]).length; if(n>bn){ bn=n; best=sd.k; } } if(best) turnTo(best); return; } const k=SITES.find(x=>x.k===arg||(arg==="lab"&&x.k==="lab")); if(k) turnTo(k.k); else note("sites: "+SITES.map(x=>x.k).join(" ")); return; }
+      case "me": if(me) select({kind:"person",id:me.id,world:id}); return; case "see": { if(!arg||arg==="off"){ see(w,id,null); return; } const p=w.people.find(x=>x.name.toLowerCase()===arg.toLowerCase()); if(p) see(w,id,p); else note("no one called "+arg); return; } case "rep": if(me){ me.rep=!me.rep; note(me.rep?"your representative now speaks for you.":"you speak for yourself now."); } return;
+      case "change": case "propose": await intervene(w,id,arg); return; case "fork": if(U.B) compareCard(); else fork(w.day); return; case "compare": compareCard(); return; case "save": save(); return; case "load": $("#file").click(); return; case "tests": runTests(); return; case "reset": begin(U.A.seed); return; case "ai": openAI(); return; case "why": why(w,id,arg); return; case "seed": begin(Number(arg)||1); return; case "restore": restore(true); return; case "keep": keepB(); return;
+      default: note("commands: /go <site|there> /see <name> /me /people /groups /commons /prompts /news /gallery /change <rule> /fork /compare /why <name> /rep /save /load /tests /seed <n> /ai"); return; } }
+  const at=text.match(/^@(\w+)\s*(.*)$/s);
+  if(at){ const name=at[1].toLowerCase(); const q=at[2].trim();
+    if(name==="world"){ why(w,id,q); return; }
+    if(name==="commons"){ askCommons(w,q||"what are you?"); return; }
+    const p=w.people.find(x=>x.name.toLowerCase()===name); if(!p){ note(`no one here called ${at[1]}`); return; }
+    if(me){ S.playerSay(w,q||"…",p.id); renderThread(); U.bubbles.push({world:id,who:me.id,line:q,at:performance.now()}); }
+    select({kind:"person",id:p.id,world:id}); await ask(w,id,p,q||"how are things?"); return; }
+  if(/^why\b/i.test(text)){ why(w,id,text); return; }
+  if(U.B && !U.sel){ await intervene(w,id,text); return; }
+  if(U.sel&&U.sel.kind==="person"&&U.sel.id!==(me&&me.id)){ const p=w.people[U.sel.id]; if(me){ S.playerSay(w,text,p.id); renderThread(); } await ask(w,id,p,text); return; }
+  if(me){ S.playerSay(w,text,null); renderThread(); U.bubbles.push({world:id,who:me.id,line:text,at:performance.now()}); return; }
+  await intervene(w,id,text); }
+function promptCard(w,id,pr){ const fam=w.prompts.filter(x=>{ let r=x,g=0; while(r.copiedFrom!=null&&g++<20) r=w.prompts[r.copiedFrom]; return r.id===(function(){ let r=pr,g=0; while(r.copiedFrom!=null&&g++<20) r=w.prompts[r.copiedFrom]; return r.id; })(); }); const users=new Set(); fam.forEach(x=>x.users.forEach(u=>users.add(u))); const works=w.artifacts.filter(a=>a.prompt===pr.id).slice(-8);
+  const el=card(`<h3>PROMPT${pr.meme?" · MEME":""}</h3><p>"${esc(pr.text)}"\n\nwritten by ${esc(w.people[pr.author].name)} on day ${pr.day}${pr.copiedFrom!=null?`\ncopied from ${esc(w.people[w.prompts[pr.copiedFrom].author].name)}'s "${esc(w.prompts[pr.copiedFrom].text)}"`:""}\nrun ${pr.uses} times · ${fam.length} version${fam.length===1?"":"s"} · ${users.size} people: ${[...users].map(u=>w.people[u].name).join(", ")}</p><div class="gal" style="grid-template-columns:repeat(4,1fr)"></div>`);
+  const g=el.querySelector(".gal"); for(const a of works){ const d=document.createElement("div"); d.className="a syn"; d.appendChild(thumb(a,70)); d.onclick=()=>{ U.focus=id; select({kind:"artifact",id:a.id,world:id}); }; g.appendChild(d); }
+  el.querySelector("p").replaceChildren(linkify(w,id,el.querySelector("p").textContent)); }
+function dispatchCard(w,e){ const j=w.people[e.who]; const el=card(`<h3>THE COMMONS LEDGER</h3><p><b>${esc(e.headline)}</b>\n\n${esc(e.body)}\n\n— ${esc(j.name)}, day ${e.day}</p>`); el.querySelector("p").replaceChildren(linkify(w,U.focus,el.querySelector("p").textContent)); }
+function promptsCard(w,id){ const roots=w.prompts.filter(p=>p.copiedFrom==null).map(root=>{ const fam=w.prompts.filter(x=>{ let r=x,g=0; while(r.copiedFrom!=null&&g++<20) r=w.prompts[r.copiedFrom]; return r.id===root.id; }); const users=new Set(); fam.forEach(x=>x.users.forEach(u=>users.add(u))); return {root,uses:fam.reduce((s,x)=>s+x.uses,0),users:users.size,versions:fam.length}; }).sort((a,b)=>b.uses-a.uses).slice(0,10);
+  const el=card(`<h3>PROMPTS IN CIRCULATION</h3><p>${esc(roots.map(r=>`"${r.root.text}"${r.root.meme?" · meme":""}\n   ${r.uses} runs · ${r.users} people · ${r.versions} versions`).join("\n"))||"no one has written a prompt yet."}</p>`); el.querySelector("p").replaceChildren(linkify(w,id,el.querySelector("p").textContent)); }
+function see(w,id,p){ U.eyes=p?{id:p.id,world:id}:null; $("#eyes").style.display=p?"flex":"none"; if(p){ $("#eyesname").textContent=`through ${p.name}'s eyes`; setFilter("person:"+p.id); eyesCard(w,id,p); } else { setFilter("all"); } }
+$("#eyesoff").onclick=()=>see(W(U.focus),U.focus,null);
+async function eyesCard(w,id,p){ const K=S.known(w,p); const o=S.observe(w,p); const el=card(`<h3>${esc(p.name.toUpperCase())} · THE COMMONS AS ${esc(p.name.toUpperCase())} SEES IT</h3><p>knows ${K.people.size-1} people · has seen ${K.arts.size} works\nthe rule as ${esc(p.name)} lives it: ${esc(w.inst.archive.policy)}\n${esc(o.attitude)} · ${p.usesAI?"uses the model":"draws by hand"}</p>`); const out=document.createElement("p"); out.style.marginTop="8px"; el.appendChild(out);
+  try{ working(`${p.name} is looking`); const t=await llm("You are one inhabitant of a small drawing town. Speak in first person, plain words, in your own temperament. You know only the observation given. Do not invent events or people. Answer in three short sentences of prose. No JSON, no lists.", `Observation:\n${JSON.stringify(o,null,1)}\n\nQuestion: what is the commons, to you? what in it is yours, what is shared, and what are you afraid of losing?`); out.textContent=t; }catch(e){ out.textContent="(no words yet — the picture above is what they know)"; } finally{ working(null); } }
+function commonsVis(w){ const c=document.createElement("canvas"); c.className="cvis"; const Wd=340,H=110; c.width=Wd*devicePixelRatio; c.height=H*devicePixelRatio; c.style.height=H+"px"; const g=c.getContext("2d"); g.scale(devicePixelRatio,devicePixelRatio); g.strokeStyle=INK; g.lineWidth=1;
+  const span=Math.max(1,w.day); const cols=34; const per=Math.ceil(span/cols); const rowH=9;
+  for(let ci=0;ci<cols;ci++){ const d0=ci*per, d1=d0+per; const arts=w.artifacts.filter(a=>a.day>=d0&&a.day<d1); if(!arts.length) continue; const hum=arts.filter(a=>!a.synthetic).length, gen=arts.length-hum, priv=arts.filter(a=>a.withheld).length; const x=6+ci*9.6; const scale=Math.min(60,arts.length)/60*70;
+    g.fillStyle="#a9c7a0"; g.fillRect(x,80-scale*hum/arts.length,7,scale*hum/arts.length); g.strokeRect(x,80-scale*hum/arts.length,7,scale*hum/arts.length);
+    g.fillStyle="#fff"; g.setLineDash([2,2]); g.fillRect(x,80-scale,7,scale*gen/arts.length); g.strokeRect(x,80-scale,7,scale*gen/arts.length); g.setLineDash([]); }
+  g.font='9px "IBM Plex Mono",monospace'; g.fillStyle=INK; g.fillText("the pool over time · green hand-drawn · dashed generated",6,94); const mk=S.RARE.filter(t=>w.people.some(p=>!p.left&&p.rare.includes(t))); g.fillText("marks still drawn: "+mk.join(" "),6,106); return c; }
+function groupsCard(w,id){ const g=S.groups(w); const lines=Object.keys(g).map(k=>`${k}\n${g[k].map(p=>"  "+p.name+(p.player?" (you)":"")+(p.usesAI?" ·model":"")+" · "+(p.ai>0.3?"open":p.ai<-0.3?"wary":"undecided")).join("\n")}`).join("\n\n");
+  const top=w.people.filter(p=>!p.left).map(p=>({p,r:S.regard(w,p)})).sort((a,b)=>b.r-a.r).slice(0,5).map(x=>`  ${x.p.name} ${x.r}`).join("\n");
+  card(`<h3>GROUPS</h3><p>${esc(lines)}\n\nmost trusted\n${esc(top)}</p>`); }
+function commonsCard(w){ const C=w.commons; const st=C.state==="lost"?"LOST":C.state==="strained"?"STRAINED":"HELD"; const ic=S.inCommon(w); const el=card(`<h3>THE COMMONS · ${st}</h3><p class="ic">what they hold in common\ntouchstones: ${ic.touchstones.map(t=>"#"+t.art+" ("+t.n+" works grew from it)").join(", ")||"none yet"}\nteachers: ${ic.teachers.map(t=>w.people[t.who].name+" taught "+t.n).join(", ")||"none yet"}\nmemes: ${ic.memes.map(m=>'"'+m+'"').join(", ")||"none"}\nmarks alive: ${ic.marks.join(", ")||"none"}\nwhere they are: ${ic.places.join(", ")}\npool: ${ic.pool.human} hand-drawn · ${ic.pool.private} private · ${ic.pool.generated} generated · ${ic.ties} ties\n\n</p><p>generated share of the pool: ${Math.round(C.slop*100)}%\nold marks still drawn: ${Math.round(C.rare*100)}%\ntrust between people: ${Math.round(C.trust*100)}\narchive rule: ${w.inst.archive.policy}\nmodels trained: ${w.models.length}\n\nheld: keep the pool mostly human and the old marks alive.\nlost: the pool mostly generated and the marks gone.\nreckoning at year four.</p><div class="row"><button class="plain" data-k="ask">ask the commons</button></div>`); el.querySelector("p").after(commonsVis(w)); el.querySelector(".ic").replaceChildren(linkify(w,U.focus,el.querySelector(".ic").textContent)); el.querySelector('[data-k="ask"]').onclick=()=>{ inp.value="@commons "; inp.focus(); }; }
+async function askCommons(w,q){ const ic=S.inCommon(w); const C=w.commons; const el=card(`<h3>@COMMONS</h3><p>${esc(q)}</p>`); const out=document.createElement("p"); out.style.marginTop="8px"; el.appendChild(out);
+  try{ working("the commons is answering"); const t=await llm("You are the commons of a small drawing town: not a person, but the shared stock — works, marks, teachers, prompts, trust — that lets the town make what comes next. Speak in first person plural (we, ours) or as 'the commons'. Plain words, four sentences at most. Say what is held in common, what is thinning, and what would keep it. Use only the facts given. No verdict on who is right.", `State: ${C.state}. generated share ${Math.round(C.slop*100)}%, old marks alive ${Math.round(C.rare*100)}%, trust ${Math.round(C.trust*100)}. Rule: ${ic.rule}.\nIn common: ${JSON.stringify(ic)}\nQuestion: ${q}`); out.textContent=t; }catch(e){ out.textContent=`held ${Math.round((1-C.slop)*100)}% by hand. marks alive: ${ic.marks.join(", ")}. (the model could not answer)`; } finally{ working(null); } }
+async function ask(w,id,p,q){ if(!AI.key){ card(`<h3>@${esc(p.name.toUpperCase())}</h3><p>${esc(p.name)} looks at you and says nothing. the town has no voice yet.</p><div class="row"><button class="plain" data-k="k">add a key</button></div>`).querySelector("button").onclick=openAI; return; } const o=S.observe(w,p); const el=card(`<h3>@${esc(p.name.toUpperCase())}</h3>`); const line=document.createElement("p"); line.style.marginTop="8px"; el.appendChild(line);
+  working(`${p.name} is thinking`); try{ const txt=await llm(AI.prompts.agent, `Observation:\n${JSON.stringify(o,null,1)}\n\nA visitor standing in front of you asks: "${q}"\nAnswer them in "say". Put your private reaction in "think". act may be none.`); const j=JSON.parse(txt.replace(/```json|```/g,"").trim());
+    if(j.think){ S.think(w,p,j.think); line.append(`( ${j.think} )\n`); }
+    line.append(`${p.name}: ${j.say||"…"}`); U.bubbles.push({world:id,who:p.id,line:String(j.say||"…"),at:performance.now()}); if(j.act&&j.act.op&&j.act.op!=="none"){ const e=S.enact(w,p,j.act); if(e) line.append(`\n→ ${S.describe(w,e)}`); } }
+  catch(err){ fault(`${p.name} could not respond.`, ()=>ask(w,id,p,q)); line.remove(); } finally{ working(null); } }
+
+function why(w,id,q){ const m=q.match(/([A-Z][a-z]+)/g)||[]; const p=m.map(n=>w.people.find(x=>x.name.toLowerCase()===n.toLowerCase())).find(Boolean) || (U.sel&&U.sel.kind==="person"?w.people[U.sel.id]:null);
+  if(!p){ const evs=w.events.filter(e=>S.CONSEQ.has(e.t)).slice(-10); card(`<h3>WHAT HAPPENED</h3><p>${esc(evs.map(e=>`year ${Math.floor(e.day/S.YEAR)+1} · ${S.describe(w,e)}`).join("\n")||"nothing consequential yet")}</p>`); return; }
+  const tr=S.trace(w,p); const lines=tr.map(e=>`year ${Math.floor(e.day/S.YEAR)+1} · ${S.describe(w,e)}`); const el=card(`<h3>WHY ${esc(p.name.toUpperCase())}?</h3><p>${esc(lines.join("\n")||"nothing consequential has happened to "+p.name+" yet")}</p>`);
+  if(AI.on && tr.length){ const out=document.createElement("p"); out.style.marginTop="8px"; el.appendChild(out); working("reading the record"); llm(AI.prompts.world, `Question: ${q}\nEvents:\n${lines.join("\n")}`).then(t=>out.textContent=t).catch(()=>out.textContent="(the record above stands; prose unavailable)").finally(()=>working(null)); } }
+
+async function intervene(w,id,text){ let intent=S.parseIntent(text);
+  if(AI.on){ working("interpreting"); try{ const t=await llm("Interpret a proposed change to a small art community's archive rule. Reply ONLY with JSON: {\"op\":\"policy\",\"value\":\"open|opt|pay|closed\"} or {\"op\":\"train\"} or {\"op\":\"none\",\"reason\":\"...\"}. open = anything may train; opt = contributors choose; pay = training pays creators and the apprenticeship fund; closed = no training.", text); const j=JSON.parse(t.replace(/```json|```/g,"").trim()); if(j.op==="policy"&&["open","opt","pay","closed"].includes(j.value)) intent={op:"policy",value:j.value}; else if(j.op==="train") intent={op:"train"}; else if(j.op==="none") intent=null; } catch(e){} finally{ working(null); } }
+  const ok=S.propose(w,text,intent,"player"); U.cursor[id]=Math.min(U.cursor[id],w.events.length); renderThread();
+  if(!ok && !intent){ const el=card(`<h3>NO RULE CHANGED</h3><p>The archive has no procedure for imposing that.\n\nIt can decide: open · opt-in · pay · closed. Or push the lab to train.</p><div class="row"><button class="plain" data-k="p">propose instead</button></div>`); el.querySelector("button").onclick=()=>{ inp.placeholder="propose: make training opt-in / require payment / close the archive…"; inp.focus(); }; }
+  else if(ok){ if(U.B){ U.paused=false; pauseMark(); note("both worlds running."); } inp.placeholder = U.B?"change one thing…":"say / ask / change…"; } }
+
+/* ---------- AI (OpenAI Responses API; key lives only in memory) ---------- */
+async function llm(instructions, input){ if(!AI.key) throw new Error("no key"); const res=await fetch("https://api.openai.com/v1/responses",{ method:"POST", headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+AI.key }, body:JSON.stringify({ model:AI.model, instructions, input, max_output_tokens:320 }) });
+  if(!res.ok) throw new Error("http "+res.status); const d=await res.json(); if(d.output_text) return d.output_text.trim(); let out=""; for(const o of d.output||[]) for(const c of o.content||[]) if(c.type==="output_text") out+=c.text; if(!out) throw new Error("empty"); return out.trim(); }
+function working(msg){ const w=$("#working"); if(!msg){ w.style.display="none"; return; } w.querySelector("span").textContent=msg; w.style.display="block"; }
+function fault(msg,retry){ const el=card(`<h3 class="fault">${esc(msg)}</h3><p>World unchanged.</p><div class="row"><button class="plain" data-k="r">retry</button><button class="plain" data-k="off">AI settings</button></div>`); el.querySelector('[data-k="r"]').onclick=()=>{ el.remove(); retry(); }; el.querySelector('[data-k="off"]').onclick=()=>{ el.remove(); openAI(); }; }
+function aiMark(){ const b=$("#ai-mark"); b.textContent = AI.on&&AI.key ? "·"+AI.model.replace("gpt-5.6-","") : "·no key"; b.classList.toggle("on",AI.on&&!!AI.key); }
+$("#ai-mark").onclick=openAI;
+function openAI(){ const pb=$("#panelbody"); pb.innerHTML=`<label>API key (kept in memory only; never saved or exported)</label><input id="k" type="password" autocomplete="off" value="${esc(AI.key)}"><label>model</label><select id="m">${["gpt-5.6-sol","gpt-5.6-terra","gpt-5.6-luna"].map(m=>`<option ${m===AI.model?"selected":""}>${m}</option>`).join("")}</select><label>agent prompt</label><textarea id="pa">${esc(AI.prompts.agent)}</textarea><label>world prompt</label><textarea id="pw">${esc(AI.prompts.world)}</textarea><div class="btns"><button class="solid" id="aiok">done</button><button id="aiclear">clear key</button></div><small>Inhabitants deliberate through the model: observe → remember → deliberate → propose → validate → execute → event. The model never writes state directly.</small>`;
+  $("#panel").style.display="flex"; const sync=()=>{ AI.key=$("#k").value.trim(); AI.model=$("#m").value; AI.prompts.agent=$("#pa").value; AI.prompts.world=$("#pw").value; AI.on=!!AI.key; };
+  $("#aiclear").onclick=()=>{ $("#k").value=""; AI.key=""; AI.on=false; aiMark(); silence(); };
+  $("#aiok").onclick=()=>{ sync(); $("#panel").style.display="none"; aiMark(); silence(); if(AI.key) note("the town has a voice."); }; }
+$("#panelclose").onclick=()=>{ $("#panel").style.display="none"; };
+
+/* ---------- controls ---------- */
+function pauseMark(){ $("#pause").innerHTML = U.paused ? '<span class="mark-play"></span>' : '<span class="mark-pause"></span>'; }
+$("#pause").onclick=()=>{ U.paused=!U.paused; pauseMark(); };
+$("#speed").onclick=()=>{ const i=SPEEDS.indexOf(U.speed); U.speed=SPEEDS[(i+1)%SPEEDS.length]; $("#speed").textContent=SPEEDNAME[U.speed]; };
+$("#more").onclick=ev=>{ ev.stopPropagation(); const m=$("#menu"); m.style.display=m.style.display==="flex"?"none":"flex"; };
+document.addEventListener("click",()=>{ $("#menu").style.display="none"; });
+$("#menu").addEventListener("click",ev=>{ const b=ev.target.closest("button"); if(!b) return; const m=b.dataset.m; if(m==="save") save(); if(m==="load") $("#file").click(); if(m==="ai") openAI(); if(m==="export") exportHistory(); if(m==="tests") runTests(); if(m==="reset"){ if(confirm("Reset the world? Save first if you want to keep it.")) begin(U.A.seed); } });
+function download(name,text){ const b=new Blob([text],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+function save(){ const payload={ v:2, A:S.serialize(U.A), B:U.B?S.serialize(U.B):null, forkDay:U.forkDay, saved:U.saved }; download(`COMMON-year${Math.floor(U.A.day/S.YEAR)+1}-day${U.A.day%S.YEAR}.json`, JSON.stringify(payload)); note("world saved."); }
+function exportHistory(){ const w=W(U.focus); download(`COMMON-history-${U.focus}.json`, JSON.stringify({ seed:w.seed, day:w.day, interventions:w.interventions, events:w.events.map(e=>Object.assign({text:S.describe(w,e)},e)) })); note("history exported."); }
+$("#file").addEventListener("change", ev=>{ const f=ev.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ try{ const p=JSON.parse(rd.result); U.A=S.deserialize(p.A); U.B=p.B?S.deserialize(p.B):null; U.forkDay=p.forkDay; U.saved=p.saved||null; U.focus=U.B?"B":"A"; U.views={A:{},B:{}}; U.snaps=[]; snap(); $("#forkbar").style.display=U.B?"flex":"none"; th.innerHTML=""; U.cursor={A:Math.max(0,U.A.events.length-60),B:U.B?Math.max(0,U.B.events.length-60):0}; U.lastDay={A:-1,B:-1}; select(null); renderThread(); note("world loaded."); } catch(e){ note("could not load that file."); } ev.target.value=""; }; rd.readAsText(f); });
+
+/* ---------- tests ---------- */
+function runTests(){ const out=[]; const T=(name,ok)=>out.push(`${ok?"pass":"FAIL"}  ${name}`);
+  const a=S.seedWorld(101), b=S.seedWorld(101); for(let i=0;i<400;i++){ S.step(a); S.step(b); }
+  T("same seed → same history", S.hash(a)===S.hash(b));
+  const f=S.clone(a); const hBefore=S.hash(a); T("fork histories identical before intervention", S.hash(f)===hBefore);
+  S.propose(f,"require payment for model training",S.parseIntent("require payment for model training")); for(let i=0;i<60;i++){ S.step(a); S.step(f); } T("fork diverges after intervention", S.hash(a)!==S.hash(f));
+  const art=a.artifacts[5]; T("artifacts retain provenance", Array.isArray(art.influencedBy) && art.influencedBy.every(i=>a.artifacts[i]));
+  const before=a.artifacts.length; const trained=a.artifacts.filter(x=>x.trainedBy.length).length; T("training never deletes source artifacts", a.models.length>0 && trained>0 && a.artifacts.slice(0,before).every(Boolean));
+  T("withheld artifacts cannot train models", a.models.every(m=>m.corpus.every(id=>!a.artifacts[id].withheld)));
+  const p=a.people[3]; const unseen=a.events.filter(e=>!(e.who===p.id||e.to===p.id||(e.witness&&e.witness.includes(p.id)))); T("agents cannot know unseen events", unseen.every(e=>!p.memory.includes(e.n)));
+  let mutated=false; try{ const o=S.observe(a,p); o.income="rich"; mutated = a.people[3].income==="rich"; }catch(e){} const bogus=S.enact(a,p,{op:"set_income",value:999}); T("LLM cannot mutate state", !mutated && bogus===null);
+  let rewrote=false; try{ a.events[0].t="forged"; rewrote = a.events[0].t==="forged"; }catch(e){} T("reflection cannot rewrite history", !rewrote);
+  const c=S.seedWorld(55); for(let i=0;i<300;i++) S.step(c); const brk=c.events.find(e=>e.t==="tie_break"); let altered=true; if(brk){ const after=c.events.filter(e=>e.n>brk.n && ((e.who===brk.who&&e.to===brk.to)||(e.who===brk.to&&e.to===brk.who)) && e.t!=="tie_new"); altered = after.length===0 || !!c.events.find(e=>e.t==="tie_new"&&e.n>brk.n); } T("broken ties alter future interaction", altered);
+  const d=S.seedWorld(9); for(let i=0;i<900;i++) S.step(d); const syn=[...d.artifacts].reverse().find(x=>x.synthetic && d.models[x.model] && d.models[x.model].synthIn>0); T("synthetic provenance survives recursion", !!syn && syn.model!=null && d.models[syn.model].corpus.some(id=>d.artifacts[id].synthetic));
+  const seen=new Set(); T("every inhabitant looks different", a.people.every(q=>{ const k=JSON.stringify(S.design(q)); if(seen.has(k)) return false; seen.add(k); return true; }));
+  card(`<h3>TESTS</h3><p>${esc(out.join("\n"))}</p>`); }
+
+/* ---------- title: the orb. a dot lattice, rings turning at their own rates, settling into one town ---------- */
+(function title(){ const c=$("#tcv"), g=c.getContext("2d"); let t0=null, done=false; const DUR=15;
+  function fit(){ c.width=innerWidth*devicePixelRatio; c.height=innerHeight*devicePixelRatio; } fit(); addEventListener("resize",fit);
+  const LAT=17, LONN=44; const townSites=[["studio",0,10],["school",52,-8],["commons",105,18],["archive",155,-4],["market",206,12],["lab",258,-14],["home1",300,22],["home2",330,-20]];
+  function frame(now){ if(done) return; if(!t0) t0=now; const t=(now-t0)/1000; const Wd=c.width/devicePixelRatio, Hd=c.height/devicePixelRatio; g.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); g.fillStyle="#fff"; g.fillRect(0,0,Wd,Hd);
+    const cx0=Wd/2, cy0=Hd/2-30, R=Math.min(Wd,Hd)*0.30; const p=Math.min(1,t/DUR);
+    // phase A (0–.4): each latitude ring turns at its own rate → moiré. phase B (.4–.7): rates converge to one slow spin. phase C: town stands on the rim.
+    const conv = p<0.4 ? 0 : p<0.7 ? (p-0.4)/0.3 : 1; const ce=conv*conv*(3-2*conv);
+    const spin = t*0.22; const tilt=0.42;
+    const pts=[];
+    for(let i=1;i<LAT;i++){ const lat=(i/LAT-0.5)*Math.PI; const rate=(1-ce)*(0.9+1.4*Math.sin(i*1.7))+ce*1.0; const n=Math.max(6,Math.round(LONN*Math.cos(lat)));
+      for(let j=0;j<n;j++){ const lon=j/n*6.283+spin*rate; const x=Math.cos(lat)*Math.cos(lon), y=Math.sin(lat), z=Math.cos(lat)*Math.sin(lon); const yy=y*Math.cos(tilt)-z*Math.sin(tilt), zz=y*Math.sin(tilt)+z*Math.cos(tilt); pts.push({x:cx0+x*R,y:cy0-yy*R,z:zz}); } }
+    g.fillStyle="#000"; for(const q of pts){ const a=q.z>0?0.35+0.65*q.z:0.06; g.globalAlpha=a; g.beginPath(); g.arc(q.x,q.y,q.z>0?1.1+1.4*q.z:0.8,0,6.283); g.fill(); } g.globalAlpha=1;
+    // the rim
+    g.strokeStyle="#000"; g.lineWidth=1; g.globalAlpha=0.5; g.beginPath(); g.arc(cx0,cy0,R,0,6.283); g.stroke(); g.globalAlpha=1;
+    // the town on the sphere, front side only, standing up along the radial
+    const townIn = p<0.55 ? 0 : Math.min(1,(p-0.55)/0.2); const te=townIn*townIn*(3-2*townIn);
+    if(te>0){ // the town rides the rim, the way a small planet wears its houses
+      const placed=townSites.map(([k,lonD])=>{ const a=lonD*Math.PI/180+spin; const depth=Math.cos(a); /* 1 = nearest */ const sx=Math.sin(a); const x=cx0+sx*R*1.0, y=cy0-Math.cos(tilt)*depth*R*0.0 - (depth)*R*0.0; return {k,a,x:cx0+sx*R,y:cy0-Math.cos(a)*R*Math.sin(tilt),depth,sx}; }).sort((a,b)=>a.depth-b.depth);
+      for(const q of placed){ const ang=Math.atan2(q.x-cx0,-(q.y-cy0)); const sc=(0.55+0.45*Math.max(0,q.depth))*te; g.save(); g.translate(q.x,q.y); g.rotate(ang); g.globalAlpha=q.depth<-0.3?0.25:q.depth<0.2?0.55:1; drawPlace(g,q.k,0,0,sc); g.restore(); g.globalAlpha=1; } }
+    if(te>0.9){ for(let i=0;i<6;i++){ const a=i*1.05+spin*1.35+0.4; const depth=Math.cos(a); if(depth<-0.2) continue; const x=cx0+Math.sin(a)*R, y=cy0-Math.cos(a)*R*Math.sin(tilt); g.save(); g.translate(x,y); g.rotate(Math.atan2(x-cx0,-(y-cy0))); g.globalAlpha=depth<0.2?0.5:1; drawChar(g,{id:40+i,name:"n",role:["artist","teacher","buyer","apprentice","curator","programmer"][i]},0,0,0.5*(0.7+0.3*depth),t,{walking:true}); g.restore(); g.globalAlpha=1; } }
+    if(p>0.78){ const k=Math.min(1,(p-0.78)/0.14); g.globalAlpha=k; g.fillStyle="#000"; g.font='500 22px "IBM Plex Mono",monospace'; const txt="C O M M O N"; g.fillText(txt, cx0-g.measureText(txt).width/2, cy0+R+54); g.font='11px "IBM Plex Mono",monospace'; const sub="the corpus is not the commons"; g.globalAlpha=k*0.7; g.fillText(sub, cx0-g.measureText(sub).width/2, cy0+R+76); g.globalAlpha=1; }
+    if(p>=1){ finish(); return; } requestAnimationFrame(frame); }
+  function finish(){ if(done) return; done=true; $("#titleseq").style.display="none"; }
+  $("#titleseq").addEventListener("pointerdown",finish); requestAnimationFrame(frame); })();
+/* ---------- begin: onboarding ---------- */
+U.player={ name:"", role:"artist", stance:"people", rep:false, design:S.randomDesign(Math.floor(Math.random()*1e6)) };
+function bstep(n){ document.querySelectorAll("#begin .step").forEach(el=>el.style.display = el.dataset.step==String(n)?"flex":"none"); document.querySelectorAll("#bprog i").forEach((i,k)=>i.classList.toggle("on",k<=n)); if(n===1) bportrait(); }
+function bportrait(){ const c=$("#bport"); const g=c.getContext("2d"); c.width=120*devicePixelRatio; c.height=140*devicePixelRatio; g.scale(devicePixelRatio,devicePixelRatio); g.fillStyle="#efe8d6"; g.fillRect(0,0,120,140); drawChar(g,{id:999,name:U.player.name||"you",role:$("#brole").value,designOverride:U.player.design},60,126,120/42,0,{}); }
+document.querySelectorAll("#begin [data-next]").forEach(b=>b.onclick=()=>{ const n=Number(b.dataset.next); if(n===1){ const k=$("#bkey").value.trim(); if(!k && !b.dataset.silent){ $("#bkey").placeholder="enter a key, or choose silence below"; $("#bkey").focus(); return; } AI.key=b.dataset.silent?"":k; AI.model=$("#bmodel").value; AI.on=!!AI.key; $("#bkey").value=""; } if(n===2){ const nm=$("#bname").value.trim(); if(!nm){ $("#bname").placeholder="a name is required"; $("#bname").focus(); return; } U.player.name=nm; U.player.role=$("#brole").value; } bstep(n); });
+$("#bshuffle").onclick=()=>{ U.player.design=S.randomDesign(Math.floor(Math.random()*1e6)); bportrait(); }; $("#brole").onchange=bportrait;
+document.querySelectorAll("#begin [data-stance]").forEach(b=>b.onclick=()=>{ U.player.stance=b.dataset.stance; bstep(3); });
+document.querySelectorAll("#begin [data-rep]").forEach(b=>b.onclick=()=>{ U.player.rep=b.dataset.rep==="1"; bstep(4); });
+$("#beginbtn").onclick=()=>{ $("#begin").style.display="none"; U.started=true; begin(7); size(); aiMark(); const me=U.A.people[U.A.player]; note(`you are ${me.name}, ${me.role}. your rule: ${STANCE[me.stance]}. ${me.rep?"your representative speaks for you.":"type to speak."}`); silence(); inp.focus(); };
+function silence(){ const on=!(AI.on&&AI.key); $("#silent").style.display=on?"block":"none"; }
+$("#silentkey").onclick=openAI;
+const STANCE={share:"share everything",people:"share with people, not models",pay:"training pays the fund",closed:"no training"};
+aiMark(); pauseMark(); requestAnimationFrame(loop);
+window.COMMON={U,AI,S};
+})();
+</script>
+</body>
+</html>

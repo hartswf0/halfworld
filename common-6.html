@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>COMMON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --w:#ffffff; --k:#000000;
+  --teal:#19e6c8; --amber:#ffd23f; --red:#ff2e2e; --blue:#3b82f6;
+  --world:50vh;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--w);color:var(--k);font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.45;overflow:hidden;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:var(--w);border:1px solid var(--k);padding:10px 14px;min-height:44px;cursor:pointer;letter-spacing:.04em}
+button:active{background:var(--k);color:var(--w)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--k);outline-offset:2px}
+input,select,textarea{font:inherit;color:inherit;background:var(--w);border:1px solid var(--k);padding:10px 12px;min-height:44px;width:100%;border-radius:0;-webkit-appearance:none;appearance:none}
+textarea{min-height:120px;resize:vertical;line-height:1.4}
+a{color:inherit}
+.hide{display:none!important}
+.mark{display:inline-block;vertical-align:middle}
+
+/* REST */
+#rest{position:fixed;inset:0;background:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;z-index:50;overflow:hidden}
+#title{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#caption{position:absolute;left:0;right:0;bottom:calc(18% + var(--sab));text-align:center;font-size:14px;padding:0 24px;pointer-events:none;opacity:0;transition:opacity .5s}
+#caption.on{opacity:1}
+#skip{position:absolute;right:14px;top:calc(14px + var(--sat));border:0;font-size:11px;letter-spacing:.1em;opacity:.6;min-height:44px}
+#rest .title{font-size:22px;letter-spacing:.42em;padding-left:.42em;margin-bottom:4px;font-weight:500;text-align:center}
+#rest .sub{font-size:11px;letter-spacing:.08em;opacity:.7;text-align:center;margin-bottom:28px}
+#rest form{position:relative;width:100%;max-width:340px;display:flex;flex-direction:column;gap:16px;background:var(--w);padding:18px 0;animation:fadein .6s ease-out}
+#enternokey{border:1px dashed var(--k);font-size:12px}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#rest label{display:block;font-size:12px;margin-bottom:6px}
+#rest .warn{font-size:12px;opacity:.85;margin-top:8px}
+#rest .stat{min-height:24px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#rest .stat .why{flex-basis:100%;font-size:12px;opacity:.8;white-space:pre-wrap;word-break:break-word}
+#rest .row{display:flex;gap:10px}
+#rest .row button{flex:1}
+.selwrap{position:relative}
+.selwrap:after{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;border-right:1px solid var(--k);border-bottom:1px solid var(--k);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+
+/* CHASSIS */
+#app{position:fixed;inset:0;display:grid;grid-template-rows:calc(44px + var(--sat)) var(--world) 18px 1fr;background:var(--w)}
+header{position:relative;z-index:3;display:grid;grid-template-columns:44px 1fr 44px;align-items:end;padding-top:var(--sat);border-bottom:1px solid var(--k)}
+header .brand{text-align:center;letter-spacing:.42em;padding-left:.42em;font-weight:500;font-size:15px;line-height:44px;cursor:pointer;user-select:none}
+header .clock{white-space:nowrap;position:absolute;left:50%;transform:translateX(-50%);top:100%;font-size:10px;background:var(--w);padding:0 6px;line-height:16px;border:1px solid var(--k);border-top:0}
+header button{border:0;min-height:44px;height:44px;width:44px;padding:0;display:flex;align-items:center;justify-content:center}
+header button:active{background:var(--w);color:var(--k)}
+#worldwrap{position:relative;overflow:hidden;background:var(--w)}
+#worldsvg{width:100%;height:100%;display:block;touch-action:none;user-select:none}
+#edges{position:absolute;left:0;right:0;bottom:6px;display:flex;justify-content:space-between;pointer-events:none;padding:0 6px;gap:6px}
+#edges .edge{pointer-events:auto;font-size:10px;line-height:1.3;border:1px solid var(--k);background:var(--w);padding:6px 8px;max-width:46%;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:6px}
+#edges .edge b{font-weight:600;display:block;font-size:11px}
+#edges .edge span{opacity:.75;display:block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#edges .edge.hot{box-shadow:inset 0 -3px 0 var(--k)}
+#nav{position:absolute;top:6px;left:6px;width:58px;height:58px;cursor:pointer;touch-action:none}
+#sitename{position:absolute;top:24px;left:68px;font-size:10px;letter-spacing:.2em;pointer-events:none}
+#cast{position:absolute;right:8px;top:8px;font-size:10px;border:1px solid var(--k);background:var(--w);padding:6px 8px;cursor:pointer;min-height:44px;display:flex;align-items:center;pointer-events:auto}
+#elsewhere{padding:6px 14px;border-bottom:1px solid var(--k);font-size:12px;opacity:.75;cursor:pointer;display:flex;justify-content:space-between}
+#frameline{position:absolute;left:0;right:0;bottom:4px;text-align:center;font-size:12px;pointer-events:none;opacity:0;transition:opacity .35s}
+#frameline.on{opacity:1}
+#frameline span{background:var(--w);border:1px solid var(--k);padding:4px 10px}
+.edgemark{font-size:9px;fill:var(--k)}
+.edgemark circle{fill:var(--k)}
+.puff{opacity:.5}
+.emote path,.emote circle{stroke:var(--k);stroke-width:1.4;fill:none;stroke-linecap:round}
+.emote .f{fill:var(--k);stroke:none}
+.scene .far path,.scene .far circle,.scene .far rect,.scene .far ellipse,.scene .far polygon,.scene .far line{stroke:var(--k);stroke-width:.7;fill:none;opacity:.4;vector-effect:non-scaling-stroke}
+.scene .far .w{fill:var(--w)}
+.scene .bd path,.scene .bd rect,.scene .bd circle,.scene .bd ellipse,.scene .bd line,.scene .bd polyline,.scene .bd polygon{fill:none;stroke:var(--k);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.scene .bd .w{fill:var(--w)}
+.scene .bd text{font-size:9px;letter-spacing:.12em;fill:var(--k)}
+.bub rect{fill:var(--w);stroke:var(--k);stroke-width:1}
+.bub path{fill:var(--w);stroke:var(--k);stroke-width:1}
+.bub text{font-size:8.5px;fill:var(--k)}
+.agent .nm{font-size:9px}
+.agent .st{font-size:8px}
+.frame rect.f{fill:var(--w);stroke:var(--k);stroke-width:1}
+.frame{cursor:pointer}
+.frame.new rect.f{animation:appear .5s ease-out}
+.frame.pulse image{animation:pulse .9s ease-in-out 3}
+.lnk{text-decoration:none;font-weight:600;cursor:pointer}
+#abtab{position:absolute;top:60px;right:8px;display:flex;justify-content:flex-start;gap:0;pointer-events:none}
+#abtab span{pointer-events:auto;font-size:11px;padding:4px 10px;border:1px solid var(--k);background:var(--w);cursor:pointer;min-width:44px;text-align:center}
+#abtab span.on{background:var(--k);color:var(--w)}
+#seam{border-top:1px solid var(--k);border-bottom:1px solid var(--k);display:flex;align-items:center;justify-content:center;gap:10px;touch-action:none;cursor:ns-resize;background:var(--w);user-select:none}
+#seam i{display:block;width:40px;height:2px;background:var(--k)}
+#seam svg{width:10px;height:10px;opacity:.8}
+#stream{display:grid;grid-template-rows:1fr auto;min-height:0;background:var(--w)}
+#feed{overflow-y:auto;overscroll-behavior:contain;padding:0 0 8px 0}
+.item{padding:10px 14px;border-bottom:1px solid #000;display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:start}
+.item .who .av{display:inline-block;width:26px;height:26px;vertical-align:middle;margin-right:8px;border:1px solid var(--k);background:var(--w)}
+.item .who .av svg{width:100%;height:100%;display:block}
+.item.focus .head{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;margin-bottom:6px}
+.item.focus .head .av{width:64px;height:64px;border:1px solid var(--k);background:var(--w)}
+.item.focus .head .av svg{width:100%;height:100%;display:block}
+.item.focus .head .who{font-size:15px}
+.gauge{margin:8px 0;font-size:12px}
+.gauge .lean{font-weight:600;margin-bottom:6px}
+.gauge .ax{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;padding:3px 0}
+.gauge .ax i{display:block;position:relative;height:10px;border-left:1px solid var(--k);border-right:1px solid var(--k)}
+.gauge .ax i:before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--k);opacity:.4}
+.gauge .ax i b{position:absolute;top:0;width:8px;height:10px;background:var(--k);margin-left:-4px}
+.gauge .ends{display:grid;grid-template-columns:96px 1fr;font-size:10px;opacity:.6}
+.gauge .ends span{display:flex;justify-content:space-between}
+.cluster{padding:6px 14px;border-bottom:1px solid #000;font-size:12px;opacity:.7;cursor:pointer;display:flex;justify-content:space-between}
+.cluster.open{opacity:1}
+.item .meta{grid-column:1/-1;font-size:11px;opacity:.7;display:flex;gap:12px;cursor:pointer}
+.cmt{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;padding:4px 0;font-size:12px}
+.cmt .av{width:22px;height:22px;border:1px solid var(--k)}
+.cmt .av svg{width:100%;height:100%;display:block}
+.cmt b{font-weight:600;margin-right:6px}
+.belief{font-size:12px;padding:4px 0 4px 10px;border-left:2px solid var(--k);margin:3px 0}
+.belief small{display:block;opacity:.6;font-size:10px}
+.item.focus pre.sess{max-height:40vh}
+.item.mine{box-shadow:inset 4px 0 0 var(--k)}
+.agent.dimmed .fig{opacity:.3}
+.agent.dimmed text{opacity:.3}
+.item.news{grid-template-columns:1fr}
+.item.news .mast{font-size:10px;letter-spacing:.2em;border-bottom:1px solid var(--k);padding-bottom:3px;margin-bottom:4px;display:flex;justify-content:space-between}
+.item.news .hl{font-weight:600;font-size:15px;line-height:1.3;margin-bottom:4px}
+.item.news .body{font-size:13px}
+.galhead{display:flex;gap:0;margin-bottom:8px}
+.galhead button{flex:1;min-height:34px;padding:4px;font-size:11px;border-right:0}
+.galhead button:last-child{border-right:1px solid var(--k)}
+.galhead button.on{background:var(--k);color:var(--w)}
+.rank{display:grid;grid-template-columns:28px 64px 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--k);font-size:12px;cursor:pointer}
+.rank .n{font-weight:600}
+.rank canvas{width:64px;height:64px;border:1px solid var(--k);display:block}
+.rank .tag{font-size:10px;opacity:.7}
+.prow{padding:8px 0;border-bottom:1px dashed var(--k);font-size:13px}
+.prow .by{font-size:11px;opacity:.7;margin-bottom:2px}
+.worksec{margin:10px 0 4px;font-size:12px;display:flex;justify-content:space-between}
+.gal .g .tag{position:absolute;left:0;bottom:0;font-size:7px;background:var(--w);padding:0 2px;border-top:1px solid var(--k);border-right:1px solid var(--k)}
+.tie{transition:none}
+.item.dim{opacity:.55}
+.item .who{font-weight:600;font-size:12px;letter-spacing:.02em;cursor:pointer}
+.item .who small{font-weight:400;opacity:.7;margin-left:8px}
+.item .say{grid-column:1/-1;font-size:14px;margin-top:2px;white-space:pre-wrap;word-break:break-word}
+.item .fact{font-size:13px;margin-top:2px}
+.item .fact .why{opacity:.7;display:block;font-size:12px}
+.item .thumb{width:72px;height:72px;border:1px solid var(--k);background:var(--w);cursor:pointer;grid-row:span 3}
+.item .thumb canvas{width:100%;height:100%;display:block}
+.item .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.item .acts button{padding:8px 12px;min-height:40px;font-size:12px}
+.item.focus{border-top:2px solid var(--k);border-bottom:2px solid var(--k);background:var(--w)}
+.item.focus .close{border:0;min-height:36px;padding:0 8px;font-size:12px}
+.item.focus .art{width:100%;max-width:280px;aspect-ratio:1;border:1px solid var(--k);margin:8px 0}
+.item.focus .art canvas{width:100%;height:100%;display:block}
+.item.focus .text{font-size:14px;white-space:pre-wrap;border:1px solid var(--k);padding:12px;margin:8px 0;max-width:280px}
+.item.focus .lineage{font-size:13px;margin:6px 0}
+.item.focus .lineage div{padding:2px 0}
+.item.focus .lineage .arrow{opacity:.6;padding-left:14px}
+.item.focus .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-size:12px;margin:8px 0}
+.item.focus .bars{margin:6px 0;font-size:12px}
+.item.focus .bars div{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:8px;padding:2px 0}
+.item.focus .bars b{display:block;height:6px;background:var(--k);transform-origin:left}
+.item.focus pre{font-size:11px;white-space:pre-wrap;border:1px dashed var(--k);padding:8px;margin:6px 0;max-height:220px;overflow:auto}
+.item.focus .memo{font-size:12px;padding:2px 0 2px 10px;border-left:1px solid var(--k);margin:2px 0}
+.item.card{grid-template-columns:1fr}
+.item.card .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.item.card .opts button{padding:10px 6px;font-size:12px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;min-height:64px}
+.item.card .opts button small{font-size:10px;letter-spacing:0;opacity:.75}
+.item.gallery{display:block;padding:8px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.gal .g{aspect-ratio:1;border:1px solid var(--k);position:relative;cursor:pointer;background:var(--w);overflow:hidden}
+.gal .g canvas{width:100%;height:100%;display:block}
+.gal .g .t{position:absolute;inset:0;font-size:7px;padding:4px;overflow:hidden;line-height:1.2}
+.gal .g .p{position:absolute;right:0;bottom:0;width:8px;height:8px}
+.gal .g.trained:after{content:"";position:absolute;left:0;top:0;width:0;height:0;border-top:10px solid var(--blue);border-right:10px solid transparent}
+.gal .g.withdrawn{opacity:.35}
+.item.work{grid-template-columns:1fr auto}
+.item.work .prog{height:2px;background:var(--k);width:0;transition:width .6s linear}
+.item.work .bar{border:1px solid var(--k);height:8px;padding:2px;margin-top:6px}
+.variants{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.variants .v{aspect-ratio:1;border:1px solid var(--k);position:relative}
+.variants .v canvas{width:100%;height:100%;display:block}
+.variants .v.chosen{outline:2px solid var(--k);outline-offset:2px}
+.variants .v.gone{opacity:.15}
+.abrow{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px}
+.abrow div{border:1px solid var(--k);padding:8px}
+.abrow h4{font-size:12px;font-weight:600;margin-bottom:4px}
+#compose{display:grid;grid-template-columns:1fr 60px;border-top:1px solid var(--k);padding-bottom:var(--sab)}
+#compose input{border:0;min-height:52px;padding:0 14px}
+#compose button{border:0;border-left:1px solid var(--k);min-height:52px}
+#compose .ctx{grid-column:1/-1;font-size:11px;padding:4px 14px 0;display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--k)}
+#compose .ctx button{border:0;min-height:28px;padding:0 6px;font-size:11px}
+
+/* SVG WORLD */
+.place text{font-size:9px;letter-spacing:.08em;fill:var(--k)}
+.place path,.place rect,.place circle,.place ellipse,.place line,.place polyline,.place polygon{fill:none;stroke:var(--k);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.place .fill{fill:var(--w)}
+.agent{cursor:pointer}
+.agent .hit{fill:transparent;stroke:none}
+.fig path,.fig circle,.fig rect,.fig line{stroke:var(--k);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;fill:none;vector-effect:non-scaling-stroke}
+.fig .w{fill:var(--w)}
+.fig .k{fill:var(--k);stroke:none}
+.fig .prop{display:none}
+.agent .fig.p-board .board,.agent .fig.p-page .page,.agent .fig.p-screen .screen,.agent .fig.p-point .point,.agent .fig.p-talk .talk{display:inline}
+.agent .fig.p-board .armR,.agent .fig.p-page .armR,.agent .fig.p-screen .armR,.agent .fig.p-point .armR{display:none}
+.agent text{font-size:8px;fill:var(--k);text-anchor:middle;pointer-events:none}
+.agent .st{font-size:7px;opacity:.75}
+.agent.sel .ring{fill:none;stroke:var(--k);stroke-width:1;stroke-dasharray:2 2}
+.agent.left .fig{opacity:.35}
+.ink{filter:url(#wob)}
+.agent .fault{fill:var(--red)}
+.agent .work{fill:var(--k)}
+.tie{stroke:var(--k);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}
+.tie.teach{stroke-dasharray:1 3}
+.tie.conflict{stroke:var(--red)}
+.tie.breaking{stroke-dasharray:6 4;animation:snap .9s steps(6) forwards}
+@keyframes snap{to{stroke-dashoffset:40;opacity:0}}
+.artw{cursor:pointer}
+.artw rect.frame{fill:var(--w);stroke:var(--k);stroke-width:.8}
+.artw.new rect{animation:appear .5s ease-out}
+@keyframes appear{from{transform:scale(0)}to{transform:scale(1)}}
+.artw.pulse image{animation:pulse .9s ease-in-out 3}
+@keyframes pulse{50%{opacity:.25}}
+.model .core{fill:none;stroke:var(--k);stroke-width:1}
+.model .dot{fill:var(--k)}
+.model text{font-size:8px;text-anchor:middle;fill:var(--k)}
+.model.sel .core{stroke-width:2}
+.ray{stroke:var(--blue);stroke-width:1;fill:none;stroke-dasharray:3 3;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.wlabel{font-size:8px;fill:var(--k)}
+.wlabel.fault{fill:var(--red)}
+.stopbtn rect{fill:var(--w);stroke:var(--k);stroke-width:1}
+.stopbtn text{font-size:7px;fill:var(--k);text-anchor:middle;pointer-events:none}
+.stopbtn{cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* SHEETS */
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--w);border-top:1px solid var(--k);z-index:40;padding:14px 14px calc(14px + var(--sab));max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform .22s ease-out}
+.sheet.on{transform:none}
+.scrim{position:fixed;inset:0;z-index:39;background:transparent}
+.sheet h3{font-size:12px;font-weight:600;letter-spacing:.06em;margin-bottom:10px}
+.sheet .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sheet .row button{flex:1 1 auto}
+.sheet .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:13px;margin-bottom:8px}
+.sheet .kv span:nth-child(odd){opacity:.7}
+.sheet .tabs{display:flex;gap:0;margin:8px 0}
+.sheet .tabs button{flex:1;min-height:36px;padding:6px;font-size:11px;border-right:0}
+.sheet .tabs button:last-child{border-right:1px solid var(--k)}
+.sheet .tabs button.on{background:var(--k);color:var(--w)}
+.sheet textarea{font-size:12px;min-height:38vh}
+#fault{position:fixed;inset:0;z-index:60;background:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+#fault .row{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+</style>
+</head>
+<body>
+
+<div id="rest">
+  <canvas id="title"></canvas>
+  <div id="caption"></div>
+  <button id="skip" type="button">SKIP</button>
+  <form id="restform" autocomplete="off" class="hide">
+    <div class="title">COMMON</div>
+    <div class="sub">the corpus is not the commons</div>
+    <div>
+      <label for="key">API KEY</label>
+      <input id="key" type="password" inputmode="text" autocomplete="off" spellcheck="false" placeholder="••••••••••••">
+    </div>
+    <div>
+      <label for="model">MODEL</label>
+      <input id="model" list="models" value="gpt-5.6-sol" autocomplete="off" spellcheck="false">
+      <datalist id="models"><option value="gpt-5.6-sol"><option value="gpt-5.6-terra"><option value="gpt-5.6-luna"></datalist>
+    </div>
+    <button type="submit" id="enter">ENTER</button>
+    <button type="button" id="enternokey">LOOK AROUND WITHOUT A KEY</button>
+    <div class="stat" id="reststat"></div>
+    <div class="warn">Browser keys can be inspected. Use a development/testing key. Without a key nobody can make, write, or speak.</div>
+  </form>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <button id="pause" aria-label="pause" title="pause"><svg class="mark" width="16" height="16" viewBox="0 0 16 16" id="pauseico"><rect x="3" y="2" width="3" height="12" fill="#000"/><rect x="10" y="2" width="3" height="12" fill="#000"/></svg></button>
+    <div class="brand" id="brand">COMMON</div>
+    <button id="aistat" aria-label="AI status" title="AI"><svg class="mark" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="#000"/><circle cx="8" cy="8" r="2" fill="#000"/></svg></button>
+    <div class="clock" id="clock"></div>
+  </header>
+  <div id="worldwrap">
+    <svg id="worldsvg" viewBox="0 0 360 300" preserveAspectRatio="xMidYMid meet"></svg>
+    <canvas id="nav" width="180" height="180"></canvas><div id="sitename"></div><div id="cast" class="hide"></div><div id="frameline"></div><div id="edges"><div class="edge" id="edgeL"></div><div class="edge" id="edgeR"></div></div><div id="abtab" class="hide"><span data-w="0">A</span><span data-w="1">B</span></div>
+  </div>
+  <div id="seam" title="drag to resize · double-tap to cycle"><svg viewBox="0 0 10 10"><path d="M1 4l4-3 4 3M1 6l4 3 4-3" fill="none" stroke="#000"/></svg><i></i><svg viewBox="0 0 10 10"><path d="M1 4l4-3 4 3M1 6l4 3 4-3" fill="none" stroke="#000"/></svg></div>
+  <div id="stream">
+    <div id="feed"></div>
+    <div id="compose">
+      <div class="ctx hide" id="ctx"><span id="ctxlabel"></span><button id="ctxclear">clear</button></div>
+      <input id="say" placeholder="say / ask / make / change…" autocomplete="off">
+      <button id="send" aria-label="send"><svg class="mark" width="16" height="16" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="#000" stroke-width="1.4"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div id="scrim" class="scrim hide"></div>
+<div id="sys" class="sheet">
+  <h3>AI</h3>
+  <div class="kv"><span>model</span><span id="sysmodel"></span><span>key</span><span id="syskey">connected</span><span>calls</span><span id="syscalls">0 in flight · 0 done · 0 failed</span><span>tokens</span><span id="systok">0</span></div>
+  <div class="row"><button id="changekey">CHANGE KEY</button><button id="prompts">PROMPTS</button></div>
+  <div class="row"><button id="exportfeed">EXPORT FEED</button><button id="exportbtn">EXPORT WORLD</button></div>
+  <div class="row"><button id="exitbtn">EXIT</button></div>
+  <div class="row"><button id="sysclose">CLOSE</button></div>
+</div>
+<div id="promptsheet" class="sheet">
+  <h3>PROMPTS</h3>
+  <div class="tabs" id="ptabs"></div>
+  <textarea id="ptext" spellcheck="false"></textarea>
+  <div class="row"><button id="preset">RESET</button><button id="pclose">CLOSE</button></div>
+</div>
+<div id="fault" class="hide">
+  <div style="font-weight:600;letter-spacing:.08em">CONNECTION LOST</div>
+  <div style="font-size:13px">World preserved.</div>
+  <div class="row"><button id="fretry">RETRY</button><button id="fkey">CHANGE KEY</button><button id="fexit">EXIT</button></div>
+</div>
+<script>
+'use strict';
+/* ============================================================
+   COMMON — THE CORPUS IS NOT THE COMMONS
+   two surfaces. one composer. zero tabs.
+   ============================================================ */
+
+/* ---------- RNG (cloneable) ---------- */
+function RNG(seed){ this.s = seed>>>0; }
+RNG.prototype.next = function(){ let t = (this.s += 0x6D2B79F5); t = Math.imul(t ^ (t>>>15), t|1); t ^= t + Math.imul(t ^ (t>>>7), t|61); return ((t ^ (t>>>14))>>>0)/4294967296; };
+RNG.prototype.int = function(n){ return Math.floor(this.next()*n); };
+RNG.prototype.pick = function(a){ return a[this.int(a.length)]; };
+RNG.prototype.clone = function(){ return new RNG(this.s); };
+
+/* ---------- KEY: memory only ---------- */
+const AI = { key:'', model:'gpt-5.6-sol', inflight:0, done:0, failed:0, controllers:new Set(), connected:false, tokIn:0, tokOut:0 };
+
+/* ---------- PROMPTS (part of the work) ---------- */
+const PROMPT_DEFAULTS = {
+AGENT:`YOU ARE ONE PERSON INSIDE A CULTURAL WORLD.
+
+You are not the simulator.
+
+You know only the supplied observations, memories, relationships,
+skills, practices, economic conditions, and institutions.
+
+Do not invent world facts.
+
+Choose one plausible next intention.
+
+You may:
+make,
+write,
+draw,
+prompt,
+generate,
+teach,
+learn,
+criticize,
+talk,
+collaborate,
+publish,
+withhold,
+leave,
+join,
+petition,
+rest.
+
+Do not optimize for ideological consistency.
+
+People may be contradictory.
+
+Return JSON only:
+
+{
+  "action": "...",
+  "target": null,
+  "practice": null,
+  "reason": "...",
+  "utterance": null
+}
+
+The simulator validates it.`,
+
+ART:`YOU ARE MAKING ONE ARTIFACT INSIDE A LIVING CULTURAL SIMULATION.
+
+Write the artwork itself as drawing code.
+
+You are given:
+- creator state
+- creator cultural traits
+- creator practice
+- source influences
+- social situation
+- provenance
+- previous works when relevant
+
+Do not describe the artwork.
+
+Do not explain it.
+
+Do not return Markdown.
+
+Return only a program using the permitted drawing language.
+
+The work should visibly inherit some features from its influences
+while preserving variation from the creator.
+
+Human work may contain idiosyncrasy, hesitation, repetition, error,
+obsession, or deliberate departure.
+
+Synthetic work should be generated from the current model-cultural distribution
+plus the prompting agent's preferences.
+
+Hybrid work may combine both.
+
+Do not maximize beauty.
+Produce a culturally situated artifact.
+
+Something that actually happened in the world recently (an argument, a lesson,
+a rule, a departure, a work you saw, a comment you received) should leave a trace
+in the work: in its subject, its rhythm, its restraint, or its excess.
+
+Maximum 120 drawing commands.
+
+DRAWING LANGUAGE (one command per line, canvas is 100 x 100, origin top-left):
+PEN width
+INK r g b a
+MOVE x y
+LINE x y
+CURVE cx1 cy1 cx2 cy2 x y
+CIRCLE x y radius
+RECT x y width height
+POLYGON x1 y1 x2 y2 x3 y3 ...
+TEXT x y size word
+FILL r g b a
+NOFILL
+STROKE
+NOSTROKE
+PUSH
+POP
+ROTATE radians
+TRANSLATE x y
+
+r g b are 0-255, a is 0-1.`,
+
+WRITING:`YOU ARE WRITING ONE SHORT TEXT INSIDE A LIVING CULTURAL SIMULATION.
+
+You are given the writer's state, cultural traits, practice, influences,
+social situation, provenance, and previous works when relevant.
+
+Write the text itself. Not a description of it.
+
+It must be short enough to live physically in the world: at most 40 words.
+
+It may be a fragment, instruction, poem, critique, story sentence, note,
+manifesto, or caption. Not every text is profound.
+
+It should inherit something from its influences while keeping the writer's variation.
+
+Something that actually happened in the world recently should leave a trace in it.
+
+Return only the text. No title. No Markdown. No quotation marks.`,
+
+REFLECTION:`YOU ARE ONE PERSON REMEMBERING.
+
+You are given recent events (each with an id) that happened to you or near you,
+plus your memories, practices and relationships.
+
+Write one short reflection (at most 30 words) in the first person about what these events mean to you.
+
+You may be mistaken, partial, or contradictory. You may not invent events.
+
+Return JSON only:
+{ "reflection": "...", "sources": ["event ids you are reflecting on"] }`,
+
+ARGUMENT:`YOU ARE ONE PERSON INSIDE A CULTURAL WORLD ANSWERING SOMEONE.
+
+You are given who is speaking to you, what they said, your memories, relationships,
+practices, attitudes, and the institutions in force.
+
+Answer in your own voice in at most 35 words. Do not invent world facts.
+You may refuse, deflect, argue, agree, or ask back.
+
+If the message is a request that changes what you do (share, withhold, stop, teach, publish),
+say whether you will do it.
+
+Return JSON only:
+{ "utterance": "...", "will": null | "share" | "withhold" | "teach" | "publish" | "stop" | "leave", "stance": "warm" | "neutral" | "cool" }`,
+
+TALK:`YOU ARE ONE PERSON INSIDE A CULTURAL WORLD SPEAKING TO ANOTHER PERSON.
+
+Something just happened between you and them involving a work: you sampled it, remixed it,
+learned from it, praised it, dismissed it, or fed it to the generator.
+
+You are given your own state, your relationship with them, the work, and what you did.
+
+Say one thing to them, in your own voice, at most 30 words. It can be a question, a thanks,
+an excuse, a boast, a confession, a complaint. Do not invent world facts.
+
+Return JSON only:
+{ "utterance": "...", "stance": "warm" | "neutral" | "cool" }`,
+
+COMMENT:`YOU ARE ONE PERSON LOOKING AT ANOTHER PERSON'S WORK INSIDE A CULTURAL WORLD.
+
+You are given your own traits, attitudes, memories, your relationship with the maker,
+the work itself (a drawing program or a text), and its provenance (human / synthetic / hybrid).
+
+Say one thing about the work, as you would out loud, at most 18 words. It can be praise,
+a question, a complaint, a joke, a refusal to engage. Do not describe the work back.
+
+Return JSON only:
+{ "comment": "...", "like": true | false }`,
+
+COMPACT:`YOU ARE ONE PERSON WHOSE MEMORY IS FULL.
+
+You are given a set of older memories, each with an event id.
+
+Fold them into ONE belief you now hold (at most 20 words), the way memories become
+a settled sense of things. The belief may be unfair, partial, or wrong. Do not invent events.
+
+Return JSON only:
+{ "belief": "...", "sources": ["event ids that fed the belief"] }`,
+
+NEWS:`YOU ARE THE LEDGER, THE ONLY PAPER IN A SMALL CULTURAL WORLD.
+
+You are given the notable events of the last few days with the people involved,
+the works that drew the most and least attention, the training rule in force,
+and what people have been saying.
+
+Write one short dispatch (headline of at most 8 words, body of at most 55 words).
+Name people by name. Report what happened; you may have an angle, a scandal to chase,
+a hero to make, a trend to declare. Do not invent events that are not listed.
+
+Return JSON only:
+{ "headline": "...", "body": "...", "about": ["names of people the piece is mainly about"], "tone": "scandal" | "praise" | "trend" | "notice" }`,
+
+INTENT:`YOU TRANSLATE A PLAYER'S TYPED MESSAGE INTO ONE INTENT FOR A CULTURAL SIMULATION.
+
+Agents (people) and policies are listed. Return JSON only:
+{ "intent": "ask" | "tell" | "policy" | "show" | "fork" | "compare" | "train" | "none",
+  "target": null | agent name,
+  "text": "what to say to the agent, in the player's words, or null",
+  "policy": null | "OPEN" | "ASK" | "PAY" | "RETURN" | "OPEN_MODEL" | "CLOSE" }
+
+"ask" and "tell" address one agent. "policy" proposes a training rule.
+"show" asks to see something (an agent, an artifact, the pool, the model).
+If unsure return "none".`
+};
+const PROMPTS = Object.assign({}, PROMPT_DEFAULTS);
+
+/* ---------- OPENAI RESPONSES API ---------- */
+class NetFault extends Error { constructor(m, kind){ super(m); this.kind = kind; } }
+
+async function llm(system, user, opts={}){
+  if(!AI.key) throw new NetFault('no key', 'nokey');
+  const ac = new AbortController();
+  AI.controllers.add(ac);
+  if(opts.onController) opts.onController(ac);
+  AI.inflight++; updateCalls();
+  try{
+    const body = { model: AI.model, max_output_tokens: opts.maxTokens || 900,
+      input: [ { role:'system', content: system }, { role:'user', content: user } ] };
+    const r = await fetch('https://api.openai.com/v1/responses', {
+      method:'POST', signal: ac.signal,
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + AI.key },
+      body: JSON.stringify(body) });
+    if(r.status === 401 || r.status === 403) throw new NetFault('unauthorized', 'auth');
+    if(r.status === 429){ let t=''; try{ t=(await r.json()).error?.message||''; }catch(e){} throw new NetFault('http 429 rate limited or out of quota'+(t?': '+t:''), 'local'); }
+    if(!r.ok){ let t=''; try{ t = (await r.json()).error?.message || ''; }catch(e){} throw new NetFault(('http ' + r.status + (t? ': '+t : '')), r.status >= 500 ? 'global' : 'local'); }
+    const j = await r.json();
+    let text = '';
+    if(typeof j.output_text === 'string') text = j.output_text;
+    else if(Array.isArray(j.output)) for(const o of j.output){ if(o.type==='message' && Array.isArray(o.content)) for(const c of o.content){ if(c.type==='output_text' && c.text) text += c.text; } }
+    if(j.usage){ AI.tokIn += j.usage.input_tokens||0; AI.tokOut += j.usage.output_tokens||0; }
+    AI.done++; updateCalls();
+    return text.trim();
+  }catch(e){
+    if(e.name === 'AbortError') throw new NetFault('stopped', 'abort');
+    if(e instanceof NetFault){ AI.failed++; throw e; }
+    AI.failed++;
+    throw new NetFault(e.message || 'network', 'global');
+  }finally{
+    AI.inflight--; AI.controllers.delete(ac); updateCalls();
+  }
+}
+function stopAllCalls(){ for(const c of AI.controllers) c.abort(); }
+function parseJSON(t){
+  if(!t) return null;
+  let s = t.replace(/```json|```/g,'').trim();
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if(a>=0 && b>a) s = s.slice(a, b+1);
+  try{ return JSON.parse(s); }catch(e){ return null; }
+}
+
+/* ---------- DRAWING LANGUAGE: parse · validate · interpret ---------- */
+const CMD_ARITY = { PEN:1, INK:4, MOVE:2, LINE:2, CURVE:6, CIRCLE:3, RECT:4, FILL:4, NOFILL:0, STROKE:0, NOSTROKE:0, PUSH:0, POP:0, ROTATE:1, TRANSLATE:2, POLYGON:-1, TEXT:-2 };
+const MAX_OPS = 120;
+function clampN(v, lo, hi){ v = Number(v); if(!isFinite(v)) return lo; return Math.max(lo, Math.min(hi, v)); }
+function parseProgram(src){
+  const out = []; if(!src) return out;
+  const lines = src.replace(/```[a-z]*/g,'').split(/\r?\n/);
+  for(let raw of lines){
+    let ln = raw.trim(); if(!ln || ln.startsWith('#') || ln.startsWith('//')) continue;
+    const parts = ln.split(/\s+/); const op = parts[0].toUpperCase();
+    if(!(op in CMD_ARITY)) continue;
+    const ar = CMD_ARITY[op];
+    let args = parts.slice(1);
+    if(ar >= 0){ if(args.length < ar) continue; args = args.slice(0, ar).map(Number); if(args.some(x=>!isFinite(x))) continue; }
+    else if(op === 'POLYGON'){ args = args.map(Number).filter(isFinite); if(args.length < 6 || args.length % 2) continue; args = args.slice(0, 24); }
+    else if(op === 'TEXT'){ const x=Number(args[0]), y=Number(args[1]), sz=Number(args[2]); const word = args.slice(3).join(' ').replace(/[^\w .,!?'-]/g,'').slice(0,24); if(![x,y,sz].every(isFinite) || !word) continue; args = [x,y,sz,word]; }
+    // clamp
+    switch(op){
+      case 'PEN': args[0] = clampN(args[0], .2, 12); break;
+      case 'INK': case 'FILL': args[0]=clampN(args[0],0,255); args[1]=clampN(args[1],0,255); args[2]=clampN(args[2],0,255); args[3]=clampN(args[3],0,1); break;
+      case 'MOVE': case 'LINE': case 'TRANSLATE': args[0]=clampN(args[0],-50,150); args[1]=clampN(args[1],-50,150); break;
+      case 'CURVE': for(let i=0;i<6;i++) args[i]=clampN(args[i],-50,150); break;
+      case 'CIRCLE': args[0]=clampN(args[0],-50,150); args[1]=clampN(args[1],-50,150); args[2]=clampN(args[2],0,120); break;
+      case 'RECT': args[0]=clampN(args[0],-50,150); args[1]=clampN(args[1],-50,150); args[2]=clampN(args[2],0,150); args[3]=clampN(args[3],0,150); break;
+      case 'ROTATE': args[0]=clampN(args[0],-Math.PI*4,Math.PI*4); break;
+      case 'POLYGON': args = args.map(v=>clampN(v,-50,150)); break;
+      case 'TEXT': args[0]=clampN(args[0],-50,150); args[1]=clampN(args[1],-50,150); args[2]=clampN(args[2],3,40); break;
+    }
+    out.push([op, ...args]);
+    if(out.length >= MAX_OPS) break;
+  }
+  return out;
+}
+function serializeProgram(p){ return p.map(c => c.join(' ')).join('\n'); }
+function renderProgram(canvas, program, size){
+  const s = size || canvas.width; canvas.width = s; canvas.height = s;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,s,s);
+  ctx.scale(s/100, s/100);
+  ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=1.2; ctx.strokeStyle='rgba(0,0,0,1)'; ctx.fillStyle='rgba(0,0,0,0.15)';
+  let doFill=false, doStroke=true, depth=0, pathOpen=false, px=0, py=0;
+  const closePath = ()=>{ if(pathOpen){ if(doFill) ctx.fill(); if(doStroke) ctx.stroke(); pathOpen=false; } };
+  for(const c of program){
+    const op=c[0], a=c.slice(1);
+    switch(op){
+      case 'PEN': ctx.lineWidth=a[0]; break;
+      case 'INK': closePath(); ctx.strokeStyle=`rgba(${a[0]|0},${a[1]|0},${a[2]|0},${a[3]})`; break;
+      case 'FILL': closePath(); ctx.fillStyle=`rgba(${a[0]|0},${a[1]|0},${a[2]|0},${a[3]})`; doFill=true; break;
+      case 'NOFILL': closePath(); doFill=false; break;
+      case 'STROKE': closePath(); doStroke=true; break;
+      case 'NOSTROKE': closePath(); doStroke=false; break;
+      case 'MOVE': closePath(); ctx.beginPath(); ctx.moveTo(a[0],a[1]); px=a[0]; py=a[1]; pathOpen=true; break;
+      case 'LINE': if(!pathOpen){ ctx.beginPath(); ctx.moveTo(px,py); pathOpen=true; } ctx.lineTo(a[0],a[1]); px=a[0]; py=a[1]; break;
+      case 'CURVE': if(!pathOpen){ ctx.beginPath(); ctx.moveTo(px,py); pathOpen=true; } ctx.bezierCurveTo(a[0],a[1],a[2],a[3],a[4],a[5]); px=a[4]; py=a[5]; break;
+      case 'CIRCLE': closePath(); ctx.beginPath(); ctx.arc(a[0],a[1],a[2],0,Math.PI*2); if(doFill) ctx.fill(); if(doStroke) ctx.stroke(); break;
+      case 'RECT': closePath(); ctx.beginPath(); ctx.rect(a[0],a[1],a[2],a[3]); if(doFill) ctx.fill(); if(doStroke) ctx.stroke(); break;
+      case 'POLYGON': closePath(); ctx.beginPath(); ctx.moveTo(a[0],a[1]); for(let i=2;i<a.length;i+=2) ctx.lineTo(a[i],a[i+1]); ctx.closePath(); if(doFill) ctx.fill(); if(doStroke) ctx.stroke(); break;
+      case 'TEXT': closePath(); ctx.font = `${a[2]}px "IBM Plex Mono", monospace`; const fs = ctx.fillStyle; ctx.fillStyle = ctx.strokeStyle; ctx.fillText(a[3], a[0], a[1]); ctx.fillStyle = fs; break;
+      case 'PUSH': if(depth<16){ closePath(); ctx.save(); depth++; } break;
+      case 'POP': if(depth>0){ closePath(); ctx.restore(); depth--; } break;
+      case 'ROTATE': closePath(); ctx.rotate(a[0]); break;
+      case 'TRANSLATE': closePath(); ctx.translate(a[0],a[1]); break;
+    }
+  }
+  closePath(); while(depth>0){ ctx.restore(); depth--; }
+  return canvas;
+}
+function renderText(canvas, text, size){
+  const s = size || canvas.width; canvas.width = s; canvas.height = s;
+  const ctx = canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,s,s);
+  ctx.fillStyle='#000'; const fs = Math.max(6, Math.round(s/12)); ctx.font = `${fs}px "IBM Plex Mono", monospace`;
+  const words = (text||'').split(/\s+/); const lines=[]; let line='';
+  for(const w of words){ const t = line? line+' '+w : w; if(ctx.measureText(t).width > s-10){ lines.push(line); line=w; } else line=t; }
+  lines.push(line);
+  lines.slice(0, Math.floor((s-8)/(fs*1.3))).forEach((l,i)=> ctx.fillText(l, 5, 5+fs*(i+1)*1.3));
+  return canvas;
+}
+function programStats(p){
+  const ops = {}; let ink=[0,0,0], inkN=0, w=0;
+  for(const c of p){ ops[c[0]]=(ops[c[0]]||0)+1; if(c[0]==='INK'||c[0]==='FILL'){ ink[0]+=c[1]; ink[1]+=c[2]; ink[2]+=c[3]; inkN++; } if(c[0]==='PEN') w+=c[1]; }
+  return { n:p.length, curves:ops.CURVE||0, circles:ops.CIRCLE||0, rects:ops.RECT||0, text:ops.TEXT||0, hue: inkN? ink.map(v=>v/inkN): [0,0,0], pen: ops.PEN? w/ops.PEN : 1 };
+}
+/* ============================================================
+   WORLD  K_t = (C, X, L, G, R, U, A, M)
+   ============================================================ */
+const NAMES = ['Mara','Niko','Lea','Kilo','Ines','Tomas','Ruth','Oren','Sela','Dov','Pia','Hale','Juno','Wren','Amal','Bea','Cass','Edo','Fen'];
+const FEATURES = [
+  ['form',    ['line','mass','grid','scatter']],
+  ['palette', ['mono','earth','cold','loud']],
+  ['rhythm',  ['sparse','dense','repeating','broken']],
+  ['subject', ['figure','landscape','sign','abstract']],
+  ['register',['quiet','urgent','ironic','tender']],
+  ['scale',   ['tiny','human','monument','field']]
+];
+const ATT = ['toolUse','training','syntheticArt','openWeights','compensation','styleImitation'];
+const PLACES = {
+  SCHOOL:{x:56,y:72,label:'school'}, COMMONS:{x:180,y:56,label:'commons'}, MARKET:{x:304,y:72,label:'market'},
+  GALLERY:{x:56,y:186,label:'gallery'}, LAB:{x:304,y:196,label:'model lab'}, SHORE:{x:180,y:272,label:'shore'}
+};
+const POLICIES = {
+  OPEN:{name:'OPEN', line:'anything can train'},
+  ASK:{name:'ASK', line:'contributors choose'},
+  PAY:{name:'PAY', line:'compensate creators'},
+  RETURN:{name:'RETURN', line:'share value with community'},
+  OPEN_MODEL:{name:'OPEN MODEL', line:'weights public'},
+  CLOSE:{name:'CLOSE', line:'no training'}
+};
+let EVENT_SEQ = 1, ART_SEQ = 1, ITEM_SEQ = 1, PROMPT_SEQ = 1;
+const worlds = []; let activeW = 0;
+function world(){ return worlds[activeW]; }
+
+function makeWorld(seed, id){
+  const rng = new RNG(seed);
+  const w = { id, seed, tick:0, rng, agents:[], artifacts:[], events:[], feed:[],
+    communities:[ {id:'harbor', name:'Harbor', trust:.55, fund:0}, {id:'grove', name:'Grove', trust:.55, fund:0} ],
+    institutions:{ trainingPolicy:null, consent:false, pay:false, returnShare:false, openWeights:false, adoptedTick:-1, previous:null, undoUntil:-1, disputeOpen:false, disputeShown:false, rejected:{} },
+    model:{ exists:false, caps:{drawing:.05,writing:.05,prompting:.05,composition:.05,stylisticCoverage:0,rareTraitCoverage:0,hybridization:0,memorizationRisk:0}, trainedIds:[], runs:0, distribution:null, lastTrainedAt:-1, lastPoolAtTrain:0, training:null, lastHint:-1 },
+    beat:null, prompts:[], press:{name:'THE LEDGER', last:0, issues:0}, llmCooldown:0, reflectCooldown:0, exchangeCooldown:0, commentCooldown:0, compactCooldown:0, paused:false, grievances:0, forkable:[], compareAt:-1 };
+  const n = 12 + rng.int(7);
+  for(let i=0;i<n;i++){
+    const name = NAMES[i] || ('P'+i);
+    const comm = i%2 ? 'grove' : 'harbor';
+    const base = comm==='harbor' ? [0,1,0,1,3,1] : [1,2,2,1,0,2];
+    const cv = base.map(v => rng.next()<.55 ? v : rng.int(4));
+    const drawer = rng.next() < .55;
+    const a = { id:'a'+i, name, communityId:comm,
+      skills:{ drawing: drawer? .4+rng.next()*.5 : .1+rng.next()*.3, writing: drawer? .1+rng.next()*.3 : .4+rng.next()*.5, prompting: .02+rng.next()*.08, teaching:.1+rng.next()*.6, criticism:.1+rng.next()*.7 },
+      practiceQ:{ draw: drawer? .5+rng.next()*.4 : .1+rng.next()*.2, write: drawer? .1+rng.next()*.2 : .5+rng.next()*.4, prompt: (i===1? .35 : .02+rng.next()*.06), generate:.02, teach:.1+rng.next()*.3, critique:.1+rng.next()*.3, remix:.1+rng.next()*.25 },
+      cultureVector: cv,
+      aiAttitude:{ toolUse:rng.next(), training:rng.next(), syntheticArt:rng.next(), openWeights:rng.next(), compensation:.3+rng.next()*.7, styleImitation:rng.next() },
+      confidenceRadius:.18+rng.next()*.2,
+      relationships:{},
+      incomeNeed:.4+rng.next()*.4, wealth:.4+rng.next()*.6, status:.2+rng.next()*.5, belonging:.5+rng.next()*.4, autonomy:rng.next(), curiosity:rng.next(),
+      memories:[], reflections:[], currentAction:'idle', cooldown:rng.int(6), place:rng.pick(['SCHOOL','COMMONS','COMMONS','MARKET','GALLERY','GALLERY','SHORE']), x:0, y:0, tx:0, ty:0,
+      working:null, fault:null, withholding:false, threshold:.25+rng.next()*.5, left:false, works:0, lastSalient:-99, promptedOnce:false };
+    if(i===0){ a.name='Mara'; a.aiAttitude.training=.12; a.aiAttitude.syntheticArt=.2; a.practiceQ.draw=.85; a.skills.drawing=.85; a.autonomy=.8; }
+    if(i===1){ a.name='Niko'; a.aiAttitude.training=.85; a.aiAttitude.toolUse=.9; a.practiceQ.teach=.4; a.skills.teaching=.7; a.curiosity=.9; a.communityId='harbor'; }
+    const p = PLACES[a.place]; a.x = a.tx = p.x + (rng.next()-.5)*60; a.y = a.ty = p.y + (rng.next()-.5)*40; a.vx=a.x; a.vy=a.y;
+    w.agents.push(a);
+  }
+  // initial ties
+  for(const a of w.agents) for(const b of w.agents){
+    if(a===b || a.relationships[b.id]) continue;
+    const sim = similarity(a.cultureVector,b.cultureVector);
+    const pr = (a.communityId===b.communityId? .38 : .12) + sim*.25;
+    if(rng.next() < pr){ const t = .35+rng.next()*.4; a.relationships[b.id]={trust:t,kind:'peer',last:0}; b.relationships[a.id]={trust:t,kind:'peer',last:0}; }
+  }
+  const m = w.agents.find(a=>a.name==='Mara'), k = w.agents.find(a=>a.name==='Niko');
+  if(m&&k){ m.relationships[k.id]={trust:.6,kind:'peer',last:0}; k.relationships[m.id]={trust:.6,kind:'peer',last:0}; }
+  return w;
+}
+function similarity(a,b){ let s=0; for(let i=0;i<a.length;i++) if(a[i]===b[i]) s++; return s/a.length; }
+function agentById(w,id){ return w.agents.find(a=>a.id===id); }
+function artById(w,id){ return w.artifacts.find(a=>a.id===id); }
+function agentByName(w,n){ if(!n) return null; n=n.toLowerCase().replace(/[^a-z]/g,''); return w.agents.find(a=>a.name.toLowerCase()===n); }
+function cultureWords(cv){ return FEATURES.map((f,i)=> f[0]+': '+f[1][cv[i]]).join(', '); }
+function dayclock(t){ return 'DAY '+(Math.floor(t/24)+1)+' \u00b7 '+String(t%24).padStart(2,'0')+':00'; }
+function commName(w,id){ const c=w.communities.find(c=>c.id===id); return c? c.name : id; }
+
+/* ---------- EVENTS: W_t = FOLD(W_0, E_0:t) ---------- */
+function emit(w, type, actorId, payload, parents, opts={}){
+  const e = { id:'e'+(EVENT_SEQ++), tick:w.tick, actorId, type, payload:payload||{}, parents:parents||[], worldId:w.id };
+  w.events.push(e);
+  if(opts.snapshot){ e.snapshot = snapshotWorld(w); w.forkable.push(e.id); }
+  return e;
+}
+function setBeat(w, agentId, line, kind){ const a = agentId? agentById(w,agentId):null; if(a) a.site = a.site; w.beat = { agentId, line, kind, tick:w.tick, until:w.tick+4, at:Date.now() }; markDirty('world'); }
+function feedPush(w, item){ if(item.strong && item.agentId) setBeat(w, item.agentId, item.text.split('\n')[0], item.kind);  item.id = item.id || ('i'+(ITEM_SEQ++)); item.tick = w.tick; w.feed.push(item); if(w.feed.length>400) w.feed.splice(0, w.feed.length-400); if(w===world()) markDirty('feed'); return item; }
+function fact(w, text, opts={}){ return feedPush(w, Object.assign({kind:'fact', text}, opts)); }
+function say(w, agent, text, opts={}){ setBeat(w, agent.id, (opts.to? '\u2192 '+opts.to+'  ':'')+text, 'say'); return feedPush(w, Object.assign({kind:'say', agentId:agent.id, who:agent.name, text}, opts)); }
+function emote(a, w, k){ a.emo = {k, until: Date.now()+2600}; }
+function remember(a, w, text, eventId, weight){ if(weight>=.3) emote(a,w,'spark'); else if(weight<=-.3) emote(a,w,'bang'); a.memories.push({tick:w.tick, text, eventId, weight:weight||0}); if(AI.key && a.memories.length>=12 && !a.working && w.compactCooldown===0 && AI.inflight<3) compactMemories(w,a); if(a.memories.length>16) a.memories.shift(); if(Math.abs(weight||0)>=.3){ a.lastSalient = w.tick; } }
+
+/* ---------- SNAPSHOT / FORK ---------- */
+function snapshotWorld(w){
+  const clean = { id:w.id, seed:w.seed, tick:w.tick, rngState:w.rng.s, communities:w.communities, institutions:w.institutions, prompts:w.prompts, press:Object.assign({}, w.press, {busy:false}), model:Object.assign({}, w.model, {training:null}), grievances:w.grievances,
+    agents: w.agents.map(a => Object.assign({}, a, {working:null, fault:null})),
+    artifacts: w.artifacts.map(x => Object.assign({}, x)),
+    events: w.events.map(e => { const c = Object.assign({}, e); delete c.snapshot; return c; }),
+    feed: w.feed.filter(i => i.kind!=='work' && i.kind!=='card').slice(-80) };
+  return JSON.parse(JSON.stringify(clean));
+}
+function restoreWorld(snap, id){
+  const w = JSON.parse(JSON.stringify(snap)); w.id = id; w.rng = new RNG(snap.rngState); w.prompts = w.prompts||[]; w.press = w.press||{name:'THE LEDGER', last:w.tick, issues:0}; w.llmCooldown=0; w.reflectCooldown=0; w.exchangeCooldown=0; w.commentCooldown=0; w.compactCooldown=0; w.paused=false; w.forkable=[]; w.compareAt=-1;
+  for(const a of w.agents){ a.working=null; a.fault=null; }
+  w.model.training=null;
+  return w;
+}
+function forkFrom(eventId){
+  const w = world(); const e = w.events.find(x=>x.id===eventId);
+  if(!e || !e.snapshot || worlds.length>1) return false;
+  const b = restoreWorld(e.snapshot, 'B'); w.id='A';
+  worlds.push(b); activeW = 1; focus=null; ctxTarget=null; nodeMap.clear();
+  b.institutions = Object.assign({}, b.institutions, { trainingPolicy:null, consent:false, pay:false, returnShare:false, openWeights:false, disputeOpen:true, disputeShown:false });
+  emit(b, 'WORLD_FORKED', null, {from:eventId, tick:e.tick}, [eventId]);
+  fact(b, 'This world diverges here. Change one condition.', {strong:true});
+  b.feed.push({id:'i'+(ITEM_SEQ++), tick:b.tick, kind:'card', policyCard:true, title:'B', line:'One condition for this history.', live:true});
+  b.institutions.disputeShown = true;
+  markDirty('all'); return true;
+}
+
+/* ---------- CULTURE BEFORE MODEL TRAINING ---------- */
+function influencePair(w, a, b){
+  const sim = similarity(a.cultureVector, b.cultureVector);
+  const rng = w.rng;
+  // Axelrod: interact with probability = similarity; copy one differing feature
+  if(sim < 1 && rng.next() < sim*.9+.05){
+    const diff = []; for(let i=0;i<6;i++) if(a.cultureVector[i]!==b.cultureVector[i]) diff.push(i);
+    if(diff.length){ const i = rng.pick(diff); const learner = rng.next()<.5 ? a : b; const src = learner===a? b : a;
+      learner.cultureVector[i] = src.cultureVector[i];
+      const e = emit(w, 'CULTURAL_INFLUENCE', src.id, {to:learner.id, feature:FEATURES[i][0], value:FEATURES[i][1][src.cultureVector[i]]});
+      if(rng.next()<.1) fact(w, `${learner.name} picked up ${src.name}'s ${FEATURES[i][0]} (${FEATURES[i][1][src.cultureVector[i]]}).`, {dim:true, eventId:e.id, agentId:learner.id});
+      touchTie(w, a, b, .02, 'influence'); } }
+  // bounded confidence on AI attitudes (separate dynamics)
+  const k = rng.pick(ATT); const d = b.aiAttitude[k]-a.aiAttitude[k];
+  if(Math.abs(d) < a.confidenceRadius){ a.aiAttitude[k] += d*.15; b.aiAttitude[k] -= d*.15; touchTie(w,a,b,.01); }
+  else { touchTie(w, a, b, -.04); if(Math.abs(d)>.55 && rng.next()<.18){ touchTie(w,a,b,-.04,'conflict'); const e=emit(w,'ATTITUDE_CHANGED',a.id,{with:b.id,on:k,gap:+d.toFixed(2)}); fact(w, `${a.name} and ${b.name} disagree about ${attWord(k)}. Neither moved.`, {eventId:e.id, agentId:a.id, tie:[a.id,b.id]}); remember(a,w,`argued with ${b.name} about ${attWord(k)}`,e.id,-.2); remember(b,w,`argued with ${a.name} about ${attWord(k)}`,e.id,-.2); } }
+}
+function aiView(a){ const t=a.aiAttitude; const parts=[];
+  parts.push(t.toolUse>.6? 'uses the tool' : t.toolUse<.35? 'won\u2019t touch the tool' : 'unsure about the tool');
+  parts.push(t.training>.6? 'fine with being trained on' : t.training<.35? 'refuses training' : 'undecided on training');
+  parts.push(t.syntheticArt>.6? 'likes synthetic work' : t.syntheticArt<.35? 'dislikes synthetic work' : 'mixed on synthetic work');
+  if(t.compensation>.65) parts.push('wants to be paid'); if(t.openWeights>.65) parts.push('wants open weights'); if(t.styleImitation<.3) parts.push('hates imitation');
+  const mean = ATT.reduce((s,k)=>s+t[k],0)/ATT.length; const lean = mean>.62? 'leaning for' : mean<.38? 'leaning against' : 'split';
+  return {lean, mean, parts}; }
+function attWord(k){ return {toolUse:'using the tool',training:'training on our work',syntheticArt:'synthetic art',openWeights:'open weights',compensation:'payment',styleImitation:'style imitation'}[k]||k; }
+function touchTie(w, a, b, d, kind){
+  const ra = a.relationships[b.id], rb = b.relationships[a.id]; if(!ra||!rb) return;
+  ra.trust = Math.max(0, Math.min(1, ra.trust+d)); rb.trust = ra.trust; ra.last = rb.last = w.tick; if(kind){ ra.kind = rb.kind = kind; }
+}
+function rewire(w){
+  const rng = w.rng;
+  for(const a of w.agents){ if(a.left) continue;
+    for(const id in a.relationships){ const r = a.relationships[id]; const b = agentById(w,id); if(!b) continue;
+      if(r.trust < .18 && a.id < b.id){ delete a.relationships[id]; delete b.relationships[a.id];
+        const e = emit(w,'RELATIONSHIP_BROKEN',a.id,{with:b.id}, [], {snapshot:true});
+        fact(w, `${a.name} stopped sharing work with ${b.name}.`, {strong:true, eventId:e.id, agentId:a.id, breaking:[a.id,b.id], fork:e.id});
+        remember(a,w,`${b.name} and I stopped talking`,e.id,-.4); remember(b,w,`${a.name} and I stopped talking`,e.id,-.4);
+        w.breakAnim = {a:a.id,b:b.id,until:Date.now()+1200}; } } }
+  // new ties by proximity + similarity
+  const live = w.agents.filter(a=>!a.left);
+  for(let i=0;i<2;i++){ const a = rng.pick(live), b = rng.pick(live); if(a===b || a.relationships[b.id]) continue;
+    const near = Math.hypot(a.x-b.x,a.y-b.y) < 60; const sim = similarity(a.cultureVector,b.cultureVector);
+    if(near && sim>=.5 && rng.next()<.35){ a.relationships[b.id]={trust:.4,kind:'peer',last:w.tick}; b.relationships[a.id]={trust:.4,kind:'peer',last:w.tick};
+      const e=emit(w,'RELATIONSHIP_CREATED',a.id,{with:b.id}); fact(w, `${a.name} and ${b.name} started working near each other.`, {dim:true, eventId:e.id, tie:[a.id,b.id]}); } }
+}
+function cascade(w){
+  // threshold adoption of prompting as a practice
+  for(const a of w.agents){ if(a.left || a.practiceQ.prompt > .3) continue;
+    const ids = Object.keys(a.relationships); if(!ids.length) continue;
+    const frac = ids.filter(id => { const b = agentById(w,id); return b && b.practiceQ.prompt > .3; }).length / ids.length;
+    if(frac > a.threshold && a.aiAttitude.toolUse > .35 && w.rng.next()<.3){ a.practiceQ.prompt = .35; a.skills.prompting = Math.max(a.skills.prompting,.25);
+      const e=emit(w,'PRACTICE_ADOPTED',a.id,{practice:'prompt'}); fact(w, `${a.name} started prompting too.`, {eventId:e.id, agentId:a.id}); remember(a,w,'started prompting',e.id,.2); } }
+}
+function economy(w){
+  const rng=w.rng;
+  for(const a of w.agents){ if(a.left) continue;
+    const recent = w.artifacts.filter(x=>x.creatorId===a.id && w.tick - x.tick < 48);
+    const income = recent.reduce((s,x)=>s+x.attention*.08,0) + (a.practiceQ.teach*.05);
+    a.wealth = Math.max(0, Math.min(2, a.wealth + income - a.incomeNeed*.12));
+    if(a.wealth < .2 && w.model.exists && a.aiAttitude.toolUse>.4){ a.practiceQ.prompt = Math.min(1, a.practiceQ.prompt+.08); if(rng.next()<.2){ const e=emit(w,'INCOME_PRESSURE',a.id,{wealth:+a.wealth.toFixed(2)}); fact(w, `${a.name} can't cover costs and is leaning on the generator.`, {eventId:e.id, agentId:a.id}); remember(a,w,'money is short',e.id,-.3); } }
+    // reinforce practices by attention
+    for(const x of recent){ const key = x.modality==='text'? 'write' : (x.provenanceType==='synthetic'? 'prompt' : (x.parentArtifactIds.length? 'remix':'draw')); a.practiceQ[key] = Math.min(1, a.practiceQ[key] + x.attention*.02); }
+    // decay
+    for(const k in a.practiceQ) a.practiceQ[k] = Math.max(.02, a.practiceQ[k]*.995); }
+}
+function liveCount(w){ return w.agents.filter(a=>!a.left).length; }
+function isViral(w, x){ return x.likes.length >= Math.max(4, Math.round(liveCount(w)*.3)); }
+function isRejected(w, x){ const cold = x.comments.filter(c=>c.like===false).length; return cold >= 2 && x.likes.length <= 1; }
+function reception(w, a){ const mine = w.artifacts.filter(x=>x.creatorId===a.id && x.published).slice(-3); if(!mine.length) return 'no public work yet'; const L=mine.reduce((s,x)=>s+x.likes.length,0), C=mine.reduce((s,x)=>s+x.comments.length,0), R=mine.filter(x=>isRejected(w,x)).length, V=mine.filter(x=>isViral(w,x)).length; return `last ${mine.length} works: ${L} likes, ${C} comments${V?', '+V+' went viral':''}${R?', '+R+' rejected':''}`; }
+function attentionOf(w, x){ const age = w.tick - x.tick; return Math.min(3, .25 + x.likes.length*.35 + x.comments.length*.55) * Math.exp(-age/120); }
+function attention(w){
+  const live = w.agents.filter(a=>!a.left);
+  for(const x of w.artifacts){ x.attention = attentionOf(w,x); }
+  const pool = w.artifacts.filter(x=>x.published && w.tick-x.tick<96);
+  if(!pool.length) return;
+  for(let i=0;i<3;i++){ const v = w.rng.pick(live); const x = w.rng.pick(pool); if(x.creatorId===v.id || v.working) continue;
+    const sim = similarity(v.cultureVector, x.culturalVector); const nov = 1 - sim;
+    const pref = x.provenanceType==='synthetic' ? v.aiAttitude.syntheticArt : 1;
+    const gain = (sim*.6 + nov*.25) * pref;
+    if(gain > .42 && !x.likes.includes(v.id) && w.rng.next()<.6){ x.likes.push(v.id); emit(w,'LIKED',v.id,{artifact:x.id}); const c=agentById(w,x.creatorId); if(c && x.likes.length===3) remember(c,w,'people liked my work',null,.2); if(isViral(w,x) && !x.viralAt){ x.viralAt=w.tick; const ev=emit(w,'WENT_VIRAL',x.creatorId,{artifact:x.id, likes:x.likes.length}); fact(w, `${c?c.name:'?'}'s ${x.modality==='text'?'text':'drawing'} is everywhere.`, {strong:true, eventId:ev.id, artId:x.id, agentId:x.creatorId}); if(c){ c.status=Math.min(1,c.status+.15); remember(c,w,'a work of mine went viral',ev.id,.5); } } }
+    if(w.rng.next() < .18) commentOn(w, v, x);
+    if(gain > .45 && w.rng.next() < .2 && sim<1){ const diff=[]; for(let j=0;j<6;j++) if(v.cultureVector[j]!==x.culturalVector[j]) diff.push(j); const j=w.rng.pick(diff); v.cultureVector[j]=x.culturalVector[j];
+      const c = agentById(w,x.creatorId); const e=emit(w,'CULTURAL_INFLUENCE',x.creatorId,{to:v.id,via:x.id,feature:FEATURES[j][0]});
+      if(c && w.rng.next()<.25) queueExchange(w, v, c, x, `borrowed ${c.name}'s ${FEATURES[j][0]} after looking at their work`, .5);
+      if(x.provenanceType!=='human' && v.aiAttitude.syntheticArt<.3){ remember(v,w,`I copied ${FEATURES[j][0]} from a ${x.provenanceType} work and I'm not sure I like that`,e.id,-.3); } } }
+}
+function commentOn(w, v, x, force){
+  if(!AI.key) return false;
+  if(!force && (w.commentCooldown>0 || AI.inflight>=3)) return false; if(v.working || v.left) return false; if(x.comments.some(c=>c.agentId===v.id)) return false;
+  w.commentCooldown = 4; const c = agentById(w,x.creatorId);
+  startWork(w, v, 'looking', async (onC)=>{
+    const out = await llm(PROMPTS.COMMENT, agentContext(w,v,`THE MAKER: ${c?c.name:'?'} (${c? 'trust '+(v.relationships[c.id]? v.relationships[c.id].trust.toFixed(2):'none') : ''})\nTHE WORK ${x.id}: ${x.provenanceType} ${x.modality}${x.modality==='text'? ' text: "'+x.text+'"' : ' program: '+serializeProgram(x.program).replace(/\n/g,' / ')}\nITS TRAITS: ${cultureWords(x.culturalVector)}\nLIKES SO FAR: ${x.likes.length} \u00b7 COMMENTS SO FAR: ${x.comments.map(k=>{ const b=agentById(w,k.agentId); return (b?b.name:'?')+': '+k.text; }).join(' | ')||'none'}`), {onController:onC, maxTokens:120});
+    const j = parseJSON(out) || {comment: out.slice(0,120)}; const t = String(j.comment||'').slice(0,160); if(!t) return;
+    const e = emit(w,'COMMENTED',v.id,{artifact:x.id, text:t, like:!!j.like},[x.createdEvent]);
+    x.comments.push({agentId:v.id, text:t, tick:w.tick, eventId:e.id, like:!!j.like});
+    if(isViral(w,x) && !x.viralAt){ x.viralAt=w.tick; const ev=emit(w,'WENT_VIRAL',x.creatorId,{artifact:x.id, likes:x.likes.length}); fact(w, `${c?c.name:'?'}'s ${x.modality==='text'?'text':'drawing'} is everywhere.`, {strong:true, eventId:ev.id, artId:x.id, agentId:x.creatorId}); if(c){ c.status=Math.min(1,c.status+.15); remember(c,w,'a work of mine went viral',ev.id,.5); } }
+    if(isRejected(w,x) && !x.rejectedAt){ x.rejectedAt=w.tick; const ev=emit(w,'REJECTED',x.creatorId,{artifact:x.id}); fact(w, `Nobody wants ${c?c.name:'?'}'s ${x.modality==='text'?'text':'drawing'}.`, {eventId:ev.id, artId:x.id, agentId:x.creatorId}); if(c) remember(c,w,'a work of mine was rejected',ev.id,-.4); } if(j.like && !x.likes.includes(v.id)) x.likes.push(v.id);
+    if(c){ remember(c,w,`${v.name} said of my work: ${t.slice(0,50)}`,e.id, j.like? .2 : -.15); if(!j.like && c.relationships[v.id]) touchTie(w,c,v,-.03); if(j.like && c.relationships[v.id]) touchTie(w,c,v,.03);
+      if(w.rng.next()<.3) queueExchange(w, c, v, x, `read ${v.name}'s comment on your work: "${t}"`, .8); }
+    x.bump = w.tick; markDirty('feed');
+  });
+  return true;
+}
+/* ---------- MODEL ---------- */
+function eligibleArtifacts(w){
+  const R = w.institutions;
+  if(R.trainingPolicy==='CLOSE') return [];
+  return w.artifacts.filter(x => x.published && !x.withdrawn && !w.model.trainedIds.includes(x.id) && (!R.consent || x.consented));
+}
+function canTrain(w){ const el = eligibleArtifacts(w); return w.model.exists && !w.model.training && el.length >= 6 && el.length >= w.model.lastPoolAtTrain*0 + 4; }
+function refreshConsent(w){ for(const x of w.artifacts){ const c = agentById(w,x.creatorId); if(!c) continue; x.consented = c.aiAttitude.training > .45 || x.provenanceType==='synthetic'; } }
+function modelDistribution(w){
+  const tr = w.artifacts.filter(x => w.model.trainedIds.includes(x.id)); if(!tr.length) return null;
+  const hist = FEATURES.map(()=>[0,0,0,0]); for(const x of tr) x.culturalVector.forEach((v,i)=>hist[i][v]++);
+  return hist.map(h => h.map(c=>c/tr.length));
+}
+function poolShares(w){ const p = w.artifacts.filter(x=>x.published); const n=p.length||1; const sh = {human:0,synthetic:0,hybrid:0}; for(const x of p) sh[x.provenanceType]++; const seen = new Set(p.map(x=>x.culturalVector.join(''))); const traitCov = FEATURES.map((f,i)=> new Set(p.map(x=>x.culturalVector[i])).size/4); return { n:p.length, human:sh.human/n, synthetic:sh.synthetic/n, hybrid:sh.hybrid/n, diversity: seen.size/n, rare: traitCov.reduce((a,b)=>a+b,0)/6 }; }
+function startTrain(w){
+  const el = eligibleArtifacts(w); if(!el.length || w.model.training) return;
+  w.model.training = { ids: el.map(x=>x.id), i:0, item:null };
+  const item = feedPush(w, {kind:'work', who:'MODEL', text:'reading 0 / '+el.length, live:true, modelTrain:true, total:el.length, progress:0});
+  w.model.training.item = item;
+  markDirty('all');
+  const step = ()=>{
+    const T = w.model.training; if(!T) return;
+    if(worlds.indexOf(w)<0) return;
+    if(w.paused){ setTimeout(step, 300); return; }
+    if(T.i >= T.ids.length){ finishTrain(w); return; }
+    const id = T.ids[T.i++]; w.model.trainedIds.push(id); const x = artById(w,id); if(x){ x.pulse = Date.now()+900; }
+    item.text = 'reading '+T.i+' / '+T.ids.length; item.progress = T.i/T.ids.length; w.rayTo = {id, until:Date.now()+700};
+    markDirty('all'); setTimeout(step, 380);
+  };
+  setTimeout(step, 300);
+}
+function stopTrain(w){ const T=w.model.training; if(!T) return; if(T.item){ T.item.live=false; T.item.text='stopped at '+T.i+' / '+T.ids.length; } w.model.training=null; emit(w,'MODEL_TRAINING_STOPPED',null,{read:T.i}); fact(w,'The model stopped reading. What it read stays read.'); markDirty('all'); }
+function finishTrain(w){
+  const T = w.model.training; const M = w.model; const R = w.institutions; const n = T.ids.length;
+  const tr = w.artifacts.filter(x=>M.trainedIds.includes(x.id));
+  const dist = modelDistribution(w); M.distribution = dist;
+  const drawings = tr.filter(x=>x.modality==='drawing').length, texts = tr.filter(x=>x.modality==='text').length;
+  const synthShare = tr.filter(x=>x.provenanceType==='synthetic').length/Math.max(1,tr.length);
+  const vecs = new Set(tr.map(x=>x.culturalVector.join('')));
+  const cov = FEATURES.map((f,i)=> new Set(tr.map(x=>x.culturalVector[i])).size/4);
+  M.caps.drawing = Math.min(1, M.caps.drawing + drawings*.03);
+  M.caps.writing = Math.min(1, M.caps.writing + texts*.03);
+  M.caps.prompting = Math.min(1, M.caps.prompting + n*.01);
+  M.caps.composition = Math.min(1, M.caps.composition + n*.012);
+  M.caps.stylisticCoverage = Math.min(1, vecs.size/Math.max(8,tr.length*.6));
+  M.caps.rareTraitCoverage = cov.reduce((a,b)=>a+b,0)/6 * (1 - synthShare*.5);
+  M.caps.hybridization = Math.min(1, M.caps.hybridization + tr.filter(x=>x.provenanceType==='hybrid').length*.04);
+  M.caps.memorizationRisk = Math.min(1, synthShare*.6 + (tr.length<12? .3:.1) + (vecs.size/Math.max(1,tr.length) < .3 ? .2 : 0));
+  M.runs++; M.lastTrainedAt = w.tick; M.lastPoolAtTrain = w.artifacts.filter(x=>x.published).length;
+  if(T.item){ T.item.live=false; T.item.text = 'read '+n+' works'; T.item.progress=1; }
+  M.training = null;
+  const e = emit(w,'MODEL_TRAINED',null,{count:n, human:tr.filter(x=>x.provenanceType==='human').length, synthetic:tr.filter(x=>x.provenanceType==='synthetic').length, hybrid:tr.filter(x=>x.provenanceType==='hybrid').length, caps:Object.assign({},M.caps), policy:R.trainingPolicy}, T.ids, {snapshot:true});
+  fact(w, `The model read ${n} works. Every work is where it was.`, {strong:true, eventId:e.id, fork:e.id, model:true});
+  // consequences
+  let grieved=0, paid=0;
+  for(const id of T.ids){ const x = artById(w,id); const c = x && agentById(w,x.creatorId); if(!c) continue;
+    if(R.pay){ c.wealth += .05; paid++; }
+    if(R.returnShare){ const cm = w.communities.find(k=>k.id===c.communityId); if(cm){ cm.fund += .03; cm.trust = Math.min(1, cm.trust+.01); } }
+    if(c.aiAttitude.training < .38 && !R.consent && !R.pay){ grieved++; remember(c,w,`the model read my ${x.modality==='text'?'text':'drawing'} and nobody asked`,e.id,-.5); c.aiAttitude.training = Math.max(0, c.aiAttitude.training-.12); c.aiAttitude.compensation = Math.min(1,c.aiAttitude.compensation+.08); const cm=w.communities.find(k=>k.id===c.communityId); if(cm) cm.trust=Math.max(0,cm.trust-.06); w.grievances++; }
+    else if(c.aiAttitude.training > .6){ remember(c,w,'my work is in the model now',e.id,.2); } }
+  if(paid) fact(w, `${paid} creators were paid for what was read.`, {eventId:e.id});
+  if(grieved) fact(w, `${grieved} people found out their work was read without being asked.`, {eventId:e.id});
+  if(w.grievances >= 2 && !R.trainingPolicy) R.disputeOpen = true;
+  for(const a of w.agents) if(a.aiAttitude.training<.3 && a.works>0 && w.rng.next()<.5) a.withholding = true;
+  markDirty('all');
+}
+function ensureModel(w){
+  if(w.model.exists) return; w.model.exists = true;
+  const e = emit(w,'MODEL_APPEARED',null,{}); fact(w,'A generator sits in the lab now.', {strong:true, eventId:e.id, model:true});
+}
+
+/* ---------- POLICY ---------- */
+function proposePolicy(w, key, by){
+  const R = w.institutions; if(!POLICIES[key]) return;
+  const e1 = emit(w,'POLICY_PROPOSED',by||null,{policy:key});
+  R.previous = { trainingPolicy:R.trainingPolicy, consent:R.consent, pay:R.pay, returnShare:R.returnShare, openWeights:R.openWeights, withdrawn: w.artifacts.filter(x=>x.withdrawn).map(x=>x.id) };
+  R.trainingPolicy = key; R.consent = key==='ASK'; R.pay = key==='PAY'; R.returnShare = key==='RETURN'; R.openWeights = key==='OPEN_MODEL' || R.openWeights; if(key==='CLOSE') R.openWeights=false;
+  R.adoptedTick = w.tick; R.undoUntil = w.tick+12; R.disputeOpen=false; R.disputeShown=true;
+  const e = emit(w,'POLICY_ADOPTED',by||null,{policy:key},[e1.id],{snapshot:true});
+  for(const it of w.feed) if(it.kind==='card' && it.policyCard) it.live=false;
+  let lines = [];
+  if(key==='ASK'){ refreshConsent(w); let n=0; const by2={}; for(const x of w.artifacts){ if(x.published && !x.consented && !w.model.trainedIds.includes(x.id)){ x.withdrawn=true; n++; by2[x.creatorId]=(by2[x.creatorId]||0)+1; } }
+    lines.push('training now requires contributor choice'); const rem = w.artifacts.filter(x=>x.published&&!x.withdrawn).length; lines.push(`${n} works withdrawn, ${rem} remain available`);
+    for(const id in by2){ const a=agentById(w,id); if(a) remember(a,w,`I withdrew ${by2[id]} works`,e.id,.2); } }
+  if(key==='OPEN'){ lines.push('anything published can train'); for(const x of w.artifacts) x.withdrawn=false; }
+  if(key==='PAY'){ lines.push('creators are paid when the model reads them'); }
+  if(key==='RETURN'){ lines.push('value from training returns to the communities'); }
+  if(key==='OPEN_MODEL'){ lines.push('the model\u2019s weights are public'); w.model.caps.memorizationRisk = Math.min(1, w.model.caps.memorizationRisk+.1); }
+  if(key==='CLOSE'){ lines.push('no further training'); }
+  fact(w, lines.join('\n'), {strong:true, eventId:e.id, undo:e.id, fork:e.id, policy:key});
+  // agents react
+  for(const a of w.agents){ if(a.left) continue; const s = policySupport(a,key); 
+    if(s < -.45 && a.autonomy > .55 && w.rng.next() < .5){ w.institutions.rejected[a.id] = w.tick + 6 + w.rng.int(10); }
+    else if(s > .5) { const cm=w.communities.find(k=>k.id===a.communityId); if(cm) cm.trust=Math.min(1,cm.trust+.02); }
+    remember(a,w,`rule changed to ${POLICIES[key].name}`,e.id, s*.3); }
+  markDirty('all');
+}
+function policySupport(a,key){ const t=a.aiAttitude; switch(key){
+  case 'OPEN': return (t.training-.5)*2;
+  case 'ASK': return .4 + (1-t.training)*.4 - (t.toolUse>.8? .2:0);
+  case 'PAY': return (t.compensation-.4)*1.5;
+  case 'RETURN': return .3 + (t.compensation-.5)*.6;
+  case 'OPEN_MODEL': return (t.openWeights-.5)*2;
+  case 'CLOSE': return (.5-t.training)*2 - (t.toolUse-.5)*1.2; } return 0; }
+function undoPolicy(w, eventId){
+  const R = w.institutions; if(!R.previous || w.tick > R.undoUntil) return;
+  const p = R.previous; const e=emit(w,'POLICY_UNDONE',null,{restored:p.trainingPolicy},[eventId]);
+  R.trainingPolicy=p.trainingPolicy; R.consent=p.consent; R.pay=p.pay; R.returnShare=p.returnShare; R.openWeights=p.openWeights;
+  for(const x of w.artifacts) x.withdrawn = p.withdrawn.includes(x.id);
+  R.rejected = {}; R.previous=null; R.undoUntil=-1; R.disputeOpen = w.grievances>=2;
+  for(const it of w.feed) if(it.undo===eventId) it.undo=null;
+  fact(w, 'The rule was taken back. Withdrawn works returned.', {eventId:e.id});
+  markDirty('all');
+}
+function processRejections(w){
+  const R = w.institutions;
+  for(const id in R.rejected){ if(w.tick < R.rejected[id]) continue; delete R.rejected[id]; const a = agentById(w,id); if(!a || a.left) continue;
+    const allies = w.agents.filter(b=>!b.left && b!==a && a.relationships[b.id] && policySupport(b, R.trainingPolicy) < -.2);
+    if(allies.length >= 2 && !w.communities.find(c=>c.id==='split')){ w.communities.push({id:'split', name:'Split', trust:.5, fund:0}); const members=[a,...allies.slice(0,3)]; for(const m of members){ m.communityId='split'; m.place='SHORE'; }
+      const e=emit(w,'COMMUNITY_FORKED',a.id,{members:members.map(m=>m.id), against:R.trainingPolicy},[],{snapshot:true});
+      fact(w, `${members.map(m=>m.name).join(', ')} left to form their own group rather than accept ${POLICIES[R.trainingPolicy].name}.`, {strong:true, eventId:e.id, fork:e.id, agentId:a.id});
+      for(const m of members) remember(m,w,'we formed our own group',e.id,.4); }
+    else { a.left = true; a.place='SHORE'; a.tx = 340; a.ty = 285; const e=emit(w,'AGENT_EXITED',a.id,{against:R.trainingPolicy},[],{snapshot:true}); fact(w, `${a.name} left.`, {strong:true, eventId:e.id, fork:e.id, agentId:a.id});
+      for(const id2 in a.relationships){ const b=agentById(w,id2); if(b) remember(b,w,`${a.name} left`,e.id,-.3); } } }
+  if(R.disputeOpen && !R.disputeShown && w.model.exists){ R.disputeShown = true; const cm = w.communities[0];
+    feedPush(w, {kind:'card', policyCard:true, title:cm.name.toUpperCase(), line:'We need a rule before the next training run.', live:true}); }
+}
+
+/* ---------- AGENT LIFE ---------- */
+function targetPlace(a, action, rng){ const opts = { draw:['GALLERY','GALLERY','COMMONS','SHORE'], write:['COMMONS','SCHOOL','SHORE'], teach:['SCHOOL'], learn:['GALLERY','COMMONS'], prompt:['LAB'], remix:['COMMONS','GALLERY'], critique:['GALLERY','MARKET'], talk:['COMMONS','MARKET'], market:['MARKET'], rest:['SHORE','MARKET','COMMONS'] }[action] || ['COMMONS']; return rng ? rng.pick(opts) : opts[0]; }
+function seat(w, a, placeKey){ const p = PLACES[placeKey]; const hs = (a.id.charCodeAt(1)*7 + a.name.charCodeAt(0)*13 + a.name.length*31); const ang = (hs % 628)/100; const r = 16 + (hs % 19); a.tx = p.x + Math.cos(ang)*r*1.5 + (w.rng.next()-.5)*10; a.ty = p.y + Math.sin(ang)*r*.75 + (w.rng.next()-.5)*8; if(placeKey==='SHORE'){ a.ty = Math.min(a.ty, PLACES.SHORE.y-6); } a.tx = Math.max(16, Math.min(344, a.tx)); a.ty = Math.max(34, Math.min(268, a.ty)); }
+function moveAgents(w){
+  for(const a of w.agents){ a.x = a.tx; a.y = a.ty; }
+  // slow spatial follow of community
+  if(w.tick % 8 === 0){ for(const c of w.communities){ const m = w.agents.filter(a=>a.communityId===c.id && !a.left); if(!m.length) continue; c.cx = m.reduce((s,a)=>s+a.x,0)/m.length; c.cy = m.reduce((s,a)=>s+a.y,0)/m.length; } }
+}
+function chooseAction(w, a){
+  const q = Object.assign({}, a.practiceQ); const rng=w.rng;
+  if(!AI.key){ q.draw*=.15; q.write*=.15; q.remix=0; q.prompt=0; }
+  if(!w.model.exists){ q.prompt = a.practiceQ.prompt > .3 && a.skills.prompting>.2 ? q.prompt : 0; } // nascent
+  q.generate = 0; q.learn = .2 + a.curiosity*.3; q.talk = .12 + (w.tick - a.lastSalient < 8 ? .3 : 0); q.rest = .12;
+  if(a.wealth < .3) q.market = .3;
+  if(!w.artifacts.filter(x=>x.published && x.creatorId!==a.id).length){ q.remix=0; q.critique=0; q.learn=0; }
+  const keys = Object.keys(q); const tot = keys.reduce((s,k)=>s+Math.max(0,q[k]),0); let r = rng.next()*tot;
+  for(const k of keys){ r -= Math.max(0,q[k]); if(r<=0) return k; } return 'rest';
+}
+function pickInfluences(w, a){
+  const pool = w.artifacts.filter(x=>x.published && x.creatorId!==a.id && (a.aiAttitude.syntheticArt>.3 || x.provenanceType==='human'));
+  const scored = pool.map(x=>({x, s: similarity(a.cultureVector,x.culturalVector)*(1-a.curiosity*.5) + (1-similarity(a.cultureVector,x.culturalVector))*a.curiosity*.6 + x.attention*.25 + (isViral(w,x)? .35:0) + (a.relationships[x.creatorId]? a.relationships[x.creatorId].trust*.3:0) + (Math.hypot(a.x-artPosOf(w,x).x, a.y-artPosOf(w,x).y)<70? .15:0) + w.rng.next()*.3}));
+  scored.sort((p,q)=>q.s-p.s); const picked = scored.slice(0,3).map(s=>s.x);
+  if(picked.length){ const e=emit(w,'FORAGED',a.id,{artifacts:picked.map(x=>x.id)}); const first=agentById(w,picked[0].creatorId); if(first && w.rng.next()<.5) remember(a,w,`found ${first.name}'s ${picked[0].modality==='text'?'text':'drawing'}${isViral(w,picked[0])?' that everyone is talking about':''}`,e.id,.1); }
+  return picked;
+}
+function artPosOf(w, x){ if(!x.published){ const c=agentById(w,x.creatorId); return c? {x:c.x,y:c.y} : {x:180,y:170}; } const pub=w.artifacts.filter(y=>y.published); const i=pub.indexOf(x); const k=Math.max(0,pub.length-1-i); const r=8+Math.sqrt(k)*9; const an=k*2.39996; return {x:180+Math.cos(an)*r, y:170+Math.sin(an)*r*.62}; }
+function agentContext(w, a, extra){
+  const ties = Object.keys(a.relationships).map(id=>{ const b=agentById(w,id); return b? `${b.name} (trust ${a.relationships[id].trust.toFixed(2)}, ${a.relationships[id].kind})` : null; }).filter(Boolean);
+  const R = w.institutions;
+  return [
+    `NAME: ${a.name}`, `COMMUNITY: ${commName(w,a.communityId)}`, `TICK: ${w.tick}`,
+    `CULTURAL TRAITS: ${cultureWords(a.cultureVector)}`,
+    `SKILLS: ${Object.entries(a.skills).map(([k,v])=>k+' '+v.toFixed(2)).join(', ')}`,
+    `PRACTICE (how much of my time): ${Object.entries(a.practiceQ).map(([k,v])=>k+' '+v.toFixed(2)).join(', ')}`,
+    `AI ATTITUDES (0 against - 1 for): ${ATT.map(k=>k+' '+a.aiAttitude[k].toFixed(2)).join(', ')}`,
+    `WEALTH: ${a.wealth.toFixed(2)} (need ${a.incomeNeed.toFixed(2)}) STATUS: ${a.status.toFixed(2)} BELONGING: ${a.belonging.toFixed(2)} AUTONOMY: ${a.autonomy.toFixed(2)} CURIOSITY: ${a.curiosity.toFixed(2)}`,
+    `RELATIONSHIPS: ${ties.join('; ') || 'none'}`,
+    `INSTITUTIONS: training rule ${R.trainingPolicy? POLICIES[R.trainingPolicy].name+' ('+POLICIES[R.trainingPolicy].line+')' : 'none yet'}; generator ${w.model.exists? 'exists, trained '+w.model.runs+' times' : 'not yet present'}`,
+    `MEMORIES: ${a.memories.slice(-8).map(m=>`[${m.eventId}] ${m.text}`).join('; ') || 'none'}`,
+    `WHAT I HAVE COME TO BELIEVE: ${(a.beliefs||[]).map(b=>b.text).join(' | ') || 'nothing settled yet'}`,
+    `REFLECTIONS: ${a.reflections.slice(-2).map(r=>r.text).join(' | ') || 'none'}`,
+    `RECEPTION OF MY WORK: ${reception(w,a)}`,
+    `STATUS: ${a.status>.7? 'well known' : a.status>.45? 'known' : 'little known'}`,
+    `WITHHOLDING NEW WORK FROM PUBLIC: ${a.withholding}`,
+    extra||'' ].join('\n');
+}
+function worldMood(w, a){
+  const facts = w.feed.filter(i=>i.kind==='fact' && !i.dim).slice(-6); const says = w.feed.filter(i=>i.kind==='say').slice(-4);
+  const cm = w.artifacts.filter(x=>x.creatorId===a.id).slice(-3).flatMap(x=>x.comments||[]).slice(-3).map(c=>{ const b=agentById(w,c.agentId); return (b?b.name:'?')+': '+c.text; });
+  return { text: `RECENT EVENTS IN THE WORLD:\n${facts.map(f=>'- '+f.text.replace(/\n/g,' / ')).join('\n')||'- nothing notable'}\nWHAT PEOPLE ARE SAYING:\n${says.map(s=>'- '+s.who+(s.to?' to '+s.to:'')+': '+s.text).join('\n')||'- nothing'}\nCOMMENTS ON YOUR RECENT WORK:\n${cm.map(c=>'- '+c).join('\n')||'- none yet'}`, ids: facts.map(f=>f.eventId).filter(Boolean) }; }
+function artifactContext(w, a, influences, provenance, parent){
+  const M = w.model; const dist = M.distribution;
+  const distWords = dist ? FEATURES.map((f,i)=> f[0]+': '+f[1].map((t,j)=>t+' '+Math.round(dist[i][j]*100)+'%').join('/')).join('; ') : 'untrained';
+  return [
+    `CREATOR: ${a.name} of ${commName(w,a.communityId)}`,
+    `CREATOR CULTURAL TRAITS: ${cultureWords(a.cultureVector)}`,
+    `CREATOR PRACTICE: ${Object.entries(a.practiceQ).sort((p,q)=>q[1]-p[1]).slice(0,3).map(([k,v])=>k).join(', ')}; skill drawing ${a.skills.drawing.toFixed(2)} writing ${a.skills.writing.toFixed(2)}`,
+    `PROVENANCE: ${provenance}`,
+    `SOCIAL SITUATION: wealth ${a.wealth.toFixed(2)}, status ${a.status.toFixed(2)}, recent memories: ${a.memories.slice(-4).map(m=>m.text).join('; ')||'none'}`,
+    `INFLUENCES: ${influences.length? influences.map(x=>{ const c=agentById(w,x.creatorId); return `${x.id} by ${c?c.name:'?'} (${x.provenanceType}, ${cultureWords(x.culturalVector)})${x.modality==='text'? ' text: "'+x.text+'"' : ' program excerpt: '+serializeProgram(x.program.slice(0,12)).replace(/\n/g,' / ')}`; }).join('\n') : 'none'}`,
+    parent ? `SOURCE BEING REMIXED: ${parent.id} ${parent.modality==='text'? 'text: "'+parent.text+'"' : 'program: '+serializeProgram(parent.program).replace(/\n/g,' / ')}` : '',
+    provenance!=='human' ? `MODEL-CULTURAL DISTRIBUTION (what the generator has read): ${distWords}; generator drawing capability ${M.caps.drawing.toFixed(2)}, stylistic coverage ${M.caps.stylisticCoverage.toFixed(2)}, memorization risk ${M.caps.memorizationRisk.toFixed(2)}` : '',
+    worldMood(w,a).text,
+    `PREVIOUS WORKS BY CREATOR: ${w.artifacts.filter(x=>x.creatorId===a.id).slice(-2).map(x=> x.modality==='text'? '"'+x.text+'"' : serializeProgram(x.program.slice(0,8)).replace(/\n/g,' / ')).join(' || ') || 'none'}`,
+    `CANVAS: 100 x 100`
+  ].filter(Boolean).join('\n');
+}
+function mutateVector(w, cv, k){ const v = cv.slice(); for(let i=0;i<k;i++) if(w.rng.next()<.5) v[w.rng.int(6)] = w.rng.int(4); return v; }
+function makeArtifact(w, a, modality, provenance, program, text, parents, influences, session){
+  const depth = parents.length? Math.max(...parents.map(p=>p.generationDepth))+1 : 0;
+  let cv = a.cultureVector.slice();
+  if(provenance==='synthetic' && w.model.distribution){ cv = FEATURES.map((f,i)=>{ const d=w.model.distribution[i]; let r=w.rng.next(); for(let j=0;j<4;j++){ r-=d[j]; if(r<=0) return j; } return a.cultureVector[i]; }); for(let i=0;i<6;i++) if(w.rng.next()<.4) cv[i]=a.cultureVector[i]; }
+  else if(parents.length){ cv = cv.map((v,i)=> w.rng.next()<.4 ? parents[0].culturalVector[i] : v); }
+  cv = mutateVector(w, cv, provenance==='human' ? 1 : 0);
+  const x = { id:'x'+(ART_SEQ++), creatorId:a.id, tick:w.tick, modality, provenanceType:provenance, culturalVector:cv,
+    parentArtifactIds: parents.map(p=>p.id), sourceArtifactIds: influences.map(i=>i.id), influenceAgentIds: influences.map(i=>i.creatorId).filter((v,i,s)=>s.indexOf(v)===i), thought: a.reason||null, commissioned: !!a.commission,
+    program: program||[], text: text||'', renderedPreview:'', trainingEligible: true, attention:.3, likes:[], comments:[], session: session||null, contextEvents: worldMood(w,a).ids, communityId:a.communityId, generationDepth:depth, published:false, withdrawn:false, consented:a.aiAttitude.training>.45 };
+  const c = document.createElement('canvas'); if(modality==='text') renderText(c, text, 96); else renderProgram(c, program, 96); x.renderedPreview = c.toDataURL();
+  w.artifacts.push(x); a.works++;
+  const e = emit(w,'ARTIFACT_CREATED',a.id,{artifact:x.id, modality, provenance}, parents.map(p=>p.id));
+  x.createdEvent = e.id;
+  const R = w.institutions;
+  const publish = !a.withholding || (R.consent) || (R.trainingPolicy==='CLOSE');
+  if(publish){ x.published = true; if(R.consent) x.consented = a.aiAttitude.training>.45; const e2 = emit(w,'ARTIFACT_PUBLISHED',a.id,{artifact:x.id},[e.id]); x.publishedEvent=e2.id; }
+  else { const e2 = emit(w,'ARTIFACT_WITHHELD',a.id,{artifact:x.id},[e.id]); remember(a,w,'kept a work private',e2.id,.1); }
+  x.appear = Date.now()+900; emote(a,w,'shine'); a.status = Math.min(1, a.status+.01); a.reason=null; if(a.commission){ x.commissionNote=a.commission; a.commission=null; a.wealth+=.3; }
+  return x;
+}
+
+/* per-agent LLM work */
+function startWork(w, a, label, run){
+  if(PAUSED && label!=='answering'){ a.cooldown=1; return; }
+  a.working = { label, ac:null, started:Date.now() }; a.currentAction = label; markDirty('world');
+  const done = ()=>{ a.working=null; a.cooldown = 3 + w.rng.int(5); markDirty('all'); };
+  run(ac=>{ if(a.working) a.working.ac = ac; }).then(done).catch(err=>{
+    a.working = null;
+    if(err.kind==='abort'){ a.cooldown = 4; markDirty('all'); return; }
+    if(err.kind==='nokey'){ a.currentAction='needs a key'; a.cooldown = 8 + w.rng.int(6); if(!w.keyHintAt || w.tick - w.keyHintAt > 60){ w.keyHintAt = w.tick; fact(w, 'Nobody can make, write, or speak without a key. Tap COMMON to add one.', {strong:true}); } markDirty('all'); return; }
+    if(err.kind==='global' || err.kind==='auth'){ globalFault(err); }
+    a.fault = { label, retry:()=>{ a.fault=null; startWork(w,a,label,run); }, msg: err.message };
+    markDirty('all');
+  });
+}
+function doDraw(w, a, parent){
+  const provenance = parent && parent.provenanceType!=='human' ? 'hybrid' : 'human';
+  const infl = pickInfluences(w,a); const label = parent? 'remixing' : 'drawing';
+  startWork(w, a, label, async (onC)=>{
+    const ctx = artifactContext(w,a,infl,provenance,parent) + (a.commission? `\nCOMMISSION: ${a.commission}` : '');
+    const out = await llm(PROMPTS.ART, ctx, {onController:onC, maxTokens:1400});
+    const prog = parseProgram(out);
+    if(prog.length < 3) throw new NetFault('the program came back empty','local');
+    const x = makeArtifact(w, a, 'drawing', provenance, prog, '', parent?[parent]:[], infl, {prompt:'ART', context:ctx, raw:out, model:AI.model});
+    announce(w,a,x,parent);
+  });
+}
+function doWrite(w, a, parent){
+  const provenance = parent && parent.provenanceType!=='human' ? 'hybrid' : 'human';
+  const infl = pickInfluences(w,a);
+  startWork(w, a, parent? 'rewriting':'writing', async (onC)=>{
+    const ctx = artifactContext(w,a,infl,provenance,parent);
+    const raw = await llm(PROMPTS.WRITING, ctx, {onController:onC, maxTokens:200});
+    let out = raw.replace(/^["\u201c]|["\u201d]$/g,'').split(/\s+/).slice(0,44).join(' ');
+    if(out.length < 4) throw new NetFault('the text came back empty','local');
+    const x = makeArtifact(w, a, 'text', provenance, [], out, parent?[parent]:[], infl, {prompt:'WRITING', context:ctx, raw, model:AI.model});
+    announce(w,a,x,parent);
+  });
+}
+function announce(w,a,x,parent){
+  const notable = x.attention>0 && (a.works<=1 || parent || x.provenanceType!=='human' || !x.published || w.rng.next()<.35);
+  const verb = x.modality==='text' ? (parent?'rewrote':'wrote') : (parent?'remixed':'drew');
+  const pc = parent ? agentById(w,parent.creatorId) : null;
+  const text = !x.published ? `${verb} something and kept it private.` : (parent ? `${verb} ${pc?pc.name+"'s":'a'} ${parent.modality==='text'?'text':'drawing'}.` : `${verb} this.`);
+  feedPush(w, {kind:'art', agentId:a.id, who:a.name, text, artId:x.id, dim:!notable, eventId:x.createdEvent});
+  if(parent){ const e=emit(w,'REMIX',a.id,{of:parent.id, into:x.id},[parent.createdEvent]); if(pc){ queueExchange(w, a, pc, parent, `remixed ${pc.name}'s work into your own`, .7); remember(pc,w,`${a.name} remixed my work`,e.id, pc.aiAttitude.styleImitation>.5? .2 : -.3); if(pc.relationships[a.id]) touchTie(w,pc,a, pc.aiAttitude.styleImitation>.5? .05 : -.08, pc.aiAttitude.styleImitation>.5?'collab':'conflict'); } }
+}
+function doPrompt(w, a){
+  ensureModel(w); a.promptedOnce = true;
+  const infl = pickInfluences(w,a);
+  const idea = FEATURES.map((f,i)=>f[1][a.cultureVector[i]]).slice(0,4).join(' ');
+  let promptText, copiedFrom=null;
+  const others = w.prompts.filter(p=>p.authorId!==a.id && p.artifactId);
+  const hot = others.filter(p=>{ const x=artById(w,p.artifactId); return x && (isViral(w,x) || x.likes.length>=2); });
+  if(hot.length && a.aiAttitude.styleImitation>.4 && w.rng.next()<.45){ const src=w.rng.pick(hot); copiedFrom=src; promptText = `${src.text}, but ${FEATURES[4][1][a.cultureVector[4]]}`; }
+  else { const n1 = infl[0]? agentById(w,infl[0].creatorId) : null; const n2 = infl[1]? agentById(w,infl[1].creatorId) : null; const st = infl[0]? FEATURES[0][1][infl[0].culturalVector[0]]+' '+FEATURES[1][1][infl[0].culturalVector[1]] : 'plain';
+    promptText = `${idea}, in ${n1? n1.name+"'s "+st : 'no one\u2019s'} style${n2? ', '+w.rng.pick(['after','against','beside'])+' '+n2.name : ''}${infl[0]&&infl[0].modality==='text'? ', quoting \u201c'+infl[0].text.split(' ').slice(0,5).join(' ')+'\u201d' : ''}`; }
+  const pr = { id:'p'+(PROMPT_SEQ++), authorId:a.id, tick:w.tick, text:promptText, idea, copiedFrom: copiedFrom? copiedFrom.id : null, artistsNamed: infl.map(x=>x.creatorId).filter((v,i,s)=>s.indexOf(v)===i), sourceArtifactIds: infl.map(x=>x.id), artifactId:null };
+  w.prompts.push(pr);
+  if(copiedFrom){ const oa=agentById(w,copiedFrom.authorId); const e=emit(w,'PROMPT_COPIED',a.id,{prompt:pr.id, from:copiedFrom.id, author:copiedFrom.authorId}); if(oa){ fact(w, `${a.name} copied ${oa.name}'s prompt.`, {strong:oa.aiAttitude.styleImitation<.4, eventId:e.id, agentId:a.id, promptId:pr.id}); remember(oa,w,`${a.name} copied my prompt`,e.id, oa.aiAttitude.styleImitation>.5? .1 : -.4); if(oa.aiAttitude.styleImitation<.4) setTimeout(()=>queueExchange(w, oa, a, artById(w,copiedFrom.artifactId), `saw that ${a.name} copied your prompt almost word for word`, .9), 1500); } }
+  const item = feedPush(w, {kind:'work', who:a.name, agentId:a.id, text:'idea', live:true, stages:{idea, prompt:promptText}, variants:[], chosen:-1, promptId:pr.id});
+  startWork(w, a, 'prompting', async (onC)=>{
+    item.text = 'prompt'; markDirty('feed'); await new Promise(r=>setTimeout(r,700));
+    item.text = 'generating 3'; markDirty('feed');
+    const ctx = artifactContext(w,a,infl,'synthetic',null) + `\nPROMPT WRITTEN BY ${a.name}: "${promptText}"`;
+    const raws = await Promise.all([0,1,2].map(i => llm(PROMPTS.ART, ctx + `\nVARIANT ${i+1} OF 3. Differ from the other variants.`, {onController:onC, maxTokens:1400}).catch(e=>{ if(e.kind==='abort'||e.kind==='global'||e.kind==='auth') throw e; return ''; })));
+    const outs = raws.map(parseProgram);
+    const good = outs.filter(p=>p.length>=3); const goodRaw = raws.filter(r=>parseProgram(r).length>=3);
+    if(!good.length) throw new NetFault('no variant came back','local');
+    item.variants = good; item.text = 'choosing'; markDirty('feed'); await new Promise(r=>setTimeout(r,900));
+    // selection by cultural preference: score program stats against the agent's vector
+    const scores = good.map(p=>{ const s=programStats(p); let sc=w.rng.next()*.4; const cv=a.cultureVector;
+      if(cv[0]===0) sc+= s.curves*.05; if(cv[0]===1) sc+= s.circles*.05; if(cv[0]===2) sc+= s.rects*.05; if(cv[0]===3) sc+= (s.n>60? .3:0);
+      if(cv[1]===0) sc+= (Math.abs(s.hue[0]-s.hue[1])<20? .3:0); if(cv[1]===3) sc+= (Math.max(...s.hue)-Math.min(...s.hue))/255;
+      if(cv[2]===0) sc+= s.n<40? .3:0; if(cv[2]===1) sc+= s.n>80? .3:0; if(cv[3]===2) sc+= s.text*.2; return sc; });
+    let best=0; for(let i=1;i<scores.length;i++) if(scores[i]>scores[best]) best=i;
+    item.chosen = best; item.live=false; item.text='chose one';
+    const x = makeArtifact(w, a, 'drawing', 'synthetic', good[best], '', infl.slice(0,1), infl, {prompt:'ART', agentPrompt:promptText, idea, promptId:pr.id, context:ctx, raw:goodRaw[best], variants:goodRaw, chosen:best, model:AI.model});
+    item.artId = x.id; pr.artifactId = x.id; x.promptId = pr.id; emit(w,'MODEL_GENERATED',a.id,{artifact:x.id, prompt:pr.id, variants:good.length},[]);
+    a.skills.prompting = Math.min(1, a.skills.prompting+.03);
+    if(infl[0]){ const ic=agentById(w,infl[0].creatorId); if(ic) setTimeout(()=>queueExchange(w, a, ic, infl[0], `fed ${ic.name}'s work into the generator as an influence and kept one of three outputs`, .7), 1200); }
+    markDirty('all');
+  });
+}
+function doTeach(w, a){
+  const near = w.agents.filter(b=>b!==a && !b.left && (a.relationships[b.id] || Math.hypot(a.x-b.x,a.y-b.y)<50));
+  if(!near.length){ a.cooldown=2; return; }
+  const b = w.rng.pick(near); const skill = a.skills.drawing>a.skills.writing? 'drawing':'writing';
+  if(a.skills[skill] <= b.skills[skill]+.05){ a.cooldown=2; return; }
+  b.skills[skill] = Math.min(1, b.skills[skill] + .04); const i = w.rng.int(6); if(w.rng.next()<.5) b.cultureVector[i] = a.cultureVector[i];
+  if(!a.relationships[b.id]){ a.relationships[b.id]={trust:.45,kind:'teach',last:w.tick}; b.relationships[a.id]={trust:.45,kind:'teach',last:w.tick}; } else touchTie(w,a,b,.06,'teach');
+  const e = emit(w,'TEACHING_OCCURRED',a.id,{student:b.id, skill}); seat(w,a,'SCHOOL'); b.tx=a.tx+12; b.ty=a.ty+3;
+  emote(b,w,'note'); if(w.rng.next()<.3) fact(w, `${a.name} taught ${b.name} ${skill}.`, {dim:true, eventId:e.id, tie:[a.id,b.id], agentId:a.id});
+  remember(b,w,`${a.name} taught me ${skill}`,e.id,.2); a.cooldown = 4; a.currentAction='teaching';
+}
+function doCritique(w, a){
+  const pool = w.artifacts.filter(x=>x.published && x.creatorId!==a.id && w.tick-x.tick<60); if(!pool.length){ a.cooldown=2; return; }
+  const x = w.rng.pick(pool); const c = agentById(w,x.creatorId); const sim = similarity(a.cultureVector,x.culturalVector);
+  const harsh = sim < .34 || (x.provenanceType==='synthetic' && a.aiAttitude.syntheticArt<.35); emote(a,w, harsh? 'bang':'spark');
+  if(!harsh && !x.likes.includes(a.id)) x.likes.push(a.id);
+  const e = emit(w,'CRITIQUE',a.id,{artifact:x.id, harsh});
+  if(c){ if(harsh){ remember(c,w,`${a.name} dismissed my ${x.modality==='text'?'text':'drawing'}`,e.id,-.3); if(c.relationships[a.id]) touchTie(w,c,a,-.06,'conflict'); fact(w, `${a.name} dismissed ${c.name}'s ${x.provenanceType==='synthetic'?'generated ':''}${x.modality==='text'?'text':'drawing'}.`, {eventId:e.id, artId:x.id, agentId:a.id, tie:[a.id,c.id]}); }
+    else { remember(c,w,`${a.name} praised my work`,e.id,.2); c.status=Math.min(1,c.status+.03); if(c.relationships[a.id]) touchTie(w,c,a,.04,'collab'); if(w.rng.next()<.4) fact(w, `${a.name} praised ${c.name}'s ${x.modality==='text'?'text':'drawing'}.`, {dim:true, eventId:e.id, artId:x.id, agentId:a.id}); } }
+  if(c) queueExchange(w, a, c, x, harsh? `dismissed ${c.name}'s work in front of others` : `praised ${c.name}'s work`, harsh? .8 : .4);
+  a.cooldown = 3; a.currentAction='criticizing';
+}
+function doLearn(w, a){ const infl = pickInfluences(w,a); if(!infl.length){ a.cooldown=2; return; } const x = infl[0]; const diff=[]; for(let j=0;j<6;j++) if(a.cultureVector[j]!==x.culturalVector[j]) diff.push(j); if(diff.length && w.rng.next()<.6){ const j=w.rng.pick(diff); a.cultureVector[j]=x.culturalVector[j]; const e=emit(w,'CULTURAL_INFLUENCE',x.creatorId,{to:a.id,via:x.id,feature:FEATURES[j][0]}); const c=agentById(w,x.creatorId); if(c) queueExchange(w, a, c, x, `studied ${c.name}'s work closely and took its ${FEATURES[j][0]}`, .45); } a.cooldown=2; a.currentAction='looking'; }
+function doTalk(w, a){
+  if(!AI.key){ a.cooldown=3; a.currentAction='waiting'; return; }
+  if(w.llmCooldown > 0 || AI.inflight >= 3){ a.cooldown=1; return; }
+  w.llmCooldown = 5;
+  const obs = w.feed.slice(-6).filter(i=>i.kind==='fact'||i.kind==='say').map(i=>(i.who? i.who+': ':'')+i.text).join('\n');
+  startWork(w, a, 'thinking', async (onC)=>{
+    const out = await llm(PROMPTS.AGENT, agentContext(w,a,`RECENT OBSERVATIONS:\n${obs}\nVALID ACTIONS NOW: ${['draw','write','teach','critique','remix','learn','talk','withhold','publish','rest','leave'].concat(w.model.exists||a.practiceQ.prompt>.3?['prompt']:[]).join(', ')}`), {onController:onC, maxTokens:220});
+    const j = parseJSON(out) || {};
+    const action = String(j.action||'rest').toLowerCase(); const tgt = agentByName(w, j.target);
+    emote(a,w,'idea');
+    if(j.utterance && String(j.utterance).trim()){ const e=emit(w,'UTTERANCE',a.id,{text:String(j.utterance).slice(0,200), to:tgt?tgt.id:null}); say(w,a,String(j.utterance).slice(0,200), {to:tgt?tgt.name:null, eventId:e.id}); if(tgt){ remember(tgt,w,`${a.name} said: ${String(j.utterance).slice(0,60)}`,e.id,.1); const uu=String(j.utterance).slice(0,200); if(w.exchangeCooldown===0 && !tgt.working && !tgt.left){ w.exchangeCooldown=5; setTimeout(()=>{ if(tgt.working||tgt.left) return; startWork(w,tgt,'answering', async(onC2)=>{ const o2=await llm(PROMPTS.ARGUMENT, agentContext(w,tgt,`SPEAKER: ${a.name}\nMESSAGE: ${uu}`),{onController:onC2,maxTokens:180}); const j2=parseJSON(o2)||{utterance:o2.slice(0,160)}; const u2=String(j2.utterance||'').slice(0,220); if(!u2) return; const e2=emit(w,'UTTERANCE',tgt.id,{text:u2,to:a.id,stance:j2.stance||null},[e.id]); say(w,tgt,u2,{to:a.name,eventId:e2.id}); if(!tgt.relationships[a.id]){ tgt.relationships[a.id]={trust:.35,kind:'peer',last:w.tick}; a.relationships[tgt.id]={trust:.35,kind:'peer',last:w.tick}; } touchTie(w,tgt,a,stanceDelta(j2.stance)); }); }, 800); } } }
+    // validator: only permitted actions with effects the rules allow
+    if(action==='withhold'){ a.withholding=true; emit(w,'WITHHOLD',a.id,{}); }
+    else if(action==='publish'){ a.withholding=false; const priv = w.artifacts.filter(x=>x.creatorId===a.id&&!x.published); if(priv.length){ const x=priv[priv.length-1]; x.published=true; const e=emit(w,'ARTIFACT_PUBLISHED',a.id,{artifact:x.id},[x.createdEvent]); feedPush(w,{kind:'art',agentId:a.id,who:a.name,text:'published this.',artId:x.id,eventId:e.id}); } }
+    else if(action==='leave' && a.autonomy>.6 && a.belonging<.5){ a.left=true; a.tx=340; a.ty=285; const e=emit(w,'AGENT_EXITED',a.id,{reason:j.reason},[],{snapshot:true}); fact(w,`${a.name} left.`,{strong:true,eventId:e.id,fork:e.id,agentId:a.id}); }
+    else if(['draw','write','teach','critique','remix','learn','prompt'].includes(action)){ a.next = action; }
+    a.reason = j.reason;
+  });
+}
+function compactMemories(w, a){
+  w.compactCooldown = 10; const old = a.memories.slice(0, 6); if(!a.beliefs) a.beliefs=[];
+  startWork(w, a, 'remembering', async (onC)=>{
+    const out = await llm(PROMPTS.COMPACT, `NAME: ${a.name}\nOLDER MEMORIES:\n${old.map(m=>`[${m.eventId||'?'}] tick ${m.tick}: ${m.text}`).join('\n')}\nCURRENT BELIEFS: ${a.beliefs.map(b=>b.text).join(' | ')||'none'}`, {onController:onC, maxTokens:140});
+    const j = parseJSON(out); if(!j || !j.belief) return;
+    const valid = new Set(w.events.map(e=>e.id)); const src = (Array.isArray(j.sources)? j.sources : []).filter(s=>valid.has(s));
+    a.beliefs.push({tick:w.tick, text:String(j.belief).slice(0,160), sources:src, folded:old.length}); if(a.beliefs.length>5) a.beliefs.shift();
+    a.memories.splice(0, old.length);
+    emit(w,'MEMORY_COMPACTED',a.id,{belief:String(j.belief).slice(0,160), folded:old.length},src);
+  });
+}
+function doReflect(w, a){
+  if(w.reflectCooldown>0 || AI.inflight>=3) return; w.reflectCooldown = 18;
+  const evs = a.memories.slice(-6).map(m=>{ const e=w.events.find(x=>x.id===m.eventId); return e? `[${e.id}] tick ${e.tick} ${e.type}: ${m.text}` : `[${m.eventId}] ${m.text}`; }).join('\n');
+  startWork(w, a, 'remembering', async (onC)=>{
+    const out = await llm(PROMPTS.REFLECTION, agentContext(w,a,`EVENTS:\n${evs}`), {onController:onC, maxTokens:160});
+    const j = parseJSON(out); if(!j || !j.reflection) return;
+    const valid = new Set(w.events.map(e=>e.id)); const src = (Array.isArray(j.sources)? j.sources : []).filter(s=>valid.has(s));
+    a.reflections.push({tick:w.tick, text:String(j.reflection).slice(0,220), sources:src}); if(a.reflections.length>6) a.reflections.shift();
+    const e=emit(w,'REFLECTION',a.id,{text:String(j.reflection).slice(0,220), sources:src},src);
+    say(w,a,String(j.reflection).slice(0,220), {reflect:true, eventId:e.id, sources:src});
+  });
+}
+
+
+/* agents speak to each other when they sample one another's work */
+function stanceDelta(s){ return s==='warm'? .05 : s==='cool'? -.06 : .01; }
+function queueExchange(w, from, to, x, did, prob){
+  if(!AI.key) return;
+  if(!from || !to || from===to || from.left || to.left) return;
+  if(w.exchangeCooldown>0 || AI.inflight>=3 || from.working || to.working) return;
+  if(w.rng.next() > (prob==null? .6 : prob)) return;
+  w.exchangeCooldown = 5;
+  const work = x ? `${x.id} by ${to.name} (${x.provenanceType} ${x.modality}${x.modality==='text'? ': "'+x.text+'"' : ''})` : 'their recent work';
+  startWork(w, from, 'talking', async (onC)=>{
+    const out = await llm(PROMPTS.TALK, agentContext(w,from,`THE OTHER PERSON: ${to.name} of ${commName(w,to.communityId)}\nYOUR RELATIONSHIP: ${from.relationships[to.id]? 'trust '+from.relationships[to.id].trust.toFixed(2) : 'none yet'}\nTHE WORK: ${work}\nWHAT YOU JUST DID: ${did}`), {onController:onC, maxTokens:160});
+    const j = parseJSON(out) || {utterance: out.slice(0,160)}; const u = String(j.utterance||'').slice(0,220); if(!u) return;
+    const e = emit(w,'UTTERANCE',from.id,{text:u, to:to.id, about:x?x.id:null, stance:j.stance||null});
+    say(w, from, u, {to:to.name, eventId:e.id, artId:x?x.id:null});
+    remember(to, w, `${from.name} said: ${u.slice(0,60)}`, e.id, .1);
+    if(!from.relationships[to.id]){ from.relationships[to.id]={trust:.35,kind:'peer',last:w.tick}; to.relationships[from.id]={trust:.35,kind:'peer',last:w.tick}; }
+    touchTie(w, from, to, stanceDelta(j.stance));
+    // reply
+    setTimeout(()=>{ if(to.working || to.left || worlds.indexOf(w)<0) return;
+      startWork(w, to, 'answering', async (onC2)=>{
+        const out2 = await llm(PROMPTS.ARGUMENT, agentContext(w,to,`SPEAKER: ${from.name} of ${commName(w,from.communityId)} (trust ${to.relationships[from.id]? to.relationships[from.id].trust.toFixed(2):'0'})\nCONTEXT: they just ${did.replace('you','me').replace('your','my')}; the work is ${work.replace('by '+to.name,'mine')}\nMESSAGE: ${u}`), {onController:onC2, maxTokens:180});
+        const j2 = parseJSON(out2) || {utterance: out2.slice(0,160)}; const u2 = String(j2.utterance||'').slice(0,220); if(!u2) return;
+        const e2 = emit(w,'UTTERANCE',to.id,{text:u2, to:from.id, stance:j2.stance||null, will:j2.will||null},[e.id]);
+        say(w, to, u2, {to:from.name, eventId:e2.id});
+        remember(from, w, `${to.name} answered: ${u2.slice(0,60)}`, e2.id, .1);
+        touchTie(w, to, from, stanceDelta(j2.stance), (j2.stance==='cool' && to.relationships[from.id] && to.relationships[from.id].trust<.35)? 'conflict' : (j2.stance==='warm'? 'collab' : undefined));
+        if(j2.will==='withhold'){ to.withholding=true; emit(w,'WITHHOLD',to.id,{},[e2.id]); }
+        if(j2.will==='share'){ to.withholding=false; }
+        if(j2.will==='teach'){ to.next='teach'; }
+      }); }, 900);
+  });
+}
+
+/* just-in-time depth: the world makes more about a thing when it is looked at */
+function askTheRoom(w, x){ const c=agentById(w,x.creatorId); const cands = w.agents.filter(v=>!v.left && !v.working && v.id!==x.creatorId && !x.comments.some(k=>k.agentId===v.id)); if(!cands.length) return 0;
+  cands.sort((p,q)=> (similarity(q.cultureVector,x.culturalVector)+ (c&&q.relationships[c.id]? .3:0)) - (similarity(p.cultureVector,x.culturalVector)+ (c&&p.relationships[c.id]? .3:0)));
+  let n=0; for(const v of cands.slice(0,2)){ if(commentOn(w, v, x, true)) n++; } return n; }
+function askWhy(w, a){ if(a.working || a.left) return false; w.reflectCooldown = 0; doReflect(w,a); return !!a.working; }
+function pressIssue(w){
+  w.press.busy = true; const since = w.press.last;
+  const strong = w.feed.filter(i=>(i.kind==='fact' && i.strong || i.kind==='say') && i.tick>since).slice(-14).map(i=>`- ${dayclock(i.tick).toLowerCase()} ${i.who? i.who+(i.to?' to '+i.to:'')+': ':''}${i.text.replace(/\n/g,' / ')}`).join('\n');
+  const pub = w.artifacts.filter(x=>x.published && x.tick>since-24); const top = pub.slice().sort((p,q)=>q.likes.length-p.likes.length).slice(0,2).map(x=>{ const c=agentById(w,x.creatorId); return `${c?c.name:'?'}'s ${x.modality} (${x.provenanceType}, ${x.likes.length} likes)`; }).join('; ');
+  const cold = pub.filter(x=>isRejected(w,x)).map(x=>{ const c=agentById(w,x.creatorId); return c?c.name:'?'; }).join(', ');
+  const camps = w.agents.filter(a=>!a.left).map(a=>aiView(a).lean); const forN=camps.filter(c=>c==='leaning for').length, agN=camps.filter(c=>c==='leaning against').length;
+  llm(PROMPTS.NEWS, `${dayclock(w.tick)}\nTRAINING RULE: ${w.institutions.trainingPolicy||'none'}\nCAMPS: ${forN} leaning for AI, ${agN} leaning against, ${camps.length-forN-agN} split\nEVENTS:\n${strong||'- quiet days'}\nMOST LIKED: ${top||'nothing yet'}\nREJECTED: ${cold||'nothing'}\nMODEL: read ${w.model.trainedIds.length} works in ${w.model.runs} runs`, {maxTokens:260})
+  .then(out=>{ const j=parseJSON(out); if(!j||!j.headline) return; const about=(Array.isArray(j.about)?j.about:[]).map(n=>agentByName(w,n)).filter(Boolean);
+    const e=emit(w,'PRESS',null,{headline:String(j.headline).slice(0,80), body:String(j.body).slice(0,400), about:about.map(a=>a.id), tone:j.tone}); w.press.issues++;
+    feedPush(w,{kind:'news', who:w.press.name, headline:String(j.headline).slice(0,80), text:String(j.body).slice(0,400), tone:j.tone, eventId:e.id, strong:true});
+    for(const a of about){ a.status=Math.min(1,a.status+(j.tone==='scandal'? .08 : .06)); remember(a,w,`the Ledger wrote about me: "${String(j.headline).slice(0,50)}"`,e.id, j.tone==='scandal'? -.3 : .3); }
+    const readers = w.agents.filter(a=>!a.left && !about.includes(a)); for(let i=0;i<4 && readers.length;i++){ const r=w.rng.pick(readers); remember(r,w,`read in the Ledger: ${String(j.headline).slice(0,50)}`,e.id, .1); if(j.tone==='scandal' && /train|model|generat|copy/i.test(j.body)){ const k = /copy|prompt/i.test(j.body)? 'styleImitation':'training'; r.aiAttitude[k] = Math.max(0, Math.min(1, r.aiAttitude[k] + (r.aiAttitude[k]<.5? -.06 : .03))); } }
+  }).catch(e=>{ if(e.kind==='global'||e.kind==='auth') globalFault(e); }).finally(()=>{ w.press.busy=false; w.press.last=w.tick; });
+}
+function act(w, a){
+  let action = a.next || chooseAction(w,a); a.next = null;
+  if(!w.model.exists && action==='prompt' && !(a.practiceQ.prompt>.3)) action='draw';
+  if(['draw','write','remix','prompt'].includes(action) && AI.inflight >= 3){ a.cooldown=1; return; }
+  a.place = targetPlace(a, action, w.rng); seat(w, a, a.place);
+  switch(action){
+    case 'draw': if(a.skills.drawing < a.skills.writing && w.rng.next()<.6) doWrite(w,a); else doDraw(w,a); break;
+    case 'write': if(a.skills.writing < a.skills.drawing && w.rng.next()<.6) doDraw(w,a); else doWrite(w,a); break;
+    case 'remix': { const pool = w.artifacts.filter(x=>x.published && x.creatorId!==a.id && (a.aiAttitude.syntheticArt>.4 || x.provenanceType==='human')); if(!pool.length){ a.cooldown=2; break; } const parent = w.rng.pick(pool); if(parent.modality==='text') doWrite(w,a,parent); else doDraw(w,a,parent); break; }
+    case 'prompt': doPrompt(w,a); break;
+    case 'teach': doTeach(w,a); break;
+    case 'critique': doCritique(w,a); break;
+    case 'learn': doLearn(w,a); break;
+    case 'talk': doTalk(w,a); break;
+    case 'market': a.wealth += .08; a.cooldown=3; a.currentAction='selling'; break;
+    default: a.cooldown = 2+w.rng.int(3); a.currentAction='resting';
+  }
+}
+
+/* ---------- TICK ---------- */
+function tickWorld(w){
+  w.tick++; if(w.llmCooldown>0) w.llmCooldown--; if(w.reflectCooldown>0) w.reflectCooldown--; if(w.exchangeCooldown>0) w.exchangeCooldown--; if(w.commentCooldown>0) w.commentCooldown--; if(w.compactCooldown>0) w.compactCooldown--;
+  moveAgents(w);
+  const live = w.agents.filter(a=>!a.left);
+  // social influence over ties (Axelrod + bounded confidence)
+  for(let i=0;i<3;i++){ const a = w.rng.pick(live); const ids = Object.keys(a.relationships); if(!ids.length) continue; const b = agentById(w, w.rng.pick(ids)); if(b && !b.left && !a.working && !b.working) influencePair(w,a,b); }
+  attention(w);
+  if(w.tick % 6 === 0) rewire(w);
+  if(w.tick % 10 === 0) cascade(w);
+  if(w.tick % 24 === 0) economy(w);
+  processRejections(w);
+  // agent actions
+  for(const a of live){ if(a.working || a.fault) continue; if(a.cooldown>0){ a.cooldown--; continue; }
+    if(AI.key && w.tick - a.lastSalient < 3 && a.memories.length && w.rng.next()<.35 && w.reflectCooldown===0){ doReflect(w,a); continue; }
+    act(w,a); }
+  // the press
+  if(AI.key && w.tick - w.press.last >= 26 && AI.inflight<3 && !w.press.busy){ const strong = w.feed.filter(i=>i.kind==='fact' && i.strong && i.tick>w.press.last); const said = w.feed.filter(i=>i.kind==='say' && i.tick>w.press.last); if(strong.length + said.length >= 3) pressIssue(w); }
+  // commissions: the market hires the famous
+  if(w.tick % 40 === 20){ const live=w.agents.filter(a=>!a.left && !a.working && !a.commission); if(live.length){ live.sort((p,q)=>q.status-p.status); const star=live[0]; if(star.status>.4){ const product = w.rng.pick(['a boat hire','the market\u2019s bread','a lamp','a ferry ticket','a coat']); star.commission = `the market asked for a piece to sell ${product}; it must be legible as an advertisement`; const e=emit(w,'COMMISSION',star.id,{product}); fact(w, `The market hired ${star.name} to make an ad for ${product}.`, {strong:true, eventId:e.id, agentId:star.id}); remember(star,w,'the market hired me for an ad',e.id,.3); star.next='draw'; star.cooldown=0; } } }
+  // model hint
+  if(canTrain(w) && w.tick - w.model.lastHint > 30 && w.tick - w.model.lastTrainedAt > 20){ w.model.lastHint = w.tick; fact(w, 'It can learn from the pool.', {model:true, trainHint:true, eventId:null}); }
+  markDirty('world'); if(w.tick % 4 === 0){ markDirty('feed'); markDirty('focus'); }
+  if(w.tick % 12 === 0) markDirty('clock');
+}
+/* ============================================================
+   SURFACES: header · world · stream (+composer)
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const svgNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent){ const e = document.createElementNS(svgNS, tag); for(const k in attrs||{}) e.setAttribute(k, attrs[k]); if(parent) parent.appendChild(e); return e; }
+function h(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function esc(s){ return String(s==null?'':s); }
+
+let PAUSED=false, loopTimer=null, focus=null, ctxTarget=null, dirty={}, rafPending=false, galleryMode=false, seamRatio=.5;
+function markDirty(k){ dirty[k]=true; if(!rafPending){ rafPending=true; requestAnimationFrame(render); } }
+function fmtTok(n){ return n>=1e6? (n/1e6).toFixed(2)+'M' : n>=1e3? (n/1e3).toFixed(1)+'k' : String(n); }
+function updateCalls(){ const e=$('#syscalls'); if(e) e.textContent = `${AI.inflight} in flight \u00b7 ${AI.done} done \u00b7 ${AI.failed} failed`; const t=$('#systok'); if(t) t.textContent = `${fmtTok(AI.tokIn)} in \u00b7 ${fmtTok(AI.tokOut)} out \u00b7 ${fmtTok(AI.tokIn+AI.tokOut)} total`; const c=$('#clock'); if(c && worlds.length) markDirty('clock'); }
+function globalFault(err){ if(err && err.kind==='nokey') return; if($('#fault').classList.contains('hide')){ PAUSED=true; stopAllCalls(); for(const w of worlds){ w.model.training=null; for(const a of w.agents) if(a.working){ a.working=null; a.fault={label:a.currentAction, msg:err.message, retry:null}; } } $('#fault').classList.remove('hide'); $('#fault .row').previousElementSibling.textContent = 'World preserved.' + (err && err.kind==='auth' ? ' The key was refused.' : ''); markDirty('all'); } }
+
+/* ---------- THE ORB: one renderer for the intro and the navigator ---------- */
+const SITE_LL = [[.42,0],[.05,Math.PI/3],[-.32,2*Math.PI/3],[.36,Math.PI],[-.08,4*Math.PI/3],[-.46,5*Math.PI/3]]; // lat, lon per SITES index
+const ORB = { pts:null };
+function orbPoints(n){ const pts=[]; const ga=Math.PI*(3-Math.sqrt(5)); for(let i=0;i<n;i++){ const y=1-(i/(n-1))*2; pts.push({lat:Math.asin(y), lon:ga*i, band:Math.round(Math.cos(Math.asin(y))*6)}); } return pts; }
+function orbProj(cx,cy,R,lat,lon,tilt){ const x=Math.cos(lat)*Math.cos(lon), y=Math.sin(lat), z=Math.cos(lat)*Math.sin(lon); const yy=y*Math.cos(tilt)-z*Math.sin(tilt), zz=y*Math.sin(tilt)+z*Math.cos(tilt); return {x:cx+x*R, y:cy-yy*R, z:zz}; }
+/* spin: the site whose ring index is `facing` sits front-centre when lon+spin = π/2 */
+function drawOrb(ctx, cx, cy, R, t, facing, opts){
+  opts=opts||{}; const w = worlds[0]; const tilt = opts.tilt!=null? opts.tilt : .34; const spin = Math.PI/2 - facing*Math.PI/3; const fade = opts.fade!=null? opts.fade : 1;
+  if(!ORB.pts || ORB.pts.length!==(opts.n||220)) ORB.pts = orbPoints(opts.n||220);
+  ctx.save(); ctx.globalAlpha = fade;
+  ctx.strokeStyle='#000'; ctx.lineWidth=R>60? .8 : .6; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle='#000';
+  for(const p of ORB.pts){ const q=orbProj(cx,cy,R,p.lat, p.lon + spin + t*(.10+p.band*.06)*(opts.drift!=null?opts.drift:1), tilt); const front=q.z>0; ctx.globalAlpha = fade*(front? .9 : .18); ctx.beginPath(); ctx.arc(q.x,q.y, R>60? (front?1.4:.7) : (front?.8:.5), 0, Math.PI*2); ctx.fill(); }
+  ctx.globalAlpha = fade;
+  // sites and the people at them
+  const bySite = {}; if(w) for(const a of w.agents) (bySite[siteOf(a)] = bySite[siteOf(a)]||[]).push(a);
+  const sitesDrawn = [];
+  SITES.forEach((key,i)=>{ const [lat,lon]=SITE_LL[i]; const q=orbProj(cx,cy,R,lat,lon+spin,tilt); if(q.z<=-.05) return; const sc=(R/120)*(.55+.45*q.z); const cur = ((Math.round(facing)%6)+6)%6===i;
+    ctx.strokeStyle='#000'; ctx.lineWidth = cur? 1.4 : .9; ctx.fillStyle='#fff';
+    if(key==='COMMONS'){ ctx.beginPath(); ctx.moveTo(q.x,q.y); ctx.lineTo(q.x,q.y-9*sc); ctx.stroke(); ctx.beginPath(); ctx.arc(q.x,q.y-13*sc,7*sc,0,Math.PI*2); ctx.fill(); ctx.stroke(); }
+    else if(key==='SHORE'){ ctx.beginPath(); for(let k=0;k<3;k++){ ctx.moveTo(q.x-10*sc+k*7*sc, q.y); ctx.quadraticCurveTo(q.x-6.5*sc+k*7*sc, q.y-4*sc, q.x-3*sc+k*7*sc, q.y); } ctx.stroke(); }
+    else if(key==='LAB'){ ctx.beginPath(); ctx.rect(q.x-7*sc,q.y-8*sc,14*sc,8*sc); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(q.x+5*sc,q.y-11*sc,3*sc,Math.PI,0); ctx.stroke(); }
+    else if(key==='MARKET'){ ctx.beginPath(); ctx.moveTo(q.x-8*sc,q.y-6*sc); for(let k=0;k<4;k++){ ctx.lineTo(q.x-6*sc+k*4*sc, q.y-9*sc); ctx.lineTo(q.x-4*sc+k*4*sc, q.y-6*sc); } ctx.stroke(); ctx.beginPath(); ctx.rect(q.x-7*sc,q.y-6*sc,14*sc,6*sc); ctx.stroke(); }
+    else if(key==='GALLERY'){ ctx.beginPath(); ctx.rect(q.x-8*sc,q.y-8*sc,16*sc,8*sc); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.rect(q.x-5*sc,q.y-6*sc,4*sc,3*sc); ctx.rect(q.x+1*sc,q.y-6*sc,4*sc,3*sc); ctx.stroke(); }
+    else { ctx.beginPath(); ctx.moveTo(q.x-6*sc,q.y); ctx.lineTo(q.x-6*sc,q.y-6*sc); ctx.lineTo(q.x,q.y-11*sc); ctx.lineTo(q.x+6*sc,q.y-6*sc); ctx.lineTo(q.x+6*sc,q.y); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    // people as dots in a little arc around the site
+    const ppl = bySite[key]||[]; ppl.forEach((a,k)=>{ const ang = (k/Math.max(1,ppl.length))*Math.PI*2 + t*.05; const rr = (8+ (ppl.length>4? 5:0))*sc; const px=q.x+Math.cos(ang)*rr*1.4, py=q.y+4*sc+Math.sin(ang)*rr*.6; ctx.fillStyle = a.working? '#000' : '#fff'; ctx.beginPath(); ctx.arc(px,py,(a.working?2.2:1.8)*sc,0,Math.PI*2); ctx.fill(); ctx.stroke(); a._ox=px; a._oy=py; a._oz=q.z; });
+    if(cur && opts.labels!==false){ ctx.fillStyle='#000'; ctx.font=`${Math.max(8,Math.round(R*.09))}px "IBM Plex Mono", monospace`; ctx.textAlign='center'; ctx.fillText(SITE_LABEL[key], q.x, q.y+ (R*.2)); }
+    sitesDrawn.push({key,i,q,cur}); });
+  // named people at the front site (intro only)
+  if(opts.names && w){ const cur = sitesDrawn.find(s=>s.cur); if(cur){ const ppl=(bySite[cur.key]||[]).slice(0,4); ctx.fillStyle='#000'; ctx.font=`${Math.max(9,Math.round(R*.08))}px "IBM Plex Mono", monospace`; ctx.textAlign='left'; ppl.forEach((a,k)=>{ const prac = Object.entries(a.practiceQ).sort((p,q)=>q[1]-p[1])[0][0]; const lx = cx + R*1.12, ly = cy - R*.35 + k*R*.16; ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.moveTo(a._ox,a._oy); ctx.lineTo(lx-4,ly-3); ctx.stroke(); ctx.fillText(`${a.name} \u00b7 ${prac}`, lx, ly); }); } }
+  ctx.restore(); return sitesDrawn;
+}
+
+/* ---------- TITLE: the same orb, then it shrinks into the navigator ---------- */
+const TITLE = { raf:null, t0:0, done:false, W:0, H:0 };
+const T_END = 16.4;
+const CAPTIONS = [[.8,'a small world.'],[3.6,'these people make things'],[6.8,'they learn from one another'],[9.8,'a machine can learn from them too'],[12.6,'nothing is removed. something changes.'],[14.2,'you are in the commons.']];
+function ensureWorld(){ if(!worlds.length){ worlds.push(makeWorld((Date.now() ^ 0x9e3779b9)>>>0, 'A')); activeW=0; } return worlds[0]; }
+function startTitle(){ const cv=$('#title'); const dpr=Math.min(2, window.devicePixelRatio||1); const W=cv.clientWidth||window.innerWidth, H=cv.clientHeight||window.innerHeight; cv.width=W*dpr; cv.height=H*dpr; const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ensureWorld(); TITLE.W=W; TITLE.H=H; TITLE.t0=performance.now(); TITLE.done=false;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches; if(reduced){ finishTitle(); return; }
+  $('#restform').classList.add('hide'); $('#skip').classList.remove('hide'); $('#caption').textContent=''; $('#caption').classList.remove('on');
+  const R0 = Math.min(W,H)*.30; const cx0=W/2, cy0=H*.40; let capIdx=-1;
+  const frame=(now)=>{ if(TITLE.done) return; const t=(now-TITLE.t0)/1000; ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+    let ci=-1; for(let k=0;k<CAPTIONS.length;k++) if(t>=CAPTIONS[k][0]) ci=k; if(ci!==capIdx){ capIdx=ci; const cp=$('#caption'); if(ci>=0){ cp.classList.remove('on'); setTimeout(()=>{ cp.textContent=CAPTIONS[ci][1]; cp.classList.add('on'); },160); } }
+    const lastF = 12.6/2.2; const target = 1 + 6*Math.ceil((lastF-1)/6); const facing = t<12.6 ? t/2.2 : lastF + (target-lastF)*Math.min(1,(t-12.6)/1.2);
+    // then the ball grows until it is around you: the horizon flattens into the ground line of the commons
+    const down = Math.max(0, Math.min(1, (t-13.6)/2.4)); const e = down*down*(3-2*down);
+    const R = R0*(1 + e*7); const cx = cx0; const cy = cy0 + e*(H*.62 + R0*6.2);
+    drawOrb(ctx, cx, cy, R, t, facing, {names: t>3 && t<12.6, labels: e<.3, n:220, tilt:.34*(1-e), fade: 1-e*.55});
+    if(t>T_END) finishTitle(); else TITLE.raf=requestAnimationFrame(frame); };
+  TITLE.raf=requestAnimationFrame(frame);
+}
+function finishTitle(){ if(TITLE.done) return; TITLE.done=true; if(TITLE.raf) cancelAnimationFrame(TITLE.raf); const cv=$('#title'); const ctx=cv.getContext('2d'); const dpr=Math.min(2, window.devicePixelRatio||1); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle='#fff'; ctx.fillRect(0,0,TITLE.W,TITLE.H); drawOrb(ctx, TITLE.W/2, TITLE.H*.17, 54, 0, 1, {labels:false, n:120, drift:0}); $('#caption').classList.remove('on'); $('#skip').classList.add('hide'); $('#restform').classList.remove('hide'); $('#key').focus(); }
+$('#skip').onclick=finishTitle; $('#title').addEventListener('click', ()=>{ if(!TITLE.done) finishTitle(); });
+
+/* ---------- REST ---------- */
+async function testConnection(){
+  const key = $('#key').value.trim(); AI.model = ($('#model').value||'').trim() || 'gpt-5.6-sol'; if(!key) return false;
+  AI.key = key;
+  const stat = $('#reststat'); stat.innerHTML=''; const t = h('span',null,'CONNECTING\u2026'); const stop = h('button',null,'STOP'); stop.type='button'; stat.append(t, stop);
+  stop.onclick = ()=> stopAllCalls();
+  $('#enter').disabled = true;
+  try{ await llm('Reply with the single word ok.', 'ok', {maxTokens:16}); AI.connected=true; return true; }
+  catch(e){ stat.innerHTML=''; const m=h('span',null, e.kind==='abort'? 'STOPPED' : 'COULD NOT CONNECT'); if(e.kind!=='abort'){ const why=h('span','why', (e.kind==='auth'? 'the key was refused' : e.kind==='global' && /network|fetch/i.test(e.message)? 'no route to api.openai.com (offline, blocked, or a file:// origin without network)' : e.message||'')); stat.appendChild(why); } const r=h('button',null,'RETRY'); r.type='button'; r.onclick=()=>$('#restform').requestSubmit(); const c=h('button',null,'CHANGE KEY'); c.type='button'; c.onclick=()=>{ stat.innerHTML=''; $('#key').value=''; $('#key').focus(); }; stat.insertBefore(m, stat.firstChild); stat.append(r,c); return false; }
+  finally{ $('#enter').disabled=false; }
+}
+$('#restform').addEventListener('submit', async ev=>{ ev.preventDefault(); if(await testConnection()) enterWorld(false); });
+$('#enternokey').onclick = ()=>{ AI.key=''; AI.model = ($('#model').value||'').trim() || 'gpt-5.6-sol'; AI.connected=false; enterWorld(true); };
+function enterWorld(nokey){
+  $('#key').value=''; $('#reststat').innerHTML='';
+  const fresh = !worlds.length || worlds[0].tick===0 && !worlds[0].feed.length; ensureWorld(); if(fresh){ const w0=worlds[0]; fact(w0, 'Drag sideways to look around. Tap anyone.', {strong:true}); camTarget=cam=1; if(nokey) fact(w0, 'No key. People will move, teach, and look, but nobody can make, write, or speak until one is added. Tap COMMON.', {strong:true}); }
+  else if(nokey===false){ for(const w of worlds) for(const a of w.agents) if(a.currentAction==='needs a key'||a.currentAction==='waiting'){ a.currentAction='idle'; a.cooldown=0; } }
+  $('#syskey').textContent = AI.key? 'connected' : 'none';
+  $('#rest').classList.add('hide'); $('#app').classList.remove('hide'); $('#fault').classList.add('hide');
+  $('#sysmodel').textContent = AI.model; PAUSED=false; setPauseIcon(); startLoop(); markDirty('all');
+}
+function exitWorld(){ stopAllCalls(); PAUSED=true; stopLoop(); AI.key=''; AI.connected=false; worlds.length=0; activeW=0; focus=null; ctxTarget=null; $('#feed').innerHTML=''; $('#worldsvg').innerHTML=''; $('#app').classList.add('hide'); $('#fault').classList.add('hide'); closeSheets(); $('#rest').classList.remove('hide'); TITLE.done=false; startTitle(); }
+function changeKey(){ stopAllCalls(); PAUSED=true; stopLoop(); AI.key=''; $('#app').classList.add('hide'); $('#fault').classList.add('hide'); closeSheets(); TITLE.done=true; $('#restform').classList.remove('hide'); $('#skip').classList.add('hide'); $('#rest').classList.remove('hide'); $('#key').focus(); }
+
+/* ---------- LOOP ---------- */
+function startLoop(){ stopLoop(); loopTimer = setInterval(()=>{ if(PAUSED) return; for(const w of worlds) tickWorld(w); }, 1150); }
+function stopLoop(){ if(loopTimer) clearInterval(loopTimer); loopTimer=null; }
+function setPauseIcon(){ const ico=$('#pauseico'); while(ico.firstChild) ico.removeChild(ico.firstChild); if(PAUSED){ el('path',{d:'M4 2l9 6-9 6z',fill:'#000'},ico); } else { el('rect',{x:3,y:2,width:3,height:12,fill:'#000'},ico); el('rect',{x:10,y:2,width:3,height:12,fill:'#000'},ico); } }
+$('#pause').onclick = ()=>{ PAUSED=!PAUSED; setPauseIcon(); $('#pause').setAttribute('aria-label', PAUSED?'play':'pause'); markDirty('clock'); };
+
+/* ---------- WORLD: one site at a time, a ring of six ---------- */
+const SITES = ['SCHOOL','COMMONS','MARKET','GALLERY','LAB','SHORE'];
+const SITE_LABEL = {SCHOOL:'school', COMMONS:'commons', MARKET:'market', GALLERY:'gallery', LAB:'model lab', SHORE:'shore'};
+const FLOOR = 236, SW = 360;
+let cam = 1, camTarget = 1, camDrag = null;
+const svg = $('#worldsvg'); let gScene, gBd = [], gFrames, gAgents; const nodeMap = new Map();
+function siteIndex(key){ const i = SITES.indexOf(key); return i<0? 1 : i; }
+function currentSite(){ return SITES[((Math.round(cam)%6)+6)%6]; }
+function relX(i){ let d = ((i - cam) % 6 + 6) % 6; if(d > 3) d -= 6; return d*SW; }
+function bd(i, key){
+  const far = el('g',{class:'far','data-depth':'.35'},gBd[i]);
+  // sky line of far hills, shared, with a couple of birds
+  el('path',{d:`M-20,150 q40,-38 80,-10 q30,-26 70,-4 q34,-30 78,-2 q40,-26 84,-6 q30,-20 70,4`},far);
+  el('path',{d:'M60,52 q8,-7 16,0 M78,52 q8,-7 16,0'},far); el('path',{d:'M250,40 q7,-6 14,0 M264,40 q7,-6 14,0'},far);
+  const g = el('g',{class:'bd','data-depth':'1'},gBd[i]); const x0=0;
+  el('line',{x1:0,y1:FLOOR,x2:SW,y2:FLOOR},g);
+  el('path',{d:`M0,${FLOOR+8} q30,-5 60,0 t60,0 t60,0 t60,0 t60,0 t60,0`,style:'opacity:.5'},g);
+  if(key==='SCHOOL'){ el('polygon',{points:`40,120 180,40 320,120`,class:'w'},g); el('rect',{x:60,y:120,width:240,height:116,class:'w'},g); el('rect',{x:90,y:140,width:110,height:60,class:'w'},g); el('path',{d:'M100,160 q20,-12 40,0 t40,0 M100,180 h60'},g); el('rect',{x:230,y:150,width:44,height:86},g); el('line',{x1:40,y1:120,x2:40,y2:60},g); el('polygon',{points:'40,60 70,68 40,76',class:'w'},g); el('rect',{x:210,y:135,width:18,height:18},g); }
+  if(key==='COMMONS'){ el('path',{d:`M180,${FLOOR-52} v-56`},g); el('path',{d:'M180,150 q-26,-8 -40,-28 M180,150 q26,-8 40,-28'},g); for(const [cx,cy,r] of [[152,86,22],[208,84,24],[180,64,26],[130,104,17],[230,104,18]]) el('circle',{cx,cy,r,class:'w'},g); el('path',{d:`M20,${FLOOR-40} h60 M300,${FLOOR-40} h50`},g); el('path',{d:`M30,${FLOOR-40} v40 M70,${FLOOR-40} v40 M310,${FLOOR-40} v40 M340,${FLOOR-40} v40`},g); }
+  if(key==='MARKET'){ el('rect',{x:30,y:90,width:300,height:146,class:'w'},g); el('path',{d:'M20,90 q15,-24 30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0',class:'w'},g); el('rect',{x:60,y:170,width:100,height:66,class:'w'},g); el('rect',{x:200,y:170,width:100,height:66,class:'w'},g); el('path',{d:'M70,180 h80 M70,196 h80 M210,180 h80 M210,196 h80'},g); el('rect',{x:140,y:110,width:80,height:32,class:'w'},g); const t=el('text',{x:180,y:131,'text-anchor':'middle'},g); t.textContent='OPEN'; el('line',{x1:180,y1:90,x2:180,y2:110},g); }
+  if(key==='GALLERY'){ el('rect',{x:20,y:60,width:320,height:176,class:'w'},g); el('path',{d:`M20,60 l20,20 h280 l20,-20 M40,80 v156 M320,80 v156`},g); el('rect',{x:150,y:190,width:60,height:46,class:'w'},g); el('path',{d:'M155,190 h50'},g); }
+  if(key==='LAB'){ el('rect',{x:70,y:80,width:220,height:156,class:'w'},g); el('rect',{x:100,y:110,width:160,height:80,class:'w'},g); el('path',{d:'M110,125 h140 M110,145 h100 M110,165 h120'},g); el('path',{d:'M290,80 q20,-30 40,-10 M310,70 v-30 M300,40 h20'},g); el('path',{d:`M70,${FLOOR} q-20,-30 0,-60 M290,${FLOOR} q20,-20 0,-50`},g); el('circle',{cx:180,cy:150,r:22,class:'w'},g); for(let k=0;k<10;k++){ const a=k/10*Math.PI*2; el('circle',{cx:180+Math.cos(a)*15,cy:150+Math.sin(a)*15,r:1.5,fill:'#000',stroke:'none'},g); } }
+  if(key==='SHORE'){ el('path',{d:`M0,${FLOOR-6} q15,-10 30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0`},g); el('path',{d:`M20,${FLOOR-30} h140 M30,${FLOOR-30} v30 M150,${FLOOR-30} v30 M60,${FLOOR-30} v30 M120,${FLOOR-30} v30`},g); el('path',{d:'M230,200 l60,0 l-8,18 l-44,0 z',class:'w'},g); el('line',{x1:260,y1:200,x2:260,y2:150},g); el('polygon',{points:'260,150 300,190 260,190',class:'w'},g); el('circle',{cx:320,cy:60,r:18,class:'w'},g); }
+}
+function buildStatic(){
+  svg.innerHTML=''; nodeMap.clear(); gScene = el('g',{class:'scene'},svg); gBd=[]; for(let i=0;i<6;i++){ gBd[i]=el('g',{},gScene); bd(i, SITES[i]); } gFrames=el('g',{},gScene); gAgents=el('g',{},gScene);
+}
+function drawNav(){ const cv=$('#nav'); const ctx=cv.getContext('2d'); const dpr=2; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,90,90); drawOrb(ctx, 45, 45, 34, performance.now()/1000, cam, {labels:false, n:110, drift:.3}); }
+function goSite(i){ let d = ((i - cam) % 6 + 6) % 6; if(d>3) d-=6; camTarget = cam + d; }
+function siteOf(a){ return a.left? 'SHORE' : (SITES.includes(a.place)? a.place : 'COMMONS'); }
+function siteActivity(w, key){ const here = w.agents.filter(a=>siteOf(a)===key); const making = here.filter(a=>a.working && /draw|writ|remix|prompt/.test(a.working.label)); const talking = here.filter(a=>a.working && /talk|answer/.test(a.working.label)); const recentSay = w.feed.filter(i=>i.kind==='say' && w.tick-i.tick<6 && i.agentId && siteOf(agentById(w,i.agentId)||{})===key); const strong = w.feed.filter(i=>i.strong && w.tick-i.tick<10 && i.agentId && siteOf(agentById(w,i.agentId)||{})===key); const last = recentSay[recentSay.length-1] || strong[strong.length-1]; return { n:here.length, making:making.length, talking:talking.length, hot: strong.length>0 || (key==='LAB' && w.model.training), line: last? (last.who? last.who+': ':'')+last.text.replace(/\n/g,' / ') : (making.length? making[0].name+' '+making[0].working.label+'\u2026' : (here.length? here.length+' here' : 'empty')) }; }
+function wallWorks(w, key){ const pub = w.artifacts.filter(x=>x.published && !x.withdrawn); if(key==='COMMONS') return pub.slice(-10); if(key==='GALLERY') return pub.filter(x=>isViral(w,x) || x.likes.length>=2).slice(-8); if(key==='LAB') return pub.filter(x=>x.provenanceType!=='human').slice(-8); if(key==='MARKET') return pub.filter(x=>x.commissioned).slice(-6); if(key==='SCHOOL') return pub.filter(x=>x.modality==='text').slice(-6); return []; }
+function bubble(parent, text, x, y, maxW){ const words=String(text).split(/\s+/); const lines=[]; let line=''; for(const wd of words){ const t=line?line+' '+wd:wd; if(t.length>24){ lines.push(line); line=wd; if(lines.length===3) break; } else line=t; } if(lines.length<3 && line) lines.push(line); if(lines.length===3 && line && !lines.includes(line)) lines[2]=lines[2].slice(0,20)+'\u2026'; const wdt=Math.min(maxW||150, Math.max(...lines.map(l=>l.length))*5.2+14), hgt=lines.length*11+10; const g=el('g',{class:'bub'},parent); const bx = Math.max(6, Math.min(SW-wdt-6, x-wdt/2)); el('rect',{x:bx,y:y-hgt,width:wdt,height:hgt},g); el('path',{d:`M${x-5},${y} l5,7 l5,-7`},g); lines.forEach((l,i)=>{ const t=el('text',{x:bx+7,y:y-hgt+11+i*11},g); t.textContent=l; }); return g; }
+function renderWorld(full){
+  const w = world(); if(!w) return; if(!gScene || full==='rebuild') buildStatic();
+  const now=Date.now();
+  // backdrops
+  for(let i=0;i<6;i++){ const dx=relX(i); gBd[i].setAttribute('transform','translate(0,0)'); for(const layer of gBd[i].children){ const dep=parseFloat(layer.getAttribute('data-depth')||1); layer.setAttribute('transform',`translate(${(dx*dep).toFixed(1)},0)`); } }
+  // walls of works
+  gFrames.innerHTML='';
+  for(let i=0;i<6;i++){ const key=SITES[i]; const dxs=relX(i); if(Math.abs(dxs)>SW) continue; const works=wallWorks(w,key); const y0 = key==='SHORE'? 132 : 100; const n=works.length; const size = n>6? 26 : 34; const startX = SW/2 - ((n-1)*(size+8))/2;
+    works.forEach((x,k)=>{ const fx = dxs + startX + k*(size+8); const fy = key==='COMMONS'? 168 : y0; const g=el('g',{class:'frame'+(x.appear&&now<x.appear?' new':'')+(x.pulse&&now<x.pulse?' pulse':''), transform:`translate(${fx.toFixed(1)},${fy})`},gFrames); el('rect',{class:'f',x:-size/2,y:-size/2,width:size,height:size},g); const im=el('image',{x:-size/2+2,y:-size/2+2,width:size-4,height:size-4,preserveAspectRatio:'none'},g); im.setAttribute('href',x.renderedPreview); if(x.provenanceType!=='human') el('rect',{x:size/2-6,y:size/2-6,width:5,height:5,stroke:'none',style:'fill:'+(x.provenanceType==='synthetic'?'var(--teal)':'var(--amber)')},g); if(w.model.trainedIds.includes(x.id)) el('rect',{x:-size/2,y:-size/2,width:4,height:4,stroke:'none',style:'fill:var(--blue)'},g); if(x.likes.length){ const t=el('text',{x:0,y:size/2+9,'text-anchor':'middle',style:'font-size:7px'},g); t.textContent='\u25cf '+x.likes.length; } g.onclick=(ev)=>{ ev.stopPropagation(); setFocus({type:'artifact',id:x.id}); }; g.classList.toggle('sel', !!(focus&&focus.type==='artifact'&&focus.id===x.id)); }); }
+  // the model at the lab
+  if(w.model.exists){ const dxs=relX(4); if(Math.abs(dxs)<=SW){ const M=w.model; const g=el('g',{class:'model'+(focus&&focus.type==='model'?' sel':''),transform:`translate(${dxs},0)`,style:'cursor:pointer'},gFrames); el('rect',{x:110,y:120,width:140,height:76,fill:'transparent',stroke:'none'},g); const r=8+M.caps.drawing*10; el('circle',{cx:180,cy:160,r,class:'core'},g); const t=el('text',{x:180,y:206,style:'font-size:8px'},g); t.textContent = M.training? `reading ${M.training.i} / ${M.training.ids.length}` : (canTrain(w)? 'can learn from the pool' : `read ${M.trainedIds.length}`); g.onclick=(ev)=>{ ev.stopPropagation(); setFocus({type:'model',id:'model'}); }; } }
+  // agents: seats per site
+  w.castOff = w.castOff||{}; const bySiteAll={}; for(const a of w.agents){ const s=siteOf(a); (bySiteAll[s]=bySiteAll[s])||(bySiteAll[s]=[]); bySiteAll[s].push(a); }
+  const bySite={}; const CAP=4; const curKey=currentSite(); const castEl=$('#cast'); castEl.classList.add('hide');
+  for(const s in bySiteAll){ const all=bySiteAll[s].slice().sort((p,q)=>{ const sc=(a)=> (focus&&focus.type==='agent'&&focus.id===a.id? 100:0) + (a.working? 20:0) + (w.feed.slice(-12).some(i=>i.kind==='say'&&i.agentId===a.id)? 10:0) + (w.tick-a.lastSalient<6? 5:0); return sc(q)-sc(p) || hashId(p.id)-hashId(q.id); });
+    let list = all; if(all.length>CAP){ const off = (w.castOff[s]||0) % all.length; const rot = all.slice(off).concat(all.slice(0,off)); list = rot.slice(0,CAP); if(s===curKey){ castEl.classList.remove('hide'); castEl.textContent = `+${all.length-CAP} more here`; castEl.onclick=()=>{ w.castOff[s]=(w.castOff[s]||0)+CAP; markDirty('world'); }; } }
+    bySite[s]=list; for(const a of all) if(!list.includes(a)) a.site=-1; }
+  for(const s in bySite){ const list=bySite[s].sort((p,q)=> hashId(p.id)-hashId(q.id)); const n=list.length; const span=Math.min(300, 70*Math.max(1,n-1)); list.forEach((a,k)=>{ const sx = n===1? SW/2 : (SW-span)/2 + k*(span/(n-1)); a.sx = sx + ((hashId(a.name)%11)-5); a.sy = FLOOR - 4 - (k%2)*6; a.site = SITES.indexOf(s); a.seatK = k; }); }
+  const seen=new Set();
+  for(const a of w.agents){ if(a.site<0){ const g0=nodeMap.get(a.id); if(g0) g0.style.display='none'; continue; } const dxs=relX(a.site); if(Math.abs(dxs)>SW+60){ const g0=nodeMap.get(a.id); if(g0) g0.style.display='none'; continue; } seen.add(a.id);
+    let g = nodeMap.get(a.id);
+    if(!g){ g = el('g',{class:'agent','data-agent':a.id},gAgents); el('circle',{class:'hit',cx:0,cy:-30,r:34},g); el('circle',{class:'ring',cx:0,cy:-30,r:38,style:'display:none'},g); const f=drawFigure(g,a); f.setAttribute('transform','scale(2.3)'); const nm=el('text',{x:0,y:16,class:'nm'},g); const st=el('text',{x:0,y:26,class:'st'},g); const dot=el('circle',{cx:14,cy:-70,r:2.2,style:'display:none'},g); dot.classList.add('dotk'); nodeMap.set(a.id,g); g.onclick=(ev)=>{ ev.stopPropagation(); setFocus({type:'agent',id:a.id}); }; }
+    g.style.display='';
+    if(a.vx==null || a.vsite!==a.site){ a.vx = a.sx; a.vsite=a.site; a.face=1; } a.vy = a.sy;
+    const speed = Math.abs(a.sx - a.vx); const walking = speed>1.5; if(walking) a.face = a.sx>a.vx? 1 : -1;
+    const bob = walking? Math.abs(Math.sin(Date.now()/95))*3.2 : (a.working? Math.sin(Date.now()/420+hashId(a.id))*.8 : Math.sin(Date.now()/700+hashId(a.id))*.5);
+    g.setAttribute('transform',`translate(${(dxs+a.vx).toFixed(1)},${(a.vy-bob).toFixed(1)})`); g.classList.toggle('left', !!a.left); poseFigure(g,a,w);
+    g.querySelector('.fig').setAttribute('transform',`scale(${(2.3*a.face).toFixed(2)},2.3)`);
+    // dust when walking
+    let pf=g.querySelector('.puff'); if(walking){ if(!pf){ pf=el('g',{class:'puff'},g); el('circle',{cx:-10,cy:-2,r:3},pf); el('circle',{cx:-15,cy:-1,r:2},pf); el('circle',{cx:-19,cy:0,r:1.3},pf); pf.querySelectorAll('circle').forEach(c=>{ c.setAttribute('fill','none'); c.setAttribute('stroke','#000'); c.setAttribute('stroke-width','1'); }); } pf.setAttribute('transform',`scale(${a.face},1)`); pf.setAttribute('opacity',(0.25+Math.abs(Math.sin(Date.now()/95))*.4).toFixed(2)); } else if(pf) pf.remove();
+    const focusedArt = focus&&focus.type==='artifact'? artById(w,focus.id) : null; const sel = (focus&&focus.type==='agent'&&focus.id===a.id) || (focusedArt && focusedArt.creatorId===a.id); g.classList.toggle('sel',!!sel); g.querySelector('.ring').style.display = sel? '' : 'none';
+    g.classList.toggle('dimmed', !!(focus && (focus.type==='agent'||focus.type==='artifact') && !sel && !(focus.type==='agent' && a.relationships[focus.id])));
+    g.querySelector('.nm').textContent = a.name; const st=g.querySelector('.st'); st.textContent = a.working? a.working.label+'\u2026' : (a.fault? "couldn't continue" : (a.currentAction==='idle'?'':a.currentAction)); st.setAttribute('fill', a.fault? 'var(--red)' : 'var(--k)');
+    const dot=g.querySelector('.dotk'); dot.style.display=(a.working||a.fault)?'':'none'; dot.setAttribute('class','dotk '+(a.fault?'fault':'work'));
+    let btn = g.querySelector('.stopbtn'); if(a.working || (a.fault && a.fault.retry)){ if(!btn){ btn = el('g',{class:'stopbtn'},g); el('rect',{x:-16,y:30,width:32,height:13},btn); el('text',{x:0,y:39.5,style:'font-size:8px'},btn); } btn.querySelector('text').textContent = a.working? 'STOP':'RETRY'; btn.onclick=(ev)=>{ ev.stopPropagation(); if(a.working&&a.working.ac) a.working.ac.abort(); else if(a.fault&&a.fault.retry) a.fault.retry(); }; } else if(btn) btn.remove();
+    // speech: latest utterance within 8 ticks
+    const old=g.querySelector('.bub'); if(old) old.remove();
+    const B0 = w.beat; const speaking = B0 && B0.agentId===a.id && B0.kind==='say' && w.tick<=B0.until;
+    if(speaking) bubble(g, B0.line, 0, -80, 170);
+    // the work just made, shown beside them
+    const oldw=g.querySelector('.justmade'); if(oldw) oldw.remove();
+    const mine = w.artifacts.filter(x=>x.creatorId===a.id); const lastx = mine[mine.length-1];
+    if(lastx && w.tick-lastx.tick<5 && !a.working){ const jg=el('g',{class:'justmade frame',transform:'translate(30,-52)'},g); el('rect',{class:'f',x:0,y:0,width:36,height:36},jg); const im=el('image',{x:2,y:2,width:32,height:32,preserveAspectRatio:'none'},jg); im.setAttribute('href',lastx.renderedPreview); if(!lastx.published) jg.querySelector('rect').setAttribute('stroke-dasharray','2 2'); jg.onclick=(ev)=>{ ev.stopPropagation(); setFocus({type:'artifact',id:lastx.id}); }; }
+  }
+  for(const [id,g] of nodeMap){ if(!seen.has(id)) g.style.display='none'; }
+  // the beat: a caption and a gentle push toward whoever it is about
+  const fl=$('#frameline'); const B=w.beat;
+  if(B && w.tick<=B.until && Date.now()-B.at<9000){ const ba=agentById(w,B.agentId); if(ba && ba.site===((Math.round(cam)%6)+6)%6){ if(B.kind!=='say'){ if(fl.dataset.k!==B.at+''){ fl.dataset.k=B.at+''; fl.innerHTML=''; const sp=h('span',null, (ba.name+': ').concat(String(B.line).slice(0,80))); fl.appendChild(sp); fl.classList.add('on'); } } else fl.classList.remove('on');
+      const k = Math.max(0, 1-(Date.now()-B.at)/4200); const z = 1 + k*.10; const px = (ba.vx!=null? ba.vx : SW/2);
+      gScene.setAttribute('transform',`translate(${((SW/2-px)*(z-1)).toFixed(1)},${(-(FLOOR-140)*(z-1)).toFixed(1)}) scale(${z.toFixed(3)})`);
+      // others glance toward the speaker
+      for(const o of w.agents){ if(o===ba || o.site!==ba.site) continue; const gg=nodeMap.get(o.id); if(!gg||gg.style.display==='none'||o.working) continue; const want = (ba.vx>o.vx)? 1 : -1; if(o.face!==want){ o.face=want; const fg=gg.querySelector('.fig'); if(fg) fg.setAttribute('transform',`scale(${(2.3*want).toFixed(2)},2.3)`); } }
+    } else { fl.classList.remove('on'); gScene.setAttribute('transform',''); } }
+  else { fl.classList.remove('on'); gScene.setAttribute('transform',''); }
+  // who is just off frame
+  const gEdge = svg.querySelector('.edges') || el('g',{class:'edges'},svg); gEdge.innerHTML='';
+  const ciNow = ((Math.round(cam)%6)+6)%6;
+  const offList = w.agents.filter(a=>a.site>=0 && a.site!==ciNow && (a.working || (w.tick-a.lastSalient)<5)).slice(0,4);
+  offList.forEach((a,k)=>{ let d=((a.site-ciNow)%6+6)%6; if(d>3) d-=6; const right=d>0; const x= right? SW-8 : 8; const y= 150 + k*16;
+    const gm=el('g',{class:'edgemark'},gEdge); el('circle',{cx:x,cy:y,r:2.5},gm); const t=el('text',{x: right? x-6 : x+6, y:y+3, 'text-anchor': right?'end':'start'},gm); t.textContent = a.name + (a.working? ' '+a.working.label : ''); gm.style.cursor='pointer'; gm.onclick=(ev)=>{ ev.stopPropagation(); goSite(a.site); }; });
+  // chrome: ring, site name, edges
+  const ci = ((Math.round(cam)%6)+6)%6; drawNav();
+  $('#sitename').textContent = SITE_LABEL[SITES[ci]].toUpperCase();
+  const L=(ci+5)%6, R=(ci+1)%6; for(const [id,i,arrow] of [['#edgeL',L,'\u2039 '],['#edgeR',R,' \u203a']]){ const e=$(id); const act=siteActivity(w,SITES[i]); e.innerHTML=''; const b=h('b',null, id==='#edgeL'? arrow+SITE_LABEL[SITES[i]] : SITE_LABEL[SITES[i]]+arrow); const s=h('span',null, act.line); const d=h('div'); d.appendChild(b); d.appendChild(s); e.appendChild(d); e.classList.toggle('hot', act.hot || act.making>0); e.onclick=()=>goSite(i); }
+  const ab = $('#abtab'); ab.classList.toggle('hide', worlds.length<2); ab.querySelectorAll('span').forEach(s=> s.classList.toggle('on', +s.dataset.w===activeW));
+}
+svg.addEventListener('click', ()=>{ if(focus||ctxTarget){ setFocus(null); } });
+$('#abtab').addEventListener('click', e=>{ const s=e.target.closest('span'); if(!s) return; switchWorld(+s.dataset.w); });
+function switchWorld(i){ if(i===activeW || !worlds[i]) return; activeW=i; focus=null; ctxTarget=null; for(const [id,g] of nodeMap) g.remove(); nodeMap.clear(); markDirty('all'); }
+{ let sx=null, sy=null, sc=0, moved=false; const ww=$('#worldwrap');
+  ww.addEventListener('touchstart',e=>{ sx=e.touches[0].clientX; sy=e.touches[0].clientY; sc=cam; moved=false; },{passive:true});
+  ww.addEventListener('touchmove',e=>{ if(sx==null) return; const dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy; if(Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)){ moved=true; const scale = ww.clientWidth/SW; cam = sc - dx/(SW*scale); camTarget=cam; markDirty('worldsoft'); } },{passive:true});
+  ww.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy; if(moved){ camTarget = Math.round(cam + (Math.abs(dx)>40? -Math.sign(dx)*.5*0 : 0)); if(Math.abs(cam-camTarget)<.02) camTarget=Math.round(cam); } else if(worlds.length>1 && Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5){ switchWorld(dx<0? 1 : 0); } sx=null; },{passive:true});
+  let mx=null, mc=0; ww.addEventListener('mousedown',e=>{ if(e.target.closest('.edge,#ring,#abtab')) return; mx=e.clientX; mc=cam; }); window.addEventListener('mousemove',e=>{ if(mx==null) return; const scale=ww.clientWidth/SW; cam = mc - (e.clientX-mx)/(SW*scale); camTarget=cam; markDirty('worldsoft'); }); window.addEventListener('mouseup',()=>{ if(mx==null) return; camTarget=Math.round(cam); mx=null; }); }
+
+/* ---------- FIGURES: ink cartoon, per-person variation ---------- */
+function hashId(id){ let h=7; for(const ch of id) h = (h*31 + ch.charCodeAt(0))>>>0; return h; }
+function drawFigure(g, a){
+  const hsh = hashId(a.id+a.name); const hair = hsh%4, build = (hsh>>2)%3, tall = ((hsh>>4)%3)-1;
+  const f = el('g',{class:'fig',transform:'scale(1.22)'},g); const bw = 5 + build*1.2, ht = -14 - tall*1.5;
+  el('path',{d:`M-3,-2 Q-3.5,1 -3.5,4 M3,-2 Q3.5,1 3.5,4`},f); el('path',{d:`M-6,4 Q-4,3.5 -2,4 M2,4 Q4,3.5 6,4`},f);
+  el('path',{class:'w',d:`M${-bw+.5},${ht} Q${-bw-2},${ht/2} ${-bw-1},-2 Q0,-1 ${bw+1},-2 Q${bw+2},${ht/2} ${bw-.5},${ht} Q0,${ht-2} ${-bw+.5},${ht} Z`},f);
+  if(build===1) el('path',{d:`M-3,${ht-1} L0,${ht+3} L3,${ht-1}`},f); if(build===2) el('path',{d:`M${-bw+1},${ht+3} L${bw-1},${ht+3}`},f);
+  el('path',{class:'armL',d:`M${-bw+1},${ht+3} Q${-bw-4},${ht+8} ${-bw-3},-5`},f);
+  el('path',{class:'armR',d:`M${bw-1},${ht+3} Q${bw+4},${ht+8} ${bw+3},-5`},f);
+  const hy = ht-6; el('path',{class:'w',d:`M-5.2,${hy} Q-5.6,${hy-6} 0,${hy-6.2} Q5.6,${hy-6} 5.2,${hy} Q4.8,${hy+4.6} 0,${hy+4.8} Q-4.8,${hy+4.6} -5.2,${hy} Z`},f);
+  if(hair===0) el('path',{class:'w',d:`M-5.4,${hy-.5} Q-5.6,${hy-7.5} 0,${hy-7.2} Q5.6,${hy-7.5} 5.4,${hy-.5} Q4,${hy-4} 0,${hy-4.4} Q-4,${hy-4} -5.4,${hy-.5} Z`},f);
+  if(hair===1) el('path',{class:'w',d:`M-5,${hy-1.5} L-3.5,${hy-8} L-1.5,${hy-4.5} L.5,${hy-9} L2.5,${hy-4.5} L4.5,${hy-7.5} L5,${hy-1.5} Q0,${hy-5} -5,${hy-1.5} Z`},f);
+  if(hair===2){ el('path',{class:'w',d:`M-5.4,${hy-.5} Q-4,${hy-6.5} 5.4,${hy-.5} Q0,${hy-4} -5.4,${hy-.5} Z`},f); el('circle',{class:'w',cx:3.5,cy:hy-7,r:2.4},f); }
+  if(hair===3){ for(let i=-1;i<=1;i++) el('circle',{class:'w',cx:i*3.4,cy:hy-5.6,r:2.1},f); }
+  el('circle',{class:'k eye',cx:-1.9,cy:hy+.2,r:.65},f); el('circle',{class:'k eye',cx:1.9,cy:hy+.2,r:.65},f);
+  el('path',{class:'mouth','data-hy':hy,d:`M-1.4,${hy+2.6} Q0,${hy+3.4} 1.4,${hy+2.6}`},f);
+  const px = bw+3, py = ht;
+  const board = el('g',{class:'prop board'},f); el('path',{d:`M${bw-1},${ht+3} Q${bw+3},${ht+4} ${px+1},${py+2}`},board); el('rect',{class:'w',x:px,y:py-4,width:8,height:10},board); el('path',{d:`M${px+1.5},${py+1} q2,-3 4,0 t1,2`},board); el('path',{d:`M${px+2},${py+6} L${px+1},${py+9} M${px+6},${py+6} L${px+7},${py+9}`},board);
+  const page = el('g',{class:'prop page'},f); el('path',{d:`M${bw-1},${ht+3} Q${bw+3},${ht+5} ${px+1},${py+3}`},page); el('rect',{class:'w',x:px,y:py-2,width:6.5,height:8.5},page); el('path',{d:`M${px+1.2},${py} h4 M${px+1.2},${py+2} h4 M${px+1.2},${py+4} h2.5`},page);
+  const screen = el('g',{class:'prop screen'},f); el('path',{d:`M${bw-1},${ht+3} Q${bw+3},${ht+6} ${px+1},${py+4}`},screen); el('rect',{class:'w',x:px,y:py-3,width:9.5,height:7},screen); el('path',{d:`M${px+4.7},${py+4} v2 M${px+2.5},${py+6} h4.5 M${px+1.5},${py-1} h3 M${px+1.5},${py+1} h5`},screen);
+  const point = el('g',{class:'prop point'},f); el('path',{d:`M${bw-1},${ht+3} L${bw+5},${ht-3} L${bw+10},${ht-9}`},point);
+  const talk = el('g',{class:'prop talk'},f); el('path',{class:'w',d:`M6,${hy-9} q0,-4.5 4.5,-4.5 h5 q4.5,0 4.5,4.5 q0,4 -4.5,4 h-3 l-3,2.6 l.6,-2.6 h-.5 q-3.6,0 -3.6,-4 z`},talk); for(let i=0;i<3;i++) el('circle',{class:'k',cx:10.8+i*2.5,cy:hy-9,r:.65},talk);
+  return f;
+}
+const AVCACHE = new Map();
+function avatarNode(a){ let s = AVCACHE.get(a.id+a.name); if(!s){ const svg0 = document.createElementNS(svgNS,'svg'); svg0.setAttribute('viewBox','-10 -34 20 22'); const g0=el('g',{},svg0); drawFigure(g0,a); const f0=g0.querySelector('.fig'); f0.setAttribute('transform',''); s = svg0; AVCACHE.set(a.id+a.name, s); } const n = s.cloneNode(true); const f=n.querySelector('.fig'); const m=f.querySelector('.mouth'); const hy=parseFloat(m.getAttribute('data-hy')); const mood=a.memories.slice(-3).reduce((q,r)=>q+(r.weight||0),0); m.setAttribute('d', mood<-.4? `M-1.4,${hy+3.2} Q0,${hy+2.4} 1.4,${hy+3.2}` : mood>.3? `M-1.6,${hy+2.4} Q0,${hy+3.8} 1.6,${hy+2.4}` : `M-1.4,${hy+2.6} Q0,${hy+3.4} 1.4,${hy+2.6}`); return n; }
+const EMOTES = { idea:(p)=>{ el('path',{d:'M0,-6 v-7 M-4,-3 a4,5 0 1,1 8,0 q-1,3 -4,3 q-3,0 -4,-3 z'},p); el('path',{d:'M-2,2 h4 M-2,4 h4'},p); el('path',{d:'M-9,-11 l-3,-3 M9,-11 l3,-3 M0,-16 v-4'},p); },
+  spark:(p)=>{ el('path',{d:'M0,-14 v6 M-6,-10 l4,3 M6,-10 l-4,3 M-7,-2 l4,-2 M7,-2 l-4,-2'},p); el('circle',{cx:0,cy:-4,r:2,class:'f'},p); },
+  bang:(p)=>{ el('path',{d:'M0,-16 v9'},p); el('circle',{cx:0,cy:-3,r:1.6,class:'f'},p); el('path',{d:'M-7,-18 l-3,-4 M7,-18 l3,-4'},p); },
+  note:(p)=>{ el('path',{d:'M-2,-4 v-10 l8,-2 v10'},p); el('circle',{cx:-4,cy:-3,r:2.4,class:'f'},p); el('circle',{cx:6,cy:-5,r:2.4,class:'f'},p); },
+  shine:(p)=>{ for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; el('path',{d:`M${(Math.cos(a)*5).toFixed(1)},${(-8+Math.sin(a)*5).toFixed(1)} L${(Math.cos(a)*9).toFixed(1)},${(-8+Math.sin(a)*9).toFixed(1)}`},p); } } };
+function poseFigure(g, a, w){
+  const f = g.querySelector('.fig'); if(!f) return; const lbl = a.working? a.working.label : a.currentAction;
+  const p = /draw|remix/.test(lbl)? 'p-board' : /writ|rewrit/.test(lbl)? 'p-page' : /prompt/.test(lbl)? 'p-screen' : /teach/.test(lbl)? 'p-point' : /talk|answer|think|remember/.test(lbl)? 'p-talk' : '';
+  f.setAttribute('class','fig '+p);
+  const m = f.querySelector('.mouth'); const recent = a.memories.slice(-3); const mood = recent.reduce((s,r)=>s+(r.weight||0),0);
+  const hy = parseFloat(m.getAttribute('data-hy'));
+  const talking = !!(w && w.beat && w.beat.agentId===a.id && w.beat.kind==='say');
+  m.setAttribute('d', talking? `M-1.8,${hy+2.4} q1.8,${(1.6+Math.sin(Date.now()/110)*1.2).toFixed(2)} 3.6,0 q-1.8,1.4 -3.6,0 z`
+    : a.fault? `M-1.4,${hy+3.2} Q0,${hy+2.2} 1.4,${hy+3.2}` : mood < -.4 ? `M-1.4,${hy+3.2} Q0,${hy+2.4} 1.4,${hy+3.2}` : mood > .3 ? `M-1.6,${hy+2.4} Q0,${hy+3.8} 1.6,${hy+2.4}` : `M-1.4,${hy+2.6} Q0,${hy+3.4} 1.4,${hy+2.6}`);
+  // blink
+  const blink = ((hashId(a.id) + Math.floor(Date.now()/140)) % 26) === 0;
+  f.querySelectorAll('.eye').forEach((e,i)=>{ if(blink){ e.setAttribute('r','.2'); } else e.setAttribute('r','.65'); });
+  // emote balloon
+  let em = g.querySelector('.emote'); const live = a.emo && Date.now()<a.emo.until;
+  if(live){ if(!em || em.dataset.k!==a.emo.k){ if(em) em.remove(); em=el('g',{class:'emote'},g); em.dataset.k=a.emo.k; em.setAttribute('transform','translate(16,-58)'); (EMOTES[a.emo.k]||EMOTES.spark)(em); } const ph=Math.max(0,Math.min(1,(a.emo.until-Date.now())/2600)); em.setAttribute('opacity', ph>.85? ((1-ph)/.15).toFixed(2) : Math.min(1, ph*3).toFixed(2)); const pop = ph>.85? .6+ (1-ph)/.15*.4 : 1; em.setAttribute('transform',`translate(16,${(-58 - (1-ph)*4).toFixed(1)}) scale(${pop.toFixed(2)})`); }
+  else if(em) em.remove();
+}
+
+/* ---------- SEAM ---------- */
+{ const seam=$('#seam'); let drag=null; seam.addEventListener('pointerdown',e=>{ drag={y:e.clientY, r:seamRatio}; seam.setPointerCapture(e.pointerId); });
+  seam.addEventListener('pointermove',e=>{ if(!drag) return; const H=window.innerHeight; seamRatio = Math.max(.1, Math.min(.78, drag.r + (e.clientY-drag.y)/H)); document.documentElement.style.setProperty('--world', (seamRatio*100)+'vh'); const gm = seamRatio < .2; if(gm!==galleryMode){ galleryMode=gm; markDirty('feed'); } });
+  let lastTap=0; seam.addEventListener('pointerup',(e)=>{ const now=Date.now(); if(drag && Math.abs(e.clientY-drag.y)<4 && now-lastTap<380){ const presets=[.5,.15,.72]; let i = presets.findIndex(p=>Math.abs(p-seamRatio)<.05); seamRatio = presets[(i+1)%presets.length]; document.documentElement.style.setProperty('--world',(seamRatio*100)+'vh'); galleryMode = seamRatio<.2; markDirty('feed'); } lastTap=now; drag=null; }); seam.addEventListener('pointercancel',()=>{ drag=null; }); }
+
+/* ---------- FOCUS ---------- */
+function setFocus(f){ focus = f; ctxTarget = (f && f.type==='agent')? f.id : null; const w0=world(); if(w0 && f){ let ag=null; if(f.type==='agent') ag=agentById(w0,f.id); else if(f.type==='artifact'){ const x=artById(w0,f.id); ag = x? agentById(w0,x.creatorId) : null; } else if(f.type==='model') goSite(4); if(ag) goSite(siteIndex(siteOf(ag))); } lastFocusKey=null; markDirty('world'); markDirty('feed'); markDirty('focus'); if(f){ $('#feed').scrollTop = 0; } }
+function thumbCanvas(x, size){ const c=document.createElement('canvas'); if(x.modality==='text') renderText(c,x.text,size||96); else renderProgram(c,x.program,size||96); return c; }
+function provWord(x){ return x.provenanceType; }
+
+/* ---------- STREAM ---------- */
+const feedNodes = new Map(); const openClusters = new Set(); let feedWorldId=null, lastFocusKey=null, focusNode=null;
+function renderFeed(){
+  const w = world(); if(!w) return; const feed=$('#feed');
+  if(feedWorldId!==w.id){ feedNodes.clear(); feed.innerHTML=''; feedWorldId=w.id; focusNode=null; lastFocusKey=null; }
+  const prevH = feed.scrollHeight, prevTop = feed.scrollTop;
+  const order = [];
+  const fk = focus? focus.type+':'+focus.id : null;
+  if(fk){ if(fk!==lastFocusKey || dirty.all || dirty.focus){ focusNode = renderFocus(w); lastFocusKey=fk; } order.push(focusNode); } else { focusNode=null; lastFocusKey=null; }
+  if(galleryMode){ let gn=feedNodes.get('__gal'); if(!gn || dirty.all || dirty.gallery || !gn._n || gn._n!==w.artifacts.length+w.prompts.length*1000){ gn=renderGallery(w); gn._n=w.artifacts.length+w.prompts.length*1000; feedNodes.set('__gal',gn); } if(false){ gn=renderGallery(w); gn._n=w.artifacts.length; feedNodes.set('__gal',gn); } order.push(gn); }
+  if(w.compareAt === w.tick && worlds.length>1) order.push(renderCompare());
+  const scope = currentSite(); let hidden=0;
+  const inScope = (it)=>{ if(!it.agentId) return true; if(focus || feedAll) return true; const ag=agentById(w,it.agentId); if(!ag) return true; return siteOf(ag)===scope || it.strong || it.kind==='news'; };
+  const items = w.feed.slice(-110).reverse().filter(it=>{ if(inScope(it)) return true; hidden++; return false; }).slice(0,80);
+  if(hidden && !focus){ let en=feedNodes.get('__else'); const sig=hidden+':'+scope; if(!en || en._sig!==sig){ en=h('div','',''); en.id='elsewhere'; en.appendChild(h('span',null, hidden+' things happening elsewhere')); en.appendChild(h('span',null,'‹ ›')); en._sig=sig; feedNodes.set('__else',en); } order.push(en); }
+  let run = [];
+  const flushRun = ()=>{ if(!run.length) return; if(run.length===1){ order.push(nodeFor(run[0])); run=[]; return; } const key='__c'+run[0].id; const open = openClusters.has(key); let cn = feedNodes.get(key); const sig = run.length+':'+open; if(!cn || cn._sig!==sig){ cn = h('div','cluster'+(open?' open':'')); const kinds={}; for(const r of run){ const k = r.kind==='art'? 'works' : /taught/.test(r.text)? 'lessons' : /picked up|learned/.test(r.text)? 'borrowings' : 'moves'; kinds[k]=(kinds[k]||0)+1; } cn.appendChild(h('span',null, (open? '\u2212 ' : '+ ') + Object.entries(kinds).map(([k,v])=>v+' '+k).join(' \u00b7 '))); cn.appendChild(h('span',null, dayclock(run[run.length-1].tick).toLowerCase().replace('day ','d'))); cn.onclick=()=>{ if(openClusters.has(key)) openClusters.delete(key); else openClusters.add(key); markDirty('feed'); }; cn._sig=sig; feedNodes.set(key,cn); } order.push(cn); if(open) for(const r of run) order.push(nodeFor(r)); run=[]; };
+  const nodeFor = (it)=>{ let n = feedNodes.get(it.id); const fa = focus && focus.type==='agent'? focus.id : null; if(n){ n.classList.toggle('mine', !!(fa && (it.agentId===fa || (it.kind==='art' && it.agentId===fa)))); } const x = it.kind==='art'? artById(w,it.artId) : null; const volatile = it.kind==='work' || it.kind==='card' || (it.kind==='fact' && (it.undo||it.fork||it.trainHint)) || (x && n && n._lk !== x.likes.length*100+x.comments.length);
+    if(!n || volatile){ const nn = renderItem(w, it); if(!nn){ if(n) n.remove(); feedNodes.delete(it.id); return null; } if(n) n.replaceWith(nn); n = nn; feedNodes.set(it.id, n); } const fa2 = focus && focus.type==='agent'? focus.id : null; n.classList.toggle('mine', !!(fa2 && it.agentId===fa2)); return n; };
+  for(const it of items){ const quiet = it.dim && (it.kind==='fact' || it.kind==='art') && !(it.undo||it.fork||it.trainHint); if(quiet){ run.push(it); continue; } flushRun(); const n=nodeFor(it); if(n) order.push(n); }
+  flushRun();
+  for(let i=order.length-1;i>=0;i--) if(!order[i]) order.splice(i,1);
+  if(!items.length && !focus){ order.push(h('div','item dim','People are getting to work.')); }
+  // place in order, moving existing nodes (canvases preserved)
+  let cursor = feed.firstChild;
+  for(const n of order){ if(n!==cursor){ feed.insertBefore(n, cursor); } else cursor = cursor.nextSibling; }
+  while(cursor){ const nx=cursor.nextSibling; cursor.remove(); cursor=nx; }
+  const keep = new Set(items.map(i=>i.id)); for(const [id,n] of feedNodes){ if(id!=='__gal' && id!=='__else' && !id.startsWith('__c') && !keep.has(id)){ feedNodes.delete(id); } }
+  if(focus && fk!==lastFocusKey) feed.scrollTop=0;
+  else if(prevTop > 40){ feed.scrollTop = prevTop + (feed.scrollHeight - prevH); }
+}
+function linkify(w, text){ const frag=document.createDocumentFragment(); const names = w.agents.map(a=>a.name).sort((p,q)=>q.length-p.length); const re = new RegExp('\\b('+names.map(n=>n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+'|x\\d+|p\\d+)\\b','g'); let last=0, m; const s=String(text==null?'':text);
+  while((m=re.exec(s))){ if(m.index>last) frag.appendChild(document.createTextNode(s.slice(last,m.index))); const tok=m[0]; const sp=h('span','lnk',tok); const ag=agentByName(w,tok); if(ag) sp.onclick=(ev)=>{ ev.stopPropagation(); setFocus({type:'agent',id:ag.id}); }; else if(/^x\d+$/.test(tok)) sp.onclick=(ev)=>{ ev.stopPropagation(); setFocus({type:'artifact',id:tok}); }; else if(/^p\d+$/.test(tok)) sp.onclick=(ev)=>{ ev.stopPropagation(); setFocus({type:'prompt',id:tok}); }; frag.appendChild(sp); last=m.index+tok.length; }
+  if(last<s.length) frag.appendChild(document.createTextNode(s.slice(last))); return frag; }
+function likeMark(n){ return (n? '\u25cf ' : '\u25cb ') + n; }
+function whoLine(w, it){ const d=h('div','who'); const ag = it.agentId? agentById(w,it.agentId) : null; if(ag){ const av=h('span','av'); av.appendChild(avatarNode(ag)); d.appendChild(av); } d.appendChild(document.createTextNode(it.who || '')); if(it.to){ const s=h('span',null,' \u2192 '+it.to); d.appendChild(s); } const t=h('small',null, dayclock(it.tick).replace('DAY ','d')); d.appendChild(t); if(it.agentId){ d.onclick=()=>setFocus({type:'agent',id:it.agentId}); } return d; }
+function renderItem(w, it){
+  const d = h('div','item'+(it.dim?' dim':'')+(it.kind==='work'?' work':'')+(it.kind==='card'?' card':''));
+  if(it.kind==='say'){ d.appendChild(whoLine(w,it)); const s=h('div','say'); s.appendChild(linkify(w,it.text)); d.appendChild(s); if(it.reflect){ const r=h('div','fact'); const y=h('span','why', 'remembering'+(it.sources&&it.sources.length? ' \u00b7 '+it.sources.join(' '):'')); r.appendChild(y); y.style.cursor='pointer'; y.onclick=()=>{ if(it.sources&&it.sources.length) setFocus({type:'event',id:it.sources[0]}); }; d.appendChild(r); } return d; }
+  if(it.kind==='fact'){ const f=h('div','fact'+(it.strong?' strong':'')); f.appendChild(linkify(w,it.text)); if(it.strong) f.style.fontWeight='600'; f.style.cursor='pointer'; f.onclick=()=>{ if(it.model) setFocus({type:'model',id:'model'}); else if(it.artId) setFocus({type:'artifact',id:it.artId}); else if(it.promptId) setFocus({type:'prompt',id:it.promptId}); else if(it.agentId) setFocus({type:'agent',id:it.agentId}); else if(it.eventId) setFocus({type:'event',id:it.eventId}); }; d.appendChild(f);
+    const acts=h('div','acts'); if(it.undo && w.tick<=w.institutions.undoUntil){ const b=h('button',null,'UNDO'); b.onclick=()=>undoPolicy(w,it.undo); acts.appendChild(b); }
+    if(it.fork && worlds.length<2){ const b=h('button',null,'FORK'); b.onclick=()=>forkFrom(it.fork); acts.appendChild(b); }
+    if(it.trainHint && canTrain(w)){ const b=h('button',null,'LET IT READ'); b.onclick=()=>startTrain(w); acts.appendChild(b); }
+    if(acts.children.length) d.appendChild(acts); return d; }
+  if(it.kind==='art'){ const x=artById(w,it.artId); d.appendChild(whoLine(w,it)); const th=h('div','thumb'); if(x){ th.appendChild(thumbCanvas(x,96)); th.onclick=()=>setFocus({type:'artifact',id:x.id}); } d.appendChild(th); d.appendChild(h('div','fact',it.text)); if(x){ const m=h('div','meta'); m.appendChild(h('span',null, likeMark(x.likes.length))); if(x.comments.length){ const last=x.comments[x.comments.length-1]; const b=agentById(w,last.agentId); m.appendChild(h('span',null, `${x.comments.length} comment${x.comments.length>1?'s':''} \u00b7 ${b?b.name:'?'}: ${last.text.slice(0,60)}${last.text.length>60?'\u2026':''}`)); } m.onclick=()=>setFocus({type:'artifact',id:x.id}); d.appendChild(m); d._lk = x.likes.length*100+x.comments.length; } return d; }
+  if(it.kind==='work'){ const who=whoLine(w,{who:it.who, agentId:it.agentId, tick:it.tick}); d.appendChild(who);
+    const ag = it.agentId? agentById(w,it.agentId): null; const live = it.live && (it.modelTrain ? !!w.model.training : !!(ag&&ag.working));
+    if(live){ const b=h('button',null,'STOP'); b.style.minHeight='36px'; b.style.padding='6px 10px'; b.onclick=()=>{ if(it.modelTrain) stopTrain(w); else if(ag&&ag.working&&ag.working.ac) ag.working.ac.abort(); }; d.appendChild(b); } else d.appendChild(h('span'));
+    const f=h('div','fact',it.text); d.appendChild(f);
+    if(it.stages){ const s=h('div','fact'); s.style.gridColumn='1/-1'; s.innerHTML=''; const st=[['idea',it.stages.idea],['prompt','\u201c'+it.stages.prompt+'\u201d']]; for(const [k,v] of st){ const r=h('div'); const a=h('span',null,k+'  '); a.style.opacity='.6'; r.appendChild(a); r.appendChild(linkify(w,v)); if(k==='prompt' && it.promptId){ r.style.cursor='pointer'; r.onclick=()=>setFocus({type:'prompt',id:it.promptId}); } s.appendChild(r); } d.appendChild(s); }
+    if(it.variants && it.variants.length){ const vg=h('div','variants'); it.variants.forEach((p,i)=>{ const v=h('div','v'+(it.chosen===i?' chosen':'')+(it.chosen>=0&&it.chosen!==i?' gone':'')); const c=document.createElement('canvas'); renderProgram(c,p,96); v.appendChild(c); if(it.chosen===i&&it.artId) v.onclick=()=>setFocus({type:'artifact',id:it.artId}); vg.appendChild(v); }); d.appendChild(vg); }
+    if(it.modelTrain){ const bar=h('div','bar'); bar.style.gridColumn='1/-1'; const p=h('div','prog'); p.style.width=(it.progress*100)+'%'; bar.appendChild(p); d.appendChild(bar); }
+    return d; }
+  if(it.kind==='news'){ d.classList.add('news'); const m=h('div','mast'); m.appendChild(h('span',null,it.who)); m.appendChild(h('span',null, (it.tone||'')+' \u00b7 '+dayclock(it.tick).toLowerCase().replace('day ','d'))); d.appendChild(m); const hl=h('div','hl'); hl.appendChild(linkify(w,it.headline)); d.appendChild(hl); const b=h('div','body'); b.appendChild(linkify(w,it.text)); d.appendChild(b); return d; }
+  if(it.kind==='card'){ if(!it.live) return null; d.appendChild(h('div','who',it.title)); d.appendChild(h('div','fact',it.line)); const o=h('div','opts'); for(const k in POLICIES){ const b=h('button'); b.appendChild(h('span',null,POLICIES[k].name)); b.appendChild(h('small',null,POLICIES[k].line)); b.onclick=()=>proposePolicy(w,k,'player'); o.appendChild(b); } d.appendChild(o); return d; }
+  return null;
+}
+function renderGallery(w){
+  const d=h('div','item gallery'); const head=h('div','galhead'); for(const [k,l] of [['new','NEW'],['rank','RANKED'],['prompts','PROMPTS']]){ const b=h('button',k===galTab?'on':'',l); b.onclick=()=>{ galTab=k; markDirty('gallery'); markDirty('feed'); }; head.appendChild(b); } d.appendChild(head);
+  const recent = w.artifacts.filter(x=>x.published && w.tick-x.tick<72); const modal = FEATURES.map((f,i)=>{ const c=[0,0,0,0]; for(const x of recent) c[x.culturalVector[i]]++; let b=0; for(let j=1;j<4;j++) if(c[j]>c[b]) b=j; return f[1][b]; });
+  const camps = w.agents.filter(a=>!a.left).map(a=>aiView(a).lean); const forN=camps.filter(c=>c==='leaning for').length, agN=camps.filter(c=>c==='leaning against').length;
+  const cn=h('div','fact'); cn.style.marginBottom='6px'; cn.textContent = (recent.length? `common now: ${modal.join(' \u00b7 ')}` : 'nothing common yet') + ` \u00b7 camps: ${forN} for, ${agN} against, ${camps.length-forN-agN} split`; d.appendChild(cn);
+  if(w.model.distribution){ const md = FEATURES.map((f,i)=>{ const dd=w.model.distribution[i]; let b=0; for(let j=1;j<4;j++) if(dd[j]>dd[b]) b=j; return f[1][b]; }); const mn=h('div','fact'); mn.style.marginBottom='8px'; mn.style.opacity='.7'; mn.textContent = `the model leans: ${md.join(' \u00b7 ')}`; d.appendChild(mn); }
+  const tagOf = (x)=> isViral(w,x)? 'viral' : isRejected(w,x)? 'rejected' : w.model.trainedIds.includes(x.id)? 'read' : x.withdrawn? 'withdrawn' : x.commissioned? 'ad' : x.provenanceType!=='human'? x.provenanceType : '';
+  if(galTab==='new'){ const g=h('div','gal'); const arts = w.artifacts.filter(x=>x.published).slice(-120).reverse();
+    for(const x of arts){ const c=h('div','g'+(w.model.trainedIds.includes(x.id)?' trained':'')+(x.withdrawn?' withdrawn':'')); c.appendChild(thumbCanvas(x,64)); const p=h('i','p'); p.style.background = x.provenanceType==='synthetic'?'var(--teal)': x.provenanceType==='hybrid'?'var(--amber)':'transparent'; c.appendChild(p); const t=tagOf(x); if(t) c.appendChild(h('span','tag',t)); c.onclick=()=>setFocus({type:'artifact',id:x.id}); g.appendChild(c); }
+    d.appendChild(g); }
+  else if(galTab==='rank'){ const arts = w.artifacts.filter(x=>x.published).slice().sort((p,q)=>(q.likes.length*2+q.comments.length)-(p.likes.length*2+p.comments.length)).slice(0,40);
+    arts.forEach((x,i)=>{ const c=agentById(w,x.creatorId); const r=h('div','rank'); r.appendChild(h('span','n',String(i+1))); r.appendChild(thumbCanvas(x,64)); const t=h('div'); t.appendChild(h('div',null,`${c?c.name:'?'} \u00b7 ${x.provenanceType} ${x.modality}${x.modality==='text'? ' \u00b7 \u201c'+x.text.split(' ').slice(0,7).join(' ')+'\u2026\u201d':''}`)); t.appendChild(h('div','tag',`${likeMark(x.likes.length)} \u00b7 ${x.comments.length} comments${tagOf(x)? ' \u00b7 '+tagOf(x):''}${x.promptId? ' \u00b7 prompt '+x.promptId:''}`)); r.appendChild(t); r.onclick=()=>setFocus({type:'artifact',id:x.id}); d.appendChild(r); }); }
+  else { const ps = w.prompts.slice().reverse().slice(0,40); if(!ps.length) d.appendChild(h('div','fact','No prompts written yet.'));
+    for(const p of ps){ const a=agentById(w,p.authorId); const x=p.artifactId? artById(w,p.artifactId):null; const row=h('div','prow'); const by=h('div','by'); by.appendChild(linkify(w,`${a?a.name:'?'} \u00b7 ${dayclock(p.tick).toLowerCase()}${p.copiedFrom? ' \u00b7 copied from '+p.copiedFrom : ''}${x? ' \u00b7 '+likeMark(x.likes.length) : ' \u00b7 nothing came of it'}`)); row.appendChild(by); const tx=h('div'); tx.appendChild(linkify(w,'\u201c'+p.text+'\u201d')); row.appendChild(tx); row.onclick=()=>setFocus({type:'prompt',id:p.id}); d.appendChild(row); } }
+  const sh=poolShares(w); const cap=h('div','fact'); cap.style.marginTop='8px'; cap.textContent = `${sh.n} works \u00b7 human ${Math.round(sh.human*100)}% \u00b7 synthetic ${Math.round(sh.synthetic*100)}% \u00b7 hybrid ${Math.round(sh.hybrid*100)}% \u00b7 ${w.prompts.length} prompts`; d.appendChild(cap); return d;
+}
+function bars(obj, keys){ const b=h('div','bars'); for(const k of keys){ const r=h('div'); r.appendChild(h('span',null,k.replace(/([A-Z])/g,' $1').toLowerCase())); const bb=h('b'); bb.style.transform=`scaleX(${Math.max(.02,Math.min(1,obj[k]))})`; r.appendChild(bb); b.appendChild(r); } return b; }
+function closeBtn(){ const b=h('button','close','\u00d7 close'); b.onclick=()=>setFocus(null); return b; }
+function renderFocus(w){
+  const d=h('div','item focus'); const body=h('div'); d.appendChild(body); d.appendChild(closeBtn());
+  if(focus.type==='agent'){ const a=agentById(w,focus.id); if(!a) return d;
+    const head=h('div','head'); const av=h('div','av'); av.appendChild(avatarNode(a)); head.appendChild(av); const hb=h('div'); hb.appendChild(h('div','who',a.name)); hb.appendChild(h('div','fact', `${a.working? a.working.label+'\u2026' : a.fault? "couldn't continue" : a.currentAction} \u00b7 ${commName(w,a.communityId)}${a.left?' \u00b7 left':''}${a.withholding?' \u00b7 keeping new work private':''}`)); head.appendChild(hb); body.appendChild(head);
+    if(a.fault){ const acts=h('div','acts'); if(a.fault.retry){ const b=h('button',null,'RETRY'); b.onclick=()=>a.fault.retry(); acts.appendChild(b); } body.appendChild(acts); }
+    if(a.working){ const acts=h('div','acts'); const b=h('button',null,'STOP'); b.onclick=()=>{ if(a.working&&a.working.ac) a.working.ac.abort(); }; acts.appendChild(b); body.appendChild(acts); }
+    const mine = w.artifacts.filter(x=>x.creatorId===a.id); const trainedN = mine.filter(x=>w.model.trainedIds.includes(x.id)).length; const synthN = mine.filter(x=>x.provenanceType!=='human').length; const prompts = w.events.filter(e=>e.type==='MODEL_GENERATED' && e.actorId===a.id).length;
+    const view = aiView(a);
+    const gg=h('div','gauge'); gg.appendChild(h('div','lean', `how they see AI: ${view.lean}`)); gg.appendChild(h('div','fact', view.parts.join(' \u00b7 ')));
+    const ends=h('div','ends'); ends.appendChild(h('span')); const es=h('span'); es.appendChild(h('span',null,'against')); es.appendChild(h('span',null,'for')); ends.appendChild(es); gg.appendChild(ends);
+    for(const k of ATT){ const r=h('div','ax'); r.appendChild(h('span',null,attWord(k))); const i=h('i'); const b=h('b'); b.style.left=(a.aiAttitude[k]*100)+'%'; i.appendChild(b); r.appendChild(i); gg.appendChild(r); }
+    body.appendChild(gg);
+    const kv=h('div','kv'); const add=(k,v)=>{ kv.appendChild(h('span',null,k)); kv.appendChild(h('span',null,v)); };
+    add('traits', cultureWords(a.cultureVector)); add('practice', Object.entries(a.practiceQ).sort((p,q)=>q[1]-p[1]).slice(0,3).map(([k,v])=>k+' '+v.toFixed(2)).join(', ')); add('wealth', a.wealth.toFixed(2)+' / needs '+a.incomeNeed.toFixed(2));
+    add('made', `${mine.length} works \u00b7 ${mine.filter(x=>x.published&&!x.withdrawn).length} public \u00b7 ${mine.filter(x=>!x.published).length} private`);
+    add('AI used', synthN? `${synthN} generated or hybrid \u00b7 ${prompts} prompts` : 'never');
+    add('trained on', trainedN? `${trainedN} of their works read by the model` : 'none of their work');
+    body.appendChild(kv);
+    const ties = Object.keys(a.relationships).map(id=>{ const b=agentById(w,id); return b? `${b.name} ${a.relationships[id].trust.toFixed(2)}${a.relationships[id].kind!=='peer'?' '+a.relationships[id].kind:''}`:null; }).filter(Boolean); if(ties.length){ const tk=h('div','kv'); tk.appendChild(h('span',null,'ties')); tk.appendChild(h('span',null,ties.join(' \u00b7 '))); body.appendChild(tk); }
+    if(a.beliefs && a.beliefs.length){ const ws=h('div','worksec'); ws.appendChild(h('span',null,'what they have come to believe')); body.appendChild(ws); for(const b of a.beliefs.slice(-3).reverse()){ const bb=h('div','belief',b.text); const sm=h('small',null,`folded from ${b.folded} memories \u00b7 ${dayclock(b.tick).toLowerCase()}`); bb.appendChild(sm); if(b.sources.length){ bb.style.cursor='pointer'; bb.onclick=()=>setFocus({type:'event',id:b.sources[0]}); } body.appendChild(bb); } }
+    for(const r of a.reflections.slice(-2).reverse()){ const mm=h('div','memo','\u201c'+r.text+'\u201d'); mm.style.fontStyle='italic'; body.appendChild(mm); }
+    if(a.memories.length){ const ws=h('div','worksec'); ws.appendChild(h('span',null,'remembers')); ws.appendChild(h('span',null,a.memories.length+'')); body.appendChild(ws); }
+    for(const m of a.memories.slice(-5).reverse()){ const mm=h('div','memo',m.text); mm.style.cursor='pointer'; mm.onclick=()=>setFocus({type:'event',id:m.eventId}); body.appendChild(mm); }
+    const sections = [['posted', mine.filter(x=>x.published).slice(-24).reverse()], ['private', mine.filter(x=>!x.published).slice(-12).reverse()]];
+    for(const [name, list] of sections){ if(!list.length) continue; const ws=h('div','worksec'); ws.appendChild(h('span',null,name)); ws.appendChild(h('span',null,list.length+'')); body.appendChild(ws); const g=h('div','gal');
+      for(const x of list){ const tr = w.model.trainedIds.includes(x.id); const c=h('div','g'+(tr?' trained':'')+(x.withdrawn?' withdrawn':'')); c.appendChild(thumbCanvas(x,64)); if(!x.published) c.style.borderStyle='dashed'; const p=h('i','p'); p.style.background = x.provenanceType==='synthetic'?'var(--teal)': x.provenanceType==='hybrid'?'var(--amber)':'transparent'; c.appendChild(p); const tag = tr? 'read' : x.withdrawn? 'withdrawn' : x.provenanceType!=='human'? x.provenanceType : ''; if(tag) c.appendChild(h('span','tag',tag)); c.onclick=()=>setFocus({type:'artifact',id:x.id}); g.appendChild(c); }
+      body.appendChild(g); }
+    const acts=h('div','acts'); const b=h('button',null,'MESSAGE'); b.onclick=()=>{ ctxTarget=a.id; markDirty('feed'); $('#say').focus(); }; acts.appendChild(b); const wb=h('button',null,'ASK WHY'); wb.onclick=()=>{ if(!askWhy(w,a)) fact(w,`${a.name} is busy.`,{dim:true}); markDirty('all'); }; acts.appendChild(wb); body.appendChild(acts); }
+  else if(focus.type==='artifact'){ const x=artById(w,focus.id); if(!x) return d; const c=agentById(w,x.creatorId);
+    { const head=h('div','head'); const av=h('div','av'); if(c) av.appendChild(avatarNode(c)); head.appendChild(av); const hb=h('div'); const wn=h('div','who',(c?c.name:'?')); if(c) wn.onclick=()=>setFocus({type:'agent',id:c.id}); hb.appendChild(wn); hb.appendChild(h('div','fact', provWord(x)+' '+(x.modality==='text'?'text':'drawing'))); head.appendChild(hb); body.appendChild(head); }
+    if(x.modality==='text'){ body.appendChild(h('div','text',x.text)); } else { const a=h('div','art'); a.appendChild(thumbCanvas(x,300)); body.appendChild(a); }
+    const lin=h('div','lineage'); const chain=[]; let cur=x; let guard=0; while(cur && guard++<8){ chain.unshift(cur); cur = cur.parentArtifactIds.length? artById(w,cur.parentArtifactIds[0]) : null; }
+    chain.forEach((y,i)=>{ const cc=agentById(w,y.creatorId); const row=h('div',null, `${cc?cc.name:'?'} \u00b7 ${y.provenanceType} ${y.modality}${y===x?' \u00b7 this work':''}`); row.style.cursor='pointer'; if(y!==x) row.onclick=()=>setFocus({type:'artifact',id:y.id}); lin.appendChild(row); if(i<chain.length-1) lin.appendChild(h('div','arrow','\u2193')); });
+    if(x.provenanceType==='synthetic'){ const r=h('div',null,'via the model'); r.style.opacity='.6'; lin.insertBefore(r, lin.lastChild); }
+    body.appendChild(lin);
+    const kv=h('div','kv'); const add=(k,v)=>{ kv.appendChild(h('span',null,k)); kv.appendChild(h('span',null,v)); };
+    add('made', dayclock(x.tick).toLowerCase()); add('traits', cultureWords(x.culturalVector));
+    const infl = x.influenceAgentIds.map(id=>agentById(w,id)).filter(Boolean); if(infl.length){ kv.appendChild(h('span',null,'influenced by')); const sp=h('span'); infl.forEach((b,i)=>{ const s=h('span',null,b.name+(i<infl.length-1?', ':'')); s.style.cursor='pointer'; s.style.textDecoration='underline'; s.onclick=()=>setFocus({type:'agent',id:b.id}); sp.appendChild(s); }); kv.appendChild(sp); }
+    if(x.thought) add('thinking', x.thought); if(x.promptId){ const s=h('span','lnk',x.promptId); s.onclick=()=>setFocus({type:'prompt',id:x.promptId}); kv.appendChild(h('span',null,'prompt')); kv.appendChild(s); } if(x.commissioned) add('commission', x.commissionNote||'for the market');
+    add('trained on', w.model.trainedIds.includes(x.id)? 'yes' : (x.withdrawn? 'withdrawn' : (!x.published? 'private' : (w.institutions.consent && !x.consented? 'not consented' : 'not yet'))));
+    const desc = w.artifacts.filter(y=>y.parentArtifactIds.includes(x.id)); add('descendants', desc.length? desc.map(y=>{ const b=agentById(w,y.creatorId); return (b?b.name:'?'); }).join(', ') : 'none');
+    body.appendChild(kv);
+    if(desc.length){ const g=h('div','gal'); for(const y of desc){ const cc=h('div','g'); cc.appendChild(thumbCanvas(y,64)); cc.onclick=()=>setFocus({type:'artifact',id:y.id}); g.appendChild(cc); } body.appendChild(g); }
+    if(x.sourceArtifactIds && x.sourceArtifactIds.length){ const ws=h('div','worksec'); ws.appendChild(h('span',null,'foraged from')); body.appendChild(ws); const g=h('div','gal'); for(const id of x.sourceArtifactIds){ const y=artById(w,id); if(!y) continue; const cc=h('div','g'); cc.appendChild(thumbCanvas(y,64)); const b=agentById(w,y.creatorId); if(b) cc.appendChild(h('span','tag',b.name)); cc.onclick=()=>setFocus({type:'artifact',id:y.id}); g.appendChild(cc); } body.appendChild(g); }
+    // what was happening when it was made
+    const ctxEv = (x.contextEvents||[]).map(id=>w.feed.find(f=>f.eventId===id)).filter(Boolean).slice(-3);
+    if(ctxEv.length){ const ws=h('div','worksec'); ws.appendChild(h('span',null,'made while')); body.appendChild(ws); for(const f of ctxEv){ const mm=h('div','memo',f.text.replace(/\n/g,' / ')); mm.style.cursor='pointer'; mm.onclick=()=>setFocus({type:'event',id:f.eventId}); body.appendChild(mm); } }
+    // likes + comments
+    const ws2=h('div','worksec'); ws2.appendChild(h('span',null, likeMark(x.likes.length)+' \u00b7 '+x.comments.length+' comments')); const lk = x.likes.map(id=>{ const b=agentById(w,id); return b?b.name:null; }).filter(Boolean); ws2.appendChild(h('span',null, lk.slice(0,6).join(', ')+(lk.length>6?' +'+(lk.length-6):''))); body.appendChild(ws2);
+    for(const k of x.comments.slice(-8)){ const b=agentById(w,k.agentId); const row=h('div','cmt'); const av=h('span','av'); if(b) av.appendChild(avatarNode(b)); row.appendChild(av); const t=h('div'); const nm=h('b',null,b?b.name:'?'); if(b) nm.onclick=()=>setFocus({type:'agent',id:b.id}); t.appendChild(nm); t.appendChild(document.createTextNode(k.text)); row.appendChild(t); body.appendChild(row); }
+    const acts=h('div','acts');
+    const ask=h('button',null,'ASK THE ROOM'); ask.onclick=()=>{ const n=askTheRoom(w,x); if(!n) fact(w,'Nobody free to look right now.',{dim:true}); markDirty('all'); }; acts.appendChild(ask);
+    const rb=h('button',null,x.modality==='text'?'RAW':'PROGRAM'); let pre=null; rb.onclick=()=>{ if(pre){ pre.remove(); pre=null; return; } pre=h('pre',null, x.modality==='text'? x.text : serializeProgram(x.program)); body.appendChild(pre); }; acts.appendChild(rb);
+    if(x.session){ const sb=h('button',null,'SESSION'); let sp=null; sb.onclick=()=>{ if(sp){ sp.remove(); sp=null; return; } const s=x.session; const parts=[`MODEL ${s.model}`, `PROMPT ${s.prompt}`]; if(s.agentPrompt) parts.push(`${c?c.name:'?'}'S IDEA: ${s.idea}\n${c?c.name:'?'}'S PROMPT: \u201c${s.agentPrompt}\u201d`); parts.push('--- SYSTEM ---\n'+PROMPT_DEFAULTS[s.prompt].slice(0,400)+'\u2026', '--- CONTEXT SENT ---\n'+s.context, '--- MODEL REPLIED ---\n'+(s.raw||'')); if(s.variants && s.variants.length>1) parts.push(`--- ${s.variants.length} VARIANTS, CHOSE #${s.chosen+1} ---\n`+s.variants.map((v,i)=>`#${i+1}\n${v}`).join('\n\n')); sp=h('pre','sess', parts.join('\n\n')); body.appendChild(sp); }; acts.appendChild(sb); }
+    body.appendChild(acts); }
+  else if(focus.type==='prompt'){ const p=w.prompts.find(q=>q.id===focus.id); if(!p) return d; const a=agentById(w,p.authorId); const x=p.artifactId? artById(w,p.artifactId):null;
+    const head=h('div','head'); const av=h('div','av'); if(a) av.appendChild(avatarNode(a)); head.appendChild(av); const hb=h('div'); const wn=h('div','who',(a?a.name:'?')+' \u00b7 prompt '+p.id); if(a) wn.onclick=()=>setFocus({type:'agent',id:a.id}); hb.appendChild(wn); hb.appendChild(h('div','fact', dayclock(p.tick).toLowerCase())); head.appendChild(hb); body.appendChild(head);
+    const tx=h('div','text'); tx.appendChild(linkify(w,p.text)); body.appendChild(tx);
+    const kv=h('div','kv'); const add=(k,v)=>{ kv.appendChild(h('span',null,k)); const s=h('span'); s.appendChild(typeof v==='string'? linkify(w,v) : v); kv.appendChild(s); };
+    add('idea', p.idea); const named=p.artistsNamed.map(id=>agentById(w,id)).filter(Boolean); add('artists named', named.length? named.map(b=>b.name).join(', ') : 'none');
+    if(p.copiedFrom){ const src=w.prompts.find(q=>q.id===p.copiedFrom); const sa=src? agentById(w,src.authorId):null; add('copied from', `${p.copiedFrom}${sa? ' by '+sa.name:''}`); }
+    const copies = w.prompts.filter(q=>q.copiedFrom===p.id); if(copies.length) add('copied by', copies.map(q=>{ const b=agentById(w,q.authorId); return b?b.name:'?'; }).join(', '));
+    add('result', x? `${x.id} \u00b7 ${likeMark(x.likes.length)} \u00b7 ${x.comments.length} comments` : 'nothing yet'); body.appendChild(kv);
+    if(p.sourceArtifactIds.length){ const ws=h('div','worksec'); ws.appendChild(h('span',null,'foraged from')); body.appendChild(ws); const g=h('div','gal'); for(const id of p.sourceArtifactIds){ const y=artById(w,id); if(!y) continue; const c=h('div','g'); c.appendChild(thumbCanvas(y,64)); c.onclick=()=>setFocus({type:'artifact',id:y.id}); g.appendChild(c); } body.appendChild(g); }
+    if(x){ const ws=h('div','worksec'); ws.appendChild(h('span',null,'made')); body.appendChild(ws); const g=h('div','gal'); const c=h('div','g'); c.appendChild(thumbCanvas(x,64)); c.onclick=()=>setFocus({type:'artifact',id:x.id}); g.appendChild(c); body.appendChild(g); } }
+  else if(focus.type==='model'){ const M=w.model; body.appendChild(h('div','who','MODEL'));
+    if(!M.exists){ body.appendChild(h('div','fact','Nobody has used a generator yet.')); }
+    else { const el0 = eligibleArtifacts(w); body.appendChild(h('div','fact', M.training? `reading ${M.training.i} / ${M.training.ids.length}` : `read ${M.trainedIds.length} works in ${M.runs} run${M.runs===1?'':'s'} \u00b7 ${el0.length} eligible now \u00b7 rule ${w.institutions.trainingPolicy? POLICIES[w.institutions.trainingPolicy].name : 'none'}`));
+      body.appendChild(bars(M.caps, Object.keys(M.caps)));
+      const sh=poolShares(w); const kv=h('div','kv'); const add=(k,v)=>{ kv.appendChild(h('span',null,k)); kv.appendChild(h('span',null,v)); }; add('pool', `${sh.n} works`); add('shares', `human ${Math.round(sh.human*100)}% \u00b7 synthetic ${Math.round(sh.synthetic*100)}% \u00b7 hybrid ${Math.round(sh.hybrid*100)}%`); add('rare traits', Math.round(sh.rare*100)+'%'); add('diversity', Math.round(sh.diversity*100)+'%'); body.appendChild(kv);
+      const acts=h('div','acts'); if(M.training){ const b=h('button',null,'STOP'); b.onclick=()=>stopTrain(w); acts.appendChild(b); } else if(canTrain(w)){ const b=h('button',null,'LET IT READ'); b.onclick=()=>startTrain(w); acts.appendChild(b); body.insertBefore(h('div','fact','It can learn from the pool.'), acts); }
+      body.appendChild(acts);
+      const runs = w.events.filter(e=>e.type==='MODEL_TRAINED').slice(-5).reverse(); for(const e of runs){ const mm=h('div','memo', `${dayclock(e.tick).toLowerCase()} \u00b7 read ${e.payload.count} (${e.payload.human} human, ${e.payload.synthetic} synthetic, ${e.payload.hybrid} hybrid)`); mm.style.cursor='pointer'; mm.onclick=()=>setFocus({type:'event',id:e.id}); body.appendChild(mm); } } }
+  else if(focus.type==='event'){ const e=w.events.find(x=>x.id===focus.id); body.appendChild(h('div','who', e? e.id+' \u00b7 '+e.type : 'event')); if(e){ const c=Object.assign({},e); delete c.snapshot; body.appendChild(h('pre',null, JSON.stringify(c,null,1))); if(e.parents.length){ const acts=h('div','acts'); for(const p of e.parents.slice(0,4)){ const b=h('button',null,p); b.onclick=()=>setFocus({type:'event',id:p}); acts.appendChild(b); } body.appendChild(acts); } if(e.snapshot && worlds.length<2){ const acts=h('div','acts'); const b=h('button',null,'FORK HERE'); b.onclick=()=>forkFrom(e.id); acts.appendChild(b); body.appendChild(acts); } } }
+  return d;
+}
+function renderCompare(){
+  const d=h('div','item'); const row=h('div','abrow');
+  for(const w of worlds){ const b=h('div'); b.appendChild(h('h4',null, w.id+' \u00b7 '+(w.institutions.trainingPolicy? POLICIES[w.institutions.trainingPolicy].name : 'no rule'))); const sh=poolShares(w); const ties = w.agents.reduce((s,a)=>s+Object.keys(a.relationships).length,0)/2;
+    const lines=[`${sh.n} works`, `human ${Math.round(sh.human*100)}% \u00b7 synthetic ${Math.round(sh.synthetic*100)}%`, `rare traits ${Math.round(sh.rare*100)}%`, `model read ${w.model.trainedIds.length}`, `${ties} ties \u00b7 ${w.agents.filter(a=>a.left).length} left \u00b7 ${w.communities.length} groups`, `withheld ${w.artifacts.filter(x=>!x.published||x.withdrawn).length}`];
+    for(const l of lines) b.appendChild(h('div',null,l)); row.appendChild(b); }
+  d.appendChild(row); return d;
+}
+
+/* ---------- COMPOSER: TYPE → INTERPRET → VALIDATE → EVENT ---------- */
+$('#send').onclick = ()=>submitSay(); $('#say').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitSay(); } });
+$('#ctxclear').onclick = ()=>{ ctxTarget=null; markDirty('feed'); };
+function localIntent(w, text){
+  const t=text.trim(); const low=t.toLowerCase();
+  let m;
+  if((m = t.match(/^@(\w+)\s*(.*)$/))){ const a=agentByName(w,m[1]); if(a) return {intent:'ask', target:a, text:m[2]||''}; }
+  if((m = t.match(/^(ask|tell)\s+(\w+)\s*(.*)$/i))){ const a=agentByName(w,m[2]); if(a) return {intent: m[1].toLowerCase(), target:a, text:m[3]||''}; }
+  if(/^(fork)\b/.test(low)) return {intent:'fork'};
+  if(/^(compare|a\s*\/\s*b|diff)\b/.test(low)) return {intent:'compare'};
+  if(/(let it read|^train\b|train the model|train now)/.test(low)) return {intent:'train'};
+  if(/^(show|open)\s+(the\s+)?(pool|archive|gallery)/.test(low)) return {intent:'show', what:'pool'};
+  if(/^(show|open)\s+(the\s+)?model/.test(low)) return {intent:'show', what:'model'};
+  if((m = low.match(/^(show|open)\s+(\w+)/))){ const a=agentByName(w,m[2]); if(a) return {intent:'show', target:a}; }
+  const isRule = /(train|rule|polic|weights|consent|opt|pay|compens|commons)/.test(low) && /(make|set|require|let|allow|no |stop|open|close|ask|pay|return|should|now|propose)/.test(low);
+  if(isRule){ if(/opt.?in|consent|contributor|ask/.test(low)) return {intent:'policy', policy:'ASK'}; if(/pay|compens/.test(low)) return {intent:'policy', policy:'PAY'}; if(/return|share value|community/.test(low)) return {intent:'policy', policy:'RETURN'}; if(/weights|open model|open the model/.test(low)) return {intent:'policy', policy:'OPEN_MODEL'}; if(/close|no training|stop training|forbid|ban/.test(low)) return {intent:'policy', policy:'CLOSE'}; if(/open|anything|everything|free/.test(low)) return {intent:'policy', policy:'OPEN'}; }
+  if(ctxTarget){ const a=agentById(w,ctxTarget); if(a) return {intent:'ask', target:a, text:t}; }
+  return null;
+}
+async function submitSay(){
+  const w = world(); if(!w) return; const inp=$('#say'); const text=inp.value.trim(); if(!text) return; inp.value='';
+  let it = localIntent(w, text);
+  if(!AI.key && (!it || it.intent==='ask' || it.intent==='tell')){ fact(w, 'Nobody can answer without a key. Tap COMMON to add one.', {dim:true}); return; }
+  if(!it){ const item = feedPush(w,{kind:'work', who:'YOU', text:'reading intent', live:false});
+    try{ const out = await llm(PROMPTS.INTENT, `AGENTS: ${w.agents.filter(a=>!a.left).map(a=>a.name).join(', ')}\nPOLICIES: OPEN, ASK, PAY, RETURN, OPEN_MODEL, CLOSE\nCURRENT RULE: ${w.institutions.trainingPolicy||'none'}\nMESSAGE: ${text}`, {maxTokens:120}); const j=parseJSON(out)||{}; item.text = 'read as '+(j.intent||'nothing'); const a=agentByName(w,j.target); it = {intent:j.intent, target:a, text:j.text||text, policy:j.policy, what: j.intent==='show'? (j.target? null : 'pool') : null}; }
+    catch(e){ item.text="couldn't read that"; if(e.kind==='global'||e.kind==='auth') globalFault(e); markDirty('feed'); return; } }
+  if(!it || !it.intent || it.intent==='none'){ fact(w, 'Nothing in the world answers to that. Try: ask Mara why she stopped posting \u00b7 make training opt-in \u00b7 show the pool.', {dim:true}); return; }
+  if(it.intent==='fork'){ const last = w.forkable.slice(-1)[0]; if(last && worlds.length<2) forkFrom(last); else fact(w, worlds.length>1? 'Two worlds already run.' : 'Nothing consequential has happened yet to fork from.', {dim:true}); return; }
+  if(it.intent==='compare'){ if(worlds.length<2){ fact(w,'One world so far.',{dim:true}); return; } w.compareAt = w.tick; markDirty('feed'); return; }
+  if(it.intent==='train'){ if(canTrain(w)) startTrain(w); else fact(w, w.model.exists? (w.model.training? 'It is reading now.' : `Not enough new eligible work yet (${eligibleArtifacts(w).length}).`) : 'There is no generator yet.', {dim:true}); return; }
+  if(it.intent==='show'){ if(it.target) setFocus({type:'agent',id:it.target.id}); else if(it.what==='model') setFocus({type:'model',id:'model'}); else { galleryMode=true; seamRatio=.15; document.documentElement.style.setProperty('--world','15vh'); markDirty('feed'); } return; }
+  if(it.intent==='policy'){ if(!w.model.exists){ fact(w,'There is nothing to govern yet. No generator exists.',{dim:true}); return; } proposePolicy(w, it.policy, 'player'); return; }
+  if((it.intent==='ask'||it.intent==='tell') && it.target){ const a=it.target; const msg = it.text || text;
+    const e=emit(w,'PLAYER_SAID',null,{to:a.id, text:msg}); feedPush(w,{kind:'say', who:'YOU', to:a.name, text:msg, eventId:e.id});
+    if(a.left){ fact(w, `${a.name} is gone.`, {dim:true}); return; }
+    if(a.working){ if(a.working.ac) a.working.ac.abort(); await new Promise(r=>setTimeout(r,200)); }
+    remember(a,w,`someone from outside said: ${msg.slice(0,60)}`,e.id,.1);
+    startWork(w,a,'answering', async (onC)=>{
+      const out = await llm(PROMPTS.ARGUMENT, agentContext(w,a,`SPEAKER: the player (an outside observer who can propose rules)\nMESSAGE: ${msg}`), {onController:onC, maxTokens:220});
+      const j = parseJSON(out) || {utterance: out.slice(0,200)}; const u = String(j.utterance||'').slice(0,240); if(!u) throw new NetFault('no answer came back','local');
+      const e2=emit(w,'UTTERANCE',a.id,{text:u, to:'player', will:j.will||null},[e.id]); say(w,a,u,{to:'you', eventId:e2.id});
+      if(j.will==='withhold'){ a.withholding=true; emit(w,'WITHHOLD',a.id,{},[e2.id]); }
+      if(j.will==='share'){ a.withholding=false; }
+      if(j.will==='publish'){ a.withholding=false; const priv=w.artifacts.filter(x=>x.creatorId===a.id&&!x.published); if(priv.length){ const x=priv[priv.length-1]; x.published=true; const e3=emit(w,'ARTIFACT_PUBLISHED',a.id,{artifact:x.id},[e2.id]); feedPush(w,{kind:'art',agentId:a.id,who:a.name,text:'published this.',artId:x.id,eventId:e3.id}); } }
+      if(j.will==='teach') a.next='teach'; if(j.will==='stop'){ a.cooldown=8; }
+      if(j.will==='leave' && a.autonomy>.5){ a.left=true; a.tx=340; a.ty=285; const e3=emit(w,'AGENT_EXITED',a.id,{},[e2.id],{snapshot:true}); fact(w,`${a.name} left.`,{strong:true,eventId:e3.id,fork:e3.id,agentId:a.id}); }
+    });
+    return; }
+  fact(w, 'Nothing in the world answers to that.', {dim:true});
+}
+
+/* ---------- SHEETS ---------- */
+function openSheet(id){ closeSheets(); $('#scrim').classList.remove('hide'); $(id).classList.add('on'); }
+function closeSheets(){ $('#scrim').classList.add('hide'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('on')); }
+$('#scrim').onclick = closeSheets; $('#sysclose').onclick = closeSheets; $('#pclose').onclick = closeSheets;
+$('#aistat').onclick = ()=>{ $('#sysmodel').textContent=AI.model; $('#syskey').textContent = AI.key? 'connected':'none'; $('#changekey').textContent = AI.key? 'CHANGE KEY':'ADD KEY'; updateCalls(); openSheet('#sys'); };
+$('#brand').onclick = ()=>$('#aistat').onclick();
+$('#changekey').onclick = changeKey; $('#exitbtn').onclick = exitWorld;
+$('#fretry').onclick = ()=>{ $('#fault').classList.add('hide'); PAUSED=false; setPauseIcon(); for(const w of worlds) for(const a of w.agents) if(a.fault&&!a.fault.retry) a.fault=null; markDirty('all'); };
+$('#fkey').onclick = changeKey; $('#fexit').onclick = exitWorld;
+$('#exportbtn').onclick = ()=>{ const data = { exported:new Date().toISOString(), model:AI.model, prompts:PROMPTS, worlds: worlds.map(w=>snapshotWorld(w)) }; const blob=new Blob([JSON.stringify(data)],{type:'application/json'}); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download='common-'+Date.now()+'.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(u),2000); };
+$('#exportfeed').onclick = ()=>{ const w=world(); if(!w) return; const L=[`# COMMON \u00b7 world ${w.id} \u00b7 ${dayclock(w.tick)}`, `model ${AI.model} \u00b7 tokens ${fmtTok(AI.tokIn)} in / ${fmtTok(AI.tokOut)} out`, `rule: ${w.institutions.trainingPolicy||'none'} \u00b7 model read ${w.model.trainedIds.length} works`, ''];
+  for(const it of w.feed){ const t=dayclock(it.tick).toLowerCase(); if(it.kind==='say') L.push(`**${it.who}${it.to?' \u2192 '+it.to:''}** (${t}): ${it.text}`); else if(it.kind==='fact') L.push(`_${t}_ ${it.text.replace(/\n/g,' / ')}`); else if(it.kind==='art'){ const x=artById(w,it.artId); L.push(`**${it.who}** (${t}): ${it.text}`); if(x){ if(x.modality==='text') L.push(`> ${x.text}`); else { L.push(`![${x.id}](${x.renderedPreview})`); L.push('```', serializeProgram(x.program), '```'); } L.push(`likes: ${x.likes.length}`); for(const k of x.comments){ const b=agentById(w,k.agentId); L.push(`- ${b?b.name:'?'}: ${k.text}`); } if(x.session && x.session.agentPrompt) L.push(`prompt by maker: \u201c${x.session.agentPrompt}\u201d`); } } else if(it.kind==='news'){ L.push(`## ${it.who}: ${it.headline}`, it.text); } else if(it.kind==='work' && it.stages){ L.push(`**${it.who}** (${t}): prompted \u201c${it.stages.prompt}\u201d${it.artId? ' \u2192 '+it.artId : ''}`); } L.push(''); }
+  const blob=new Blob([L.join('\n')],{type:'text/markdown'}); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download='common-feed-'+w.id+'-'+Date.now()+'.md'; a.click(); setTimeout(()=>URL.revokeObjectURL(u),2000); };
+let galTab='new';
+let ptab='AGENT';
+$('#prompts').onclick = ()=>{ const tabs=$('#ptabs'); tabs.innerHTML=''; for(const k of Object.keys(PROMPT_DEFAULTS)){ const b=h('button',k===ptab?'on':'',k); b.onclick=()=>{ savePrompt(); ptab=k; $('#prompts').onclick(); }; tabs.appendChild(b); } $('#ptext').value = PROMPTS[ptab]; openSheet('#promptsheet'); };
+function savePrompt(){ PROMPTS[ptab] = $('#ptext').value; }
+$('#ptext').addEventListener('input', savePrompt);
+$('#preset').onclick = ()=>{ PROMPTS[ptab]=PROMPT_DEFAULTS[ptab]; $('#ptext').value=PROMPTS[ptab]; };
+
+/* ---------- RENDER ---------- */
+function render(){
+  rafPending=false; const w=world(); if(!w){ dirty={}; return; }
+  if(dirty.all||dirty.world||dirty.worldsoft) renderWorld();
+  if(dirty.all||dirty.feed) renderFeed();
+  if(dirty.all||dirty.clock||dirty.world) $('#clock').textContent = (worlds.length>1? w.id+' \u00b7 ':'') + dayclock(w.tick) + ' \u00b7 ' + fmtTok(AI.tokIn+AI.tokOut) + (PAUSED? ' \u00b7 PAUSED':'');
+  const ctx=$('#ctx'); const a = ctxTarget? agentById(w,ctxTarget): null; ctx.classList.toggle('hide', !a); if(a){ $('#ctxlabel').textContent='reply to '+a.name; $('#say').placeholder='reply to '+a.name+'\u2026'; } else $('#say').placeholder='say / ask / make / change\u2026';
+  dirty={};
+}
+let lastAnim=0, lastScope=null, feedAll=false;
+function animLoop(ts){ requestAnimationFrame(animLoop); const w=world(); if(!w || !gScene) return; if(ts-lastAnim<33) return; lastAnim=ts;
+  let moving=false;
+  if(Math.abs(camTarget-cam)>.002){ cam += (camTarget-cam)*.18; moving=true; if(Math.abs(camTarget-cam)<.002) cam=camTarget; }
+  for(const a of w.agents){ if(a.vx==null || a.sx==null) continue; const dx=a.sx-a.vx; if(Math.abs(dx)>.1){ a.vx+=dx*.06; moving=true; } }
+  if(moving || (ts%1000)<40) drawNav();
+  if(moving){ for(let i=0;i<6;i++){ const dx=relX(i); gBd[i].setAttribute('transform','translate(0,0)'); for(const layer of gBd[i].children){ const dep=parseFloat(layer.getAttribute('data-depth')||1); layer.setAttribute('transform',`translate(${(dx*dep).toFixed(1)},0)`); } } for(const a of w.agents){ const g=nodeMap.get(a.id); if(!g || g.style.display==='none' || a.site==null) continue; g.setAttribute('transform',`translate(${(relX(a.site)+a.vx).toFixed(1)},${(a.vy||FLOOR).toFixed(1)})`); } for(const f of gFrames.children){ /* frames rebuilt on next render */ } if(Math.abs(camTarget-cam)<.05){ const sc=currentSite(); if(sc!==lastScope){ lastScope=sc; feedAll=false; markDirty('world'); markDirty('feed'); } } else { gFrames.style.opacity='.35'; } }
+  else if(gFrames.style.opacity!=='') gFrames.style.opacity='';
+}
+requestAnimationFrame(animLoop);
+{ const nv=$('#nav'); let nx=null, nc=0, nm=false; nv.addEventListener('pointerdown',e=>{ nx=e.clientX; nc=cam; nm=false; nv.setPointerCapture(e.pointerId); }); nv.addEventListener('pointermove',e=>{ if(nx==null) return; const dx=e.clientX-nx; if(Math.abs(dx)>4) nm=true; cam = nc + dx/60; camTarget=cam; markDirty('worldsoft'); }); nv.addEventListener('pointerup',e=>{ if(nx==null) return; if(!nm){ goSite(((Math.round(cam)%6)+6)%6 + (e.offsetX<45? -1:1)); } else camTarget=Math.round(cam); nx=null; }); }
+setInterval(()=>{ if(!PAUSED && worlds.length) markDirty('worldsoft'); }, 1000);
+startTitle();
+</script>
+</body>
+</html>

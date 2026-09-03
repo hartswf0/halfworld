@@ -1,0 +1,1988 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>COMMON</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAABNklEQVR42u2aSxaDIAxF34rc/+7soBNPrZCQv4TjqLHkXYEQPjiLFzRAA6QFwKUUAACzZAGAuIQBQLV4AwhFKDLAWbp6VZC4NAoAVgB/3Yy90q3rvVH4hbQAlpuCDSCUOLXqA/hMqMsekU091y8Sqmd5JwGEZZoSgNjPT9eAtOqJSpCz8zBi8RRaPdJzreNGeDWAm0R6pjQHyDN8qblM5uFLEdYADdAAliFIsbbHJeHjS8fxfe6/XJ+B9XcO4vz3bt0QQDybzrMATs0kAPVBbDEGOow2QAO8O53O2Qi7LimrAtDXo84AO21sld9aTBKO1Hanq26vn9UPOKIYNI+Y/BnMTylLHrMOaq9x0D1gUE8WDK8asFIUt6r2u24z7QA1LjwpYkgFWMTvSpf+wqe/vvjaALsDfADwUfZ+wXXA0AAAAABJRU5ErkJggg==">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAABNklEQVR42u2aSxaDIAxF34rc/+7soBNPrZCQv4TjqLHkXYEQPjiLFzRAA6QFwKUUAACzZAGAuIQBQLV4AwhFKDLAWbp6VZC4NAoAVgB/3Yy90q3rvVH4hbQAlpuCDSCUOLXqA/hMqMsekU091y8Sqmd5JwGEZZoSgNjPT9eAtOqJSpCz8zBi8RRaPdJzreNGeDWAm0R6pjQHyDN8qblM5uFLEdYADdAAliFIsbbHJeHjS8fxfe6/XJ+B9XcO4vz3bt0QQDybzrMATs0kAPVBbDEGOow2QAO8O53O2Qi7LimrAtDXo84AO21sld9aTBKO1Hanq26vn9UPOKIYNI+Y/BnMTylLHrMOaq9x0D1gUE8WDK8asFIUt6r2u24z7QA1LjwpYkgFWMTvSpf+wqe/vvjaALsDfADwUfZ+wXXA0AAAAABJRU5ErkJggg==">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="COMMON">
+<style>
+:root{--ink:#000;--paper:#fff;--blue:#3b82f6;--red:#ff2e2e;--grey:#8a8a8a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);
+  font:13px/1.35 "IBM Plex Mono",ui-monospace,Menlo,monospace;overflow:hidden;
+  overscroll-behavior:none}
+button,input,select{font:inherit;color:inherit;background:var(--paper);
+  border:1px solid var(--ink);border-radius:0;padding:10px 14px;min-height:44px}
+button{cursor:pointer;letter-spacing:.06em}
+button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+button:disabled{opacity:.35}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+/* ---------- rest ---------- */
+#rest{align-items:center;justify-content:center;padding:24px}
+#peek{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#rest .form{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;
+  background:rgba(255,255,255,.82);padding:22px 18px;border:1px solid var(--ink);
+  opacity:0;transition:opacity .6s;pointer-events:none}
+#rest.shown .form{opacity:1;pointer-events:auto}
+#rest .quiet{border-color:var(--grey);color:var(--grey);font-size:11px;min-height:38px;padding:6px 12px}
+#rest .skip{position:absolute;right:14px;bottom:14px;font-size:10px;letter-spacing:.14em;
+  color:var(--grey);pointer-events:auto;border:none;background:none;min-height:0;padding:6px}
+#rest.shown .skip{display:none}
+#rest h1{font-weight:500;letter-spacing:.42em;font-size:22px;margin:0 0 10px}
+#rest label{display:flex;flex-direction:column;gap:6px;width:min(320px,90vw);
+  font-size:10px;letter-spacing:.14em}
+#rest input,#rest select{width:100%}
+#rest .warn{font-size:10px;color:var(--grey);max-width:320px;text-align:center}
+#rest .fault{font-size:11px;letter-spacing:.1em;display:none;text-align:center;max-width:320px}
+#rest #why{white-space:pre-wrap;line-height:1.5}
+#rest .fault.on{display:block}
+/* ---------- world ---------- */
+#bar{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px 4px;flex:0 0 auto}
+#bar b{font-weight:500;letter-spacing:.42em;font-size:16px}
+#aitag{border:1px solid var(--ink);padding:4px 10px;min-height:0;font-size:10px;
+  letter-spacing:.14em}
+#stage{flex:1 1 auto;position:relative;min-height:0}
+#stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#ticker{flex:0 0 auto;padding:0 14px 6px;font-size:11px;letter-spacing:.02em;
+  opacity:0;transition:opacity .4s;min-height:16px}
+#ticker.on{opacity:1}
+#foot{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:6px 12px 14px;flex:0 0 auto}
+#foot button{min-width:96px}
+#foot .mid{flex:1;text-align:center;font-size:10px;letter-spacing:.1em;color:var(--grey)}
+/* the thing beside the thing it changes */
+#beside{position:absolute;left:0;right:0;bottom:0;pointer-events:none}
+.beside{position:absolute;transform:translate(-50%,8px);pointer-events:auto;
+  background:var(--paper);border:1px solid var(--ink);padding:6px 8px;font-size:11px;
+  letter-spacing:.06em;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.beside button{min-height:34px;padding:4px 10px}
+.beside.say{transform:translate(-50%,-150%);white-space:normal;max-width:56vw;
+  border-radius:0;font-size:11px;letter-spacing:0;line-height:1.35;padding:6px 9px}
+.beside.say::after{content:"";position:absolute;left:50%;bottom:-6px;width:9px;height:9px;
+  background:var(--paper);border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);
+  transform:translateX(-50%) rotate(45deg)}
+/* sheets */
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--paper);
+  border-top:1px solid var(--ink);padding:14px;display:none;flex-direction:column;
+  gap:10px;max-height:78vh;overflow:auto}
+.sheet.on{display:flex}
+.sheet h2{margin:0;font-weight:500;font-size:11px;letter-spacing:.16em}
+.sheet .row{display:flex;gap:8px;flex-wrap:wrap}
+.sheet .k{font-size:10px;color:var(--grey);letter-spacing:.1em}
+/* pool */
+#pool{padding:0}
+#pool .top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px}
+#grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+  gap:8px;padding:0 14px 14px}
+.work{border:1px solid var(--ink);padding:6px;display:flex;flex-direction:column;gap:4px;
+  background:var(--paper);min-height:44px;text-align:left}
+.work canvas{width:100%;aspect-ratio:1;display:block}
+.work .t{font-size:10px;white-space:pre-wrap;word-break:break-word;line-height:1.3;
+  max-height:88px;overflow:hidden}
+.work .m{font-size:9px;color:var(--grey);letter-spacing:.06em}
+.work.h{border-color:var(--ink)}.work.s{border-style:dashed}.work.y{border-style:double}
+/* one work */
+#one{display:none;flex-direction:column;gap:8px;padding:14px;overflow:auto}
+#one.on{display:flex}
+#one canvas{width:min(70vw,320px);align-self:center;border:1px solid var(--ink)}
+#one .t{white-space:pre-wrap;font-size:13px;padding:12px;border:1px solid var(--ink);
+  align-self:center;max-width:320px}
+#one dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:11px}
+#one dt{color:var(--grey);letter-spacing:.1em;font-size:10px}
+/* prompts */
+#prompts textarea{width:100%;min-height:36vh;font:11px/1.4 inherit;border:1px solid var(--ink);
+  padding:8px;resize:vertical}
+/* fork */
+#forkbar{position:absolute;top:0;left:0;right:0;display:none;justify-content:center;
+  gap:8px;padding:8px;pointer-events:none}
+#forkbar.on{display:flex}
+#forkbar span{border:1px solid var(--ink);padding:3px 10px;font-size:10px;letter-spacing:.14em;
+  background:var(--paper);pointer-events:auto}
+#forkbar span[aria-current="true"]{background:var(--ink);color:var(--paper)}
+.small{font-size:10px;color:var(--grey);letter-spacing:.08em}
+</style>
+</head>
+<body>
+
+<!-- ================= REST ================= -->
+<section id="rest" class="screen on">
+  <canvas id="peek"></canvas>
+  <button class="skip" id="skip">TAP TO SKIP</button>
+  <div class="form">
+  <h1>COMMON</h1>
+  <label>API KEY<input id="key" type="password" autocomplete="off" spellcheck="false"
+    placeholder="sk-…" inputmode="text"></label>
+  <label>MODEL
+    <select id="model">
+      <option value="gpt-5.6-sol">gpt-5.6-sol</option>
+      <option value="gpt-5.6-terra">gpt-5.6-terra</option>
+      <option value="gpt-5.6-luna">gpt-5.6-luna</option></select>
+    <span class="small" id="modelnote">paste a key and the list becomes what that key can reach</span>
+  </label>
+  <button id="enter">ENTER</button>
+  <button id="look" class="quiet">LOOK WITHOUT A KEY</button>
+  <div id="connecting" class="fault">CONNECTING… <button id="stopc">STOP</button></div>
+  <div id="failed" class="fault"><div id="why">COULD NOT CONNECT</div>
+    <div class="row" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+      <button id="retry">RETRY</button><button id="changekey">CHANGE KEY</button></div></div>
+  <div class="warn">Browser keys can be inspected. Use a development/testing key.</div>
+  </div>
+</section>
+
+<!-- ================= WORLD ================= -->
+<section id="world" class="screen">
+  <div id="bar"><b>COMMON</b><button id="aitag">AI · SOL</button></div>
+  <div id="stage"><canvas id="cv"></canvas>
+    <div id="beside"></div>
+    <div id="forkbar"><span data-w="0">A</span><span data-w="1">B</span></div>
+  </div>
+  <div id="ticker"></div>
+  <div id="foot">
+    <button id="pause">PAUSE</button>
+    <button id="viewb">ALL</button>
+    <span class="mid" id="mid"></span>
+    <button id="act" hidden>INTERVENE</button>
+    <button id="fork" hidden>FORK</button>
+    <button id="poolb">POOL</button>
+  </div>
+
+  <div id="ai" class="sheet">
+    <h2>AI</h2>
+    <div class="row"><span class="k">MODEL</span><span id="aimodel"></span></div>
+    <div class="row"><span class="k">KEY</span><span>CONNECTED</span></div>
+    <div class="row"><span class="k">CALLS</span><span id="aicalls">0 · 0 in flight · 0 failed</span></div>
+    <div class="row"><button id="aichange">CHANGE KEY</button><button id="aiprompts">PROMPTS</button>
+      <button id="aiclose">CLOSE</button></div>
+  </div>
+
+  <div id="prompts" class="sheet">
+    <h2>PROMPTS</h2>
+    <div class="row" id="ptabs"></div>
+    <textarea id="ptext" spellcheck="false"></textarea>
+    <div class="row"><button id="preset">RESET</button><button id="pclose">CLOSE</button></div>
+  </div>
+
+  <div id="agent" class="sheet">
+    <h2 id="agname"></h2>
+    <div id="agbody" class="small"></div>
+    <div class="row" id="agrow"></div>
+  </div>
+
+  <div id="intervene" class="sheet">
+    <h2>PROPOSE ONE RULE</h2>
+    <div class="row" id="rules"></div>
+    <div class="row"><button id="iclose">CLOSE</button></div>
+  </div>
+
+  <div id="forksheet" class="sheet">
+    <h2>FORK · CHANGE ONE CONDITION</h2>
+    <div class="row" id="forkrules"></div>
+    <div class="row"><button id="fclose">CLOSE</button></div>
+  </div>
+
+  <div id="fault" class="sheet">
+    <h2>CONNECTION LOST</h2>
+    <div class="small">World preserved.</div>
+    <div class="row"><button id="fretry">RETRY</button><button id="fkey">CHANGE KEY</button>
+      <button id="fexit">EXIT</button></div>
+  </div>
+</section>
+
+<!-- ================= POOL ================= -->
+<section id="pool" class="screen">
+  <div class="top"><b style="letter-spacing:.3em">POOL</b>
+    <span class="small" id="poolcount"></span><button id="poolx">EXIT</button></div>
+  <div id="grid"></div>
+  <div id="one">
+    <canvas id="onecv" width="256" height="256"></canvas>
+    <div class="t" id="onet" hidden></div>
+    <dl id="onedl"></dl>
+    <div class="row" style="display:flex;gap:8px"><button id="oneback">BACK</button></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+/* ===================================================================
+   COMMON · THE CORPUS IS NOT THE COMMONS
+   The sphere is the commons. People stand on it. Every artifact they
+   make lands where they stood, as a picture on the surface, drawn by a
+   program the model wrote. Nothing is a number for its own sake.
+
+   K_t = (C, X, L, G, R, U, A, M)     — kept apart, never summed
+   W_t = FOLD(W_0, E_0..t)             — events are the record
+   STATE → OBSERVATION → PROPOSAL → VALIDATOR → EVENT → STATE
+   =================================================================== */
+const PI=Math.PI,TAU=2*PI,D2R=PI/180,R2D=180/PI;
+const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+const $=id=>document.getElementById(id);
+
+/* ---------- ceilings: every store has one ---------- */
+const N_AGENTS=14, TIES_MAX=5, INFLIGHT_MAX=2, OPS_MAX=120, TEXT_MAX=220,
+      VARIANTS=3, TICK_MS=1700, GRID_W=192, GRID_H=96, PATCH_PX=96,
+      POOL_MAX=400, EVENTS_KEEP=4000, CALL_TIMEOUT_MS=45000, MEMORY_MAX=12;
+
+/* ---------- seeded randomness, so a fork can replay ---------- */
+function makeRng(seed){
+  let s=seed>>>0;
+  const next=()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^(t>>>15),t|1);
+    t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};
+  return {next,get state(){return s;},set state(v){s=v>>>0;}};}
+
+/* ---------- the sphere: borrowed whole from ORB ---------- */
+const norm=v=>{const l=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/l,v[1]/l,v[2]/l];};
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const dirLL=(lam,phi)=>[Math.cos(phi)*Math.sin(lam),Math.sin(phi),Math.cos(phi)*Math.cos(lam)];
+const llDir=d=>[Math.atan2(d[0],d[2]),Math.asin(clamp(d[1],-1,1))];
+const ang=(a,b)=>2*Math.asin(clamp(Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])/2,0,1));
+const upFor=f=>Math.abs(f[1])>.97?[0,0,1]:[0,1,0];
+function basis(f,up){f=norm(f);let r=cross(up,f);
+  if(Math.hypot(...r)<1e-6)r=cross([1,0,0],f);r=norm(r);return {f,r,u:norm(cross(f,r))};}
+function rot(yaw,pitch){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  return [[cy,0,-sy],[sy*sp,cp,cy*sp],[sy*cp,-sp,cy*cp]];}
+const toScreen=(d,R)=>[dot(d,R[0]),dot(d,R[1]),dot(d,R[2])];
+function fromScreen(x,y,R){const r2=x*x+y*y;if(r2>1)return null;const z=Math.sqrt(1-r2);
+  return norm([R[0][0]*x+R[1][0]*y+R[2][0]*z,R[0][1]*x+R[1][1]*y+R[2][1]*z,R[0][2]*x+R[1][2]*y+R[2][2]*z]);}
+
+/* ===================================================================
+   THE DRAWING LANGUAGE
+   The model writes it. The browser reads it. Nothing else runs.
+   =================================================================== */
+const CMD={PEN:1,INK:4,MOVE:2,LINE:2,CURVE:6,CIRCLE:3,RECT:4,FILL:4,NOFILL:0,
+  STROKE:0,NOSTROKE:0,PUSH:0,POP:0,ROTATE:1,TRANSLATE:2,POLYGON:-1,TEXT:-2};
+/* text → validated op list, or a reason. Coordinates are clamped to the
+   canvas, counts to OPS_MAX, depth of PUSH to 8. Unknown words are refused. */
+function parseProgram(text,W,H){
+  const ops=[],lines=String(text||"").replace(/\x60\x60\x60[a-z]*/gi,"").split(/\r?\n/);
+  let depth=0;
+  for(const raw of lines){
+    if(ops.length>=OPS_MAX)break;
+    const line=raw.trim();if(!line||line.startsWith("#")||line.startsWith("//"))continue;
+    const parts=line.split(/[\s,]+/);const name=parts[0].toUpperCase();
+    if(!(name in CMD))return {error:"unknown command "+name.slice(0,12)};
+    const nums=parts.slice(1).map(Number);
+    if(name==="TEXT"){
+      const s=line.replace(/^\S+\s*/,"");const m=/^(-?[\d.]+)\s+(-?[\d.]+)\s+(.*)$/.exec(s);
+      if(!m)return {error:"bad TEXT"};
+      ops.push(["TEXT",clamp(+m[1],0,W),clamp(+m[2],0,H),m[3].slice(0,40)]);continue;}
+    if(name==="POLYGON"){
+      if(nums.length<6||nums.length%2||nums.some(n=>!isFinite(n)))return {error:"bad POLYGON"};
+      const pts=[];for(let i=0;i<nums.length&&i<32;i+=2)pts.push(clamp(nums[i],0,W),clamp(nums[i+1],0,H));
+      ops.push(["POLYGON",...pts]);continue;}
+    const n=CMD[name];
+    if(nums.length<n||nums.slice(0,n).some(v=>!isFinite(v)))return {error:"bad args for "+name};
+    const a=nums.slice(0,n);
+    if(name==="MOVE"||name==="LINE"||name==="TRANSLATE"){a[0]=clamp(a[0],-W,2*W);a[1]=clamp(a[1],-H,2*H);}
+    if(name==="CURVE")for(let i=0;i<6;i++)a[i]=clamp(a[i],-W,2*W);
+    if(name==="CIRCLE"){a[0]=clamp(a[0],-W,2*W);a[1]=clamp(a[1],-H,2*H);a[2]=clamp(a[2],0,W);}
+    if(name==="RECT"){a[0]=clamp(a[0],-W,2*W);a[1]=clamp(a[1],-H,2*H);a[2]=clamp(a[2],0,W);a[3]=clamp(a[3],0,H);}
+    if(name==="INK"||name==="FILL"){for(let i=0;i<3;i++)a[i]=clamp(a[i],0,255);a[3]=clamp(a[3],0,1);}
+    if(name==="PEN")a[0]=clamp(a[0],0,40);
+    if(name==="ROTATE")a[0]=clamp(a[0],-TAU,TAU);
+    if(name==="PUSH"){if(++depth>8)return {error:"too deep"};}
+    if(name==="POP"){if(depth<=0)return {error:"POP without PUSH"};depth--;}
+    ops.push([name,...a]);}
+  if(!ops.length)return {error:"empty program"};
+  return {ops};}
+/* ops → pixels. A closed interpreter: each op maps to one canvas call. */
+function renderProgram(ops,cv){
+  const g=cv.getContext("2d"),W=cv.width,H=cv.height;
+  g.setTransform(1,0,0,1,0,0);g.fillStyle="#fff";g.fillRect(0,0,W,H);
+  g.lineWidth=2;g.strokeStyle="rgba(0,0,0,1)";g.fillStyle="rgba(0,0,0,0)";
+  let stroke=true,fill=false,pen=false,depth=0;
+  const rgba=a=>"rgba("+(a[0]|0)+","+(a[1]|0)+","+(a[2]|0)+","+a[3]+")";
+  const finish=()=>{if(fill)g.fill();if(stroke)g.stroke();};
+  for(const op of ops){
+    const [n,...a]=op;
+    if(n==="PEN")g.lineWidth=a[0];
+    else if(n==="INK")g.strokeStyle=rgba(a);
+    else if(n==="FILL"){g.fillStyle=rgba(a);fill=true;}
+    else if(n==="NOFILL")fill=false;
+    else if(n==="STROKE")stroke=true;
+    else if(n==="NOSTROKE")stroke=false;
+    else if(n==="MOVE"){if(pen)finish();g.beginPath();g.moveTo(a[0],a[1]);pen=true;}
+    else if(n==="LINE"){if(!pen){g.beginPath();g.moveTo(a[0],a[1]);pen=true;}else g.lineTo(a[0],a[1]);}
+    else if(n==="CURVE"){if(!pen){g.beginPath();g.moveTo(a[4],a[5]);pen=true;}else g.bezierCurveTo(...a);}
+    else if(n==="CIRCLE"){if(pen)finish();pen=false;g.beginPath();g.arc(a[0],a[1],a[2],0,TAU);finish();}
+    else if(n==="RECT"){if(pen)finish();pen=false;g.beginPath();g.rect(...a);finish();}
+    else if(n==="POLYGON"){if(pen)finish();pen=false;g.beginPath();g.moveTo(a[0],a[1]);
+      for(let i=2;i<a.length;i+=2)g.lineTo(a[i],a[i+1]);g.closePath();finish();}
+    else if(n==="TEXT"){if(pen)finish();pen=false;g.font="14px monospace";
+      const f=g.fillStyle;g.fillStyle="#000";g.fillText(a[2],a[0],a[1]);g.fillStyle=f;}
+    else if(n==="PUSH"){g.save();depth++;}
+    else if(n==="POP"){if(depth>0){g.restore();depth--;}}
+    else if(n==="ROTATE")g.rotate(a[0]);
+    else if(n==="TRANSLATE")g.translate(a[0],a[1]);}
+  if(pen)finish();
+  while(depth-->0)g.restore();
+  g.setTransform(1,0,0,1,0,0);}
+
+/* ===================================================================
+   THE PLACES · six sites on the sphere, and the figures that use them.
+   Both are programs in the same language the model writes, so the world
+   is drawn the way its works are drawn, and the interpreter is proven on
+   every launch before a single call is made.
+   =================================================================== */
+const SITES=[
+ {id:"archive",name:"THE ARCHIVE",lam:-140,phi:8,for:["publish","withhold","learn","read"],program:
+`PEN 2
+INK 0 0 0 1
+NOFILL
+RECT 14 44 68 40
+POLYGON 8 44 48 20 88 44
+MOVE 24 48 LINE 24 84
+MOVE 40 48 LINE 40 84
+MOVE 56 48 LINE 56 84
+MOVE 72 48 LINE 72 84
+MOVE 10 84 LINE 86 84`},
+ {id:"school",name:"THE SCHOOL",lam:-60,phi:-24,for:["teach","learn","join"],program:
+`PEN 2
+INK 0 0 0 1
+NOFILL
+RECT 18 44 60 40
+POLYGON 12 44 48 18 84 44
+RECT 42 62 12 22
+CIRCLE 48 32 5
+MOVE 48 37 LINE 48 44
+RECT 24 52 10 8
+RECT 62 52 10 8`},
+ {id:"studios",name:"STUDIO ROW",lam:20,phi:-6,for:["draw","make","write","remix","collaborate"],program:
+`PEN 2
+INK 0 0 0 1
+NOFILL
+RECT 6 50 24 30
+POLYGON 4 50 18 34 32 50
+RECT 36 46 24 34
+POLYGON 34 46 48 28 62 46
+RECT 66 52 24 28
+POLYGON 64 52 78 38 92 52
+RECT 14 60 8 8
+RECT 44 56 8 8
+RECT 74 62 8 8`},
+ {id:"commons",name:"THE COMMONS",lam:100,phi:22,for:["talk","rest","petition","criticize"],program:
+`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 48 60 34
+MOVE 48 70 LINE 48 42
+CIRCLE 48 34 14
+CIRCLE 38 40 8
+CIRCLE 58 40 8
+MOVE 14 60 LINE 82 60`},
+ {id:"market",name:"THE MARKET",lam:160,phi:-14,for:["publish","trade"],program:
+`PEN 2
+INK 0 0 0 1
+NOFILL
+RECT 14 56 68 26
+POLYGON 8 56 20 36 76 36 88 56
+MOVE 20 36 LINE 24 56
+MOVE 34 36 LINE 36 56
+MOVE 48 36 LINE 48 56
+MOVE 62 36 LINE 60 56
+MOVE 76 36 LINE 72 56
+RECT 30 62 12 8
+RECT 54 62 12 8`},
+ {id:"lab",name:"THE MODEL LAB",lam:-100,phi:-52,for:["prompt","generate"],program:
+`PEN 2
+INK 0 0 0 1
+NOFILL
+CURVE 12 60 12 22 48 22
+CURVE 84 22 84 60 84 60
+MOVE 12 60 LINE 84 60
+MOVE 48 22 LINE 48 60
+MOVE 24 40 LINE 72 40
+CURVE 30 22 30 60 30 60
+CURVE 66 22 66 60 66 60
+RECT 40 60 16 24`}];
+for(const s of SITES)s.at=dirLL(s.lam*D2R,s.phi*D2R);
+const POSES={
+ stand:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 24 10 6
+MOVE 24 16 LINE 24 32
+MOVE 24 32 LINE 16 46
+MOVE 24 32 LINE 32 46
+MOVE 24 20 LINE 14 30
+MOVE 24 20 LINE 34 30`,
+ draw:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 20 10 6
+MOVE 20 16 LINE 20 32
+MOVE 20 32 LINE 13 46
+MOVE 20 32 LINE 27 46
+MOVE 20 20 LINE 34 22
+MOVE 20 20 LINE 12 30
+RECT 34 12 12 16
+MOVE 36 28 LINE 34 46
+MOVE 44 28 LINE 46 46`,
+ write:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 24 12 6
+MOVE 24 18 LINE 24 32
+MOVE 24 32 LINE 16 46
+MOVE 24 32 LINE 32 46
+MOVE 24 22 LINE 34 30
+MOVE 24 22 LINE 14 30
+RECT 12 30 24 4`,
+ teach:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 24 10 6
+MOVE 24 16 LINE 24 32
+MOVE 24 32 LINE 16 46
+MOVE 24 32 LINE 32 46
+MOVE 24 20 LINE 36 8
+MOVE 24 20 LINE 14 30`,
+ read:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 24 10 6
+MOVE 24 16 LINE 24 32
+MOVE 24 32 LINE 16 46
+MOVE 24 32 LINE 32 46
+MOVE 24 20 LINE 16 26
+MOVE 24 20 LINE 32 26
+RECT 14 24 20 8`,
+ prompt:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 20 10 6
+MOVE 20 16 LINE 20 32
+MOVE 20 32 LINE 13 46
+MOVE 20 32 LINE 27 46
+MOVE 20 20 LINE 34 26
+MOVE 20 20 LINE 12 30
+RECT 32 16 14 12
+MOVE 34 28 LINE 46 28`,
+ talk:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 20 12 6
+MOVE 20 18 LINE 20 32
+MOVE 20 32 LINE 13 46
+MOVE 20 32 LINE 27 46
+MOVE 20 22 LINE 30 16
+MOVE 20 22 LINE 10 30
+CIRCLE 38 8 5`,
+ think:`PEN 2
+INK 0 0 0 1
+NOFILL
+CIRCLE 24 12 6
+MOVE 24 18 LINE 24 32
+MOVE 24 32 LINE 16 46
+MOVE 24 32 LINE 32 46
+MOVE 24 22 LINE 30 14
+MOVE 24 22 LINE 14 30
+CIRCLE 34 6 2
+CIRCLE 38 2 1`};
+const POSE_FOR={draw:"draw",make:"draw",remix:"draw",collaborate:"draw",write:"write",teach:"teach",
+  learn:"read",read:"read",publish:"read",withhold:"read",prompt:"prompt",generate:"prompt",
+  talk:"talk",criticize:"talk",petition:"talk",rest:"stand",leave:"stand",join:"stand","would make":"think"};
+const SITE_FOR=action=>SITES.find(s=>s.for.indexOf(action)>=0)||null;
+/* ---------- a person, drawn alive --------------------------------------
+   Not a sprite. Every figure is drawn each frame from a handful of numbers:
+   a bob, a squash, a blink, a lean, and arms that do the thing they are
+   doing. The numbers come from the tick and the person's own phase, so
+   fourteen people never move as one. */
+function beat(a,f,rate,phase){return Math.sin((f*rate+(a.phase||0)+(phase||0))*TAU);}
+function drawPerson(g,x,y,S,a,f,opt){
+  opt=opt||{};
+  const act=a.busy?"think":(a.currentAction||"stand");
+  const pose=POSE_FOR[act]||"stand";
+  const walking=!!opt.walking;
+  const breath=beat(a,f,.06,0)*.03;
+  const bob=walking?Math.abs(beat(a,f,.5,0))*S*.10:beat(a,f,.09,.3)*S*.012;
+  const sq=1+(walking?Math.abs(beat(a,f,.5,.25))*.10:breath);   // squash and stretch
+  const lean=walking?beat(a,f,.5,.1)*7:(pose==="draw"||pose==="write"?10:0);
+  const blink=((f*7+(a.blinkAt||0))%140)<4?1:0;
+  const arm=beat(a,f,walking?.5:.13,0);
+  const W=S*.34*(2-sq),Hh=S*sq;
+  g.save();
+  g.translate(x,y-bob);
+  g.rotate(lean*D2R);
+  g.lineWidth=Math.max(1.1,S*.055);g.lineJoin="round";g.lineCap="round";
+  g.strokeStyle="#000";g.fillStyle="#fff";
+  /* legs */
+  const stride=walking?beat(a,f,.5,0)*S*.20:S*.06;
+  g.beginPath();g.moveTo(0,-Hh*.42);g.lineTo(-stride,0);g.moveTo(0,-Hh*.42);g.lineTo(stride,0);g.stroke();
+  /* body */
+  g.beginPath();g.moveTo(0,-Hh*.42);g.lineTo(0,-Hh*.72);g.stroke();
+  /* arms, by what they are doing */
+  const sh=-Hh*.66;
+  g.beginPath();
+  if(pose==="teach"){g.moveTo(0,sh);g.lineTo(W*1.2,sh-Hh*.26+arm*S*.05);
+    g.moveTo(0,sh);g.lineTo(-W*.9,sh+Hh*.14);}
+  else if(pose==="draw"||pose==="write"||pose==="prompt"){
+    g.moveTo(0,sh);g.lineTo(W*1.25,sh+Hh*.06+arm*S*.05);
+    g.moveTo(0,sh);g.lineTo(-W*.8,sh+Hh*.18);}
+  else if(pose==="read"){g.moveTo(0,sh);g.lineTo(-W*.8,sh+Hh*.10);
+    g.moveTo(0,sh);g.lineTo(W*.8,sh+Hh*.10);}
+  else if(pose==="talk"){g.moveTo(0,sh);g.lineTo(W*1.1,sh-Hh*.10+arm*S*.06);
+    g.moveTo(0,sh);g.lineTo(-W*.9,sh+Hh*.16);}
+  else{g.moveTo(0,sh);g.lineTo(W*(walking?1:.9),sh+Hh*.18-arm*S*.06);
+    g.moveTo(0,sh);g.lineTo(-W*(walking?1:.9),sh+Hh*.18+arm*S*.06);}
+  g.stroke();
+  /* what is in their hands */
+  if(pose==="draw"){g.beginPath();g.rect(W*1.05,sh-Hh*.30,S*.30,S*.34);g.fill();g.stroke();}
+  if(pose==="write"||pose==="read"){g.beginPath();
+    g.rect(pose==="read"?-S*.20:W*.95,sh-Hh*.02,S*.40,S*.20);g.fill();g.stroke();}
+  if(pose==="prompt"){g.beginPath();g.rect(W*1.0,sh-Hh*.16,S*.34,S*.24);g.fill();g.stroke();
+    g.beginPath();g.moveTo(W*1.05,sh-Hh*.06);g.lineTo(W*1.0+S*.30,sh-Hh*.06);g.stroke();}
+  /* head, with a face that looks where it is going */
+  const hy=-Hh*.72-S*.20,hr=S*.20*(2-sq);
+  g.beginPath();g.arc(0,hy,hr,0,TAU);g.fill();g.stroke();
+  const look=clamp((opt.look||0),-1,1);
+  g.fillStyle="#000";
+  if(blink){g.lineWidth=Math.max(1,S*.04);g.beginPath();
+    g.moveTo(-hr*.55+look*hr*.2,hy-hr*.05);g.lineTo(-hr*.15+look*hr*.2,hy-hr*.05);
+    g.moveTo(hr*.15+look*hr*.2,hy-hr*.05);g.lineTo(hr*.55+look*hr*.2,hy-hr*.05);g.stroke();}
+  else{for(const sx of [-1,1]){g.beginPath();
+    g.arc(sx*hr*.36+look*hr*.22,hy-hr*.08,Math.max(.8,hr*.14),0,TAU);g.fill();}}
+  /* a mouth when they are talking */
+  if(pose==="talk"&&!blink){g.lineWidth=Math.max(1,S*.04);g.beginPath();
+    g.arc(look*hr*.2,hy+hr*.28,hr*.26,.15*PI,.85*PI);g.stroke();}
+  /* the thought, when they are waiting on the model */
+  if(a.busy){g.fillStyle="#3b82f6";
+    for(let i=1;i<=3;i++){const t=(f*.08+i*.33)%1;
+      g.globalAlpha=.9-t*.6;g.beginPath();
+      g.arc(hr*.9+i*S*.10,hy-hr*.9-t*S*.35,Math.max(.9,S*.035*i),0,TAU);g.fill();}
+    g.globalAlpha=1;}
+  g.restore();}
+const FIGURES={};
+function figureSprite(pose){
+  if(FIGURES[pose])return FIGURES[pose];
+  const cv=document.createElement("canvas");cv.width=48;cv.height=48;
+  const p=parseProgram(POSES[pose]||POSES.stand,48,48);
+  if(p.ops){renderProgram(p.ops,cv);
+    /* white becomes clear, so the figure stands on whatever is under it */
+    const g=cv.getContext("2d");
+    try{const im=g.getImageData(0,0,48,48);const d=im.data;
+      for(let i=0;i<d.length;i+=4)if(d[i]>200&&d[i+1]>200&&d[i+2]>200)d[i+3]=0;
+      g.putImageData(im,0,0);}catch(e){/* a shim without pixels */}}
+  FIGURES[pose]=cv;return cv;}
+const SITE_RGB={};
+function siteRGB(s){
+  if(SITE_RGB[s.id])return SITE_RGB[s.id];
+  const x={program:s.program};renderArtifact(x);
+  SITE_RGB[s.id]=x.rgb;return x.rgb;}
+
+/* ===================================================================
+   PROMPTS · part of the work, editable, resettable
+   =================================================================== */
+const PROMPT_DEFAULT={
+AGENT:`YOU ARE ONE PERSON INSIDE A CULTURAL WORLD.
+
+You are not the simulator.
+
+You know only the supplied observations, memories, relationships,
+skills, practices, economic conditions, and institutions.
+
+Do not invent world facts.
+
+Choose one plausible next intention.
+
+You may:
+make, write, draw, prompt, generate, teach, learn, criticize, talk,
+collaborate, publish, withhold, leave, join, petition, rest.
+
+Do not optimize for ideological consistency.
+People may be contradictory.
+
+Return JSON only:
+{"action":"...","target":null,"practice":null,"reason":"...","utterance":null}`,
+ART:`YOU ARE MAKING ONE ARTIFACT INSIDE A LIVING CULTURAL SIMULATION.
+
+Write the artwork itself as drawing code.
+
+You are given: creator state, creator cultural traits, creator practice,
+source influences, social situation, provenance, previous works when relevant.
+
+Do not describe the artwork. Do not explain it. Do not return Markdown.
+Return only a program using the permitted drawing language:
+
+PEN width
+INK r g b a
+MOVE x y
+LINE x y
+CURVE cx1 cy1 cx2 cy2 x y
+CIRCLE x y radius
+RECT x y width height
+FILL r g b a
+NOFILL
+STROKE
+NOSTROKE
+PUSH
+POP
+ROTATE radians
+TRANSLATE x y
+POLYGON x1 y1 x2 y2 x3 y3 ...
+TEXT x y words
+
+The work should visibly inherit some features from its influences
+while preserving variation from the creator.
+Human work may contain idiosyncrasy, hesitation, repetition, error,
+obsession, or deliberate departure.
+Synthetic work should be generated from the current model-cultural distribution
+plus the prompting agent's preferences.
+Hybrid work may combine both.
+
+Do not maximize beauty. Produce a culturally situated artifact.
+Maximum 120 drawing commands.`,
+WRITING:`YOU ARE WRITING ONE SMALL TEXT INSIDE A LIVING CULTURAL SIMULATION.
+
+You are given the same creator, influence, social and provenance information
+as a drawing would be.
+
+Write the text itself. It may be a fragment, instruction, poem, critique,
+story sentence, note, manifesto or caption. Not every text is profound.
+Keep it short enough to live physically in the world: at most 220 characters.
+Return only the text. No title, no quotation marks, no explanation.`,
+REFLECTION:`YOU ARE ONE PERSON REMEMBERING.
+
+You are given events you witnessed, each with an id.
+Write one or two sentences of reflection in the first person.
+Cite the event ids you draw on in square brackets.
+You may be wrong about what they meant. You may not change what they were.
+Return only the reflection.`,
+ARGUMENT:`YOU ARE ONE PERSON IN A DISAGREEMENT WITH ANOTHER.
+
+You are given your own attitudes and theirs, and the thing you disagree about.
+Say one sentence you would actually say to them. Not a summary. Not a resolution.
+Return only the sentence.`};
+const PROMPTS=Object.assign({},PROMPT_DEFAULT);
+
+/* ===================================================================
+   THE CONNECTION · load-bearing, and kept in memory only
+   =================================================================== */
+const AI={key:"",model:"gpt-5.6-sol",ok:false,calls:0,inflight:0,failed:0,aborters:new Set()};
+async function callModel(system,user,maxTokens){
+  if(!AI.key)throw new Error("no key");
+  if(AI.inflight>=INFLIGHT_MAX)throw new Error("busy");
+  const ac=new AbortController();AI.aborters.add(ac);
+  const timer=setTimeout(()=>ac.abort(),CALL_TIMEOUT_MS);
+  AI.inflight++;AI.calls++;paintAI();
+  try{
+    const res=await fetch("https://api.openai.com/v1/responses",{
+      method:"POST",signal:ac.signal,
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+AI.key},
+      /* the API's floor for max_output_tokens is 16; below it the request
+         is refused before anything is read */
+      body:JSON.stringify({model:AI.model,instructions:system,store:false,
+        max_output_tokens:Math.max(16,maxTokens||600),
+        input:[{role:"user",content:user}]})});
+    if(!res.ok){AI.failed++;
+      let why="";try{const j=await res.json();why=(j.error&&j.error.message)||"";}catch(e){}
+      throw new Error("http "+res.status+(why?": "+why:""));}
+    const data=await res.json();
+    if(typeof data.output_text==="string"&&data.output_text)return data.output_text;
+    const parts=[];
+    for(const o of (data.output||[]))for(const c of (o.content||[]))if(c.text)parts.push(c.text);
+    return parts.join("\n").trim();
+  }catch(e){if(!/http/.test(e.message))AI.failed++;throw e;}
+  finally{clearTimeout(timer);AI.aborters.delete(ac);AI.inflight--;paintAI();}}
+function stopAllCalls(){for(const a of AI.aborters)a.abort();}
+/* what this key can reach: a GET that needs no model, so it tests the key
+   alone, and returns the names the model select should offer */
+async function listModels(){
+  const ac=new AbortController();AI.aborters.add(ac);
+  const timer=setTimeout(()=>ac.abort(),15000);
+  try{
+    const res=await fetch("https://api.openai.com/v1/models",{signal:ac.signal,
+      headers:{"Authorization":"Bearer "+AI.key}});
+    if(!res.ok){let why="";try{const j=await res.json();why=(j.error&&j.error.message)||"";}catch(e){}
+      throw new Error("http "+res.status+(why?": "+why:""));}
+    const data=await res.json();
+    const names=(data.data||[]).map(m=>m.id).filter(id=>/^(gpt|o\d|chatgpt)/.test(id)).sort();
+    return names;
+  }finally{clearTimeout(timer);AI.aborters.delete(ac);}}
+/* the reason, as a lever: what to pull next */
+function explainFailure(e){
+  const m=String(e&&e.message||"");
+  if(/^http 401/.test(m))return "THE KEY WAS REFUSED\ncheck it, or make a new one at platform.openai.com";
+  if(/^http 403/.test(m))return "THE KEY IS NOT ALLOWED TO DO THIS\n"+m.replace(/^http \d+:?\s*/,"");
+  if(/^http 404/.test(m)||/model/i.test(m)&&/not (found|exist)/i.test(m))
+    return "THIS KEY CANNOT SEE "+AI.model.toUpperCase()+"\npick a model from the list";
+  if(/^http 429/.test(m))return "RATE LIMIT OR NO CREDIT\n"+m.replace(/^http \d+:?\s*/,"");
+  if(/^http 4\d\d/.test(m))return "THE REQUEST WAS REFUSED\n"+m.replace(/^http \d+:?\s*/,"");
+  if(/^http 5\d\d/.test(m))return "OPENAI IS HAVING TROUBLE\ntry again in a moment";
+  if(/abort/i.test(m))return "STOPPED, OR TOO SLOW";
+  if(/fetch|network/i.test(m))return "NO ROUTE TO OPENAI\ncheck the connection; a browser on content:// or file:// may block it";
+  return "COULD NOT CONNECT\n"+m.slice(0,140);}
+/* a connection is a 200 from this model with this key. What it says back
+   is not the test: a reasoning model may spend its few tokens thinking. */
+async function testConnection(){
+  await callModel("Reply with the single word OK.","ping",32);
+  return true;}
+function paintAI(){
+  const el=$("aicalls");if(el)el.textContent=AI.calls+" · "+AI.inflight+" in flight · "+AI.failed+" failed";
+  const tag=$("aitag");if(tag)tag.textContent="AI · "+(AI.key?AI.model.split("-").pop().toUpperCase():"NONE");
+  const m=$("aimodel");if(m)m.textContent=AI.model;}
+
+/* ===================================================================
+   THE WORLD · K = (C,X,L,G,R,U,A,M), and its events
+   =================================================================== */
+const NAMES=["Mara","Niko","Lea","Kilo","Ada","Kai","Noa","Tide","Moth","Quill",
+  "Loom","Nook","Glint","Arbor"];
+const TRAITS=["line","mass","order","noise","figure","text","colour","repeat"];
+const ATT=["toolUse","training","syntheticArt","openWeights","compensation","styleImitation"];
+const PRACTICES=["draw","write","prompt","generate","teach","critique","remix"];
+const RULES=["OPEN","ASK","PAY","RETURN","OPEN MODEL","CLOSE"];
+
+function newWorld(seed){
+  const rng=makeRng(seed);
+  const K={
+    C:[],X:[],L:{schools:[]},G:{},                       // people, artifacts, conventions, ties
+    R:{rule:"ASK",adoptedAt:0,proposed:null},            // institutions
+    U:{basePay:1},                                        // payoffs
+    A:{generatorAt:-1,generatorOwner:null},              // apparatus
+    M:{drawing:.05,writing:.05,prompting:.05,composition:.05,stylisticCoverage:.02,
+       rareTraitCoverage:.01,hybridization:.02,memorizationRisk:.02,trainedOn:[]}};
+  for(let i=0;i<N_AGENTS;i++){
+    const lam=rng.next()*TAU-PI,phi=(rng.next()-.5)*PI*.8;
+    const cv=TRAITS.map(()=>rng.next());
+    const a={id:"a"+i,name:NAMES[i],at:dirLL(lam,phi),
+      skills:{drawing:rng.next(),writing:rng.next(),prompting:rng.next()*.3,
+        teaching:rng.next(),criticism:rng.next()},
+      practiceQ:{draw:rng.next(),write:rng.next(),prompt:rng.next()*.2,generate:.02,
+        teach:rng.next()*.6,critique:rng.next()*.6,remix:rng.next()*.5},
+      cultureVector:cv,
+      aiAttitude:Object.fromEntries(ATT.map(k=>[k,rng.next()*2-1])),
+      confidenceRadius:.25+rng.next()*.35,
+      relationships:{},communityId:0,
+      incomeNeed:.4+rng.next()*.4,wealth:1+rng.next(),status:rng.next()*.5,
+      belonging:.5,autonomy:rng.next(),curiosity:rng.next(),
+      memories:[],reflections:[],currentAction:null,fault:null,busy:null};
+    K.C.push(a);}
+  /* first ties: the nearest few on the sphere, weighted by likeness */
+  for(const a of K.C){
+    const near=K.C.filter(b=>b!==a).sort((p,q)=>ang(a.at,p.at)-ang(a.at,q.at)).slice(0,4);
+    for(const b of near)if(rng.next()<.7)tie(K,a.id,b.id,"influence");}
+  if(!LAND.some(v=>v)){bakeLand(seed);plantTrees(seed);layPaths();}
+  return {K,events:[],tick:0,rng,seed,id:"W0",paused:false};}
+
+/* ---------- events: the only way state changes ---------- */
+let EVSEQ=0;
+function emit(w,type,actorId,payload,parents){
+  const e={id:"e"+(EVSEQ++),tick:w.tick,actorId,type,payload:payload||{},
+    parents:parents||[],worldId:w.id};
+  w.events.push(e);
+  if(w.events.length>EVENTS_KEEP)w.events.splice(0,w.events.length-EVENTS_KEEP);
+  applyEvent(w,e);return e;}
+function applyEvent(w,e){
+  const K=w.K,p=e.payload,a=K.C.find(x=>x.id===e.actorId);
+  switch(e.type){
+    case "ARTIFACT_CREATED":K.X.push(p.artifact);
+      if(K.X.length>POOL_MAX)K.X.splice(0,K.X.length-POOL_MAX);
+      if(a){a.practiceQ[p.artifact.practice]=clamp(a.practiceQ[p.artifact.practice]+.08,0,1);
+        a.status=clamp(a.status+.03,0,1);a.wealth+=K.U.basePay*.2*(K.R.rule==="PAY"?1.5:1);}
+      break;
+    case "ARTIFACT_PUBLISHED":{const x=K.X.find(y=>y.id===p.id);if(x)x.published=true;break;}
+    case "CULTURAL_INFLUENCE":{const b=K.C.find(x=>x.id===p.to);
+      if(b)b.cultureVector[p.trait]=p.value;break;}
+    case "ATTITUDE_CHANGED":{const b=K.C.find(x=>x.id===p.who);if(b)b.aiAttitude[p.key]=p.value;break;}
+    case "RELATIONSHIP_CREATED":tie(K,e.actorId,p.with,p.kind);break;
+    case "RELATIONSHIP_BROKEN":untie(K,e.actorId,p.with);break;
+    case "TEACHING_OCCURRED":{const b=K.C.find(x=>x.id===p.student);
+      if(b){b.skills[p.skill]=clamp(b.skills[p.skill]+.06,0,1);b.practiceQ[p.practice]=clamp(b.practiceQ[p.practice]+.05,0,1);}
+      if(a)a.status=clamp(a.status+.02,0,1);break;}
+    case "MODEL_TRAINED":Object.assign(K.M,p.after);K.M.trainedOn=K.M.trainedOn.concat(p.ids);
+      for(const x of K.X)if(p.ids.indexOf(x.id)>=0)x.trained=true;break;
+    case "MODEL_GENERATED":break;
+    case "POLICY_PROPOSED":K.R.proposed=p.rule;break;
+    case "POLICY_ADOPTED":K.R.rule=p.rule;K.R.adoptedAt=w.tick;K.R.proposed=null;break;
+    case "POLICY_REJECTED":K.R.proposed=null;break;
+    case "AGENT_EXITED":if(a){a.left=true;for(const k in a.relationships)untie(K,a.id,k);}break;
+    case "COMMUNITY_FORKED":for(const id of p.members){const b=K.C.find(x=>x.id===id);if(b)b.communityId=p.community;}break;
+    case "GENERATOR_BUILT":K.A.generatorAt=w.tick;K.A.generatorOwner=e.actorId;
+      if(a){a.practiceQ.prompt=clamp(a.practiceQ.prompt+.3,0,1);a.skills.prompting=clamp(a.skills.prompting+.2,0,1);}break;
+    case "MEMORY":if(a){a.memories.push({at:w.tick,eventId:p.of,text:p.text});
+      if(a.memories.length>MEMORY_MAX)a.memories.shift();}break;
+    case "REFLECTION":if(a)a.reflections.push({at:w.tick,text:p.text,cites:p.cites});break;
+    case "UTTERANCE":break;
+    case "ENCOUNTER":break;}}
+function tie(K,a,b,kind){const A=K.C.find(x=>x.id===a),B=K.C.find(x=>x.id===b);
+  if(!A||!B||a===b)return;
+  if(Object.keys(A.relationships).length>=TIES_MAX&&!A.relationships[b])return;
+  if(Object.keys(B.relationships).length>=TIES_MAX&&!B.relationships[a])return;
+  A.relationships[b]=kind;B.relationships[a]=kind;}
+function untie(K,a,b){const A=K.C.find(x=>x.id===a),B=K.C.find(x=>x.id===b);
+  if(A)delete A.relationships[b];if(B)delete B.relationships[a];}
+
+/* ---------- the explicit rules: the model never sets these ---------- */
+const similarity=(a,b)=>1-a.cultureVector.reduce((s,v,i)=>s+Math.abs(v-b.cultureVector[i]),0)/TRAITS.length;
+function axelrodStep(w){                       // one pair, one trait, maybe
+  const K=w.K,live=K.C.filter(a=>!a.left);if(live.length<2)return;
+  const a=live[Math.floor(w.rng.next()*live.length)];
+  const ids=Object.keys(a.relationships);if(!ids.length)return;
+  const b=K.C.find(x=>x.id===ids[Math.floor(w.rng.next()*ids.length)]);if(!b||b.left)return;
+  const sim=similarity(a,b);
+  if(w.rng.next()<sim){
+    const t=Math.floor(w.rng.next()*TRAITS.length);
+    if(Math.abs(a.cultureVector[t]-b.cultureVector[t])>.02)
+      emit(w,"CULTURAL_INFLUENCE",a.id,{to:b.id,trait:t,
+        value:b.cultureVector[t]+(a.cultureVector[t]-b.cultureVector[t])*.5});}
+  else if(sim<.35&&w.rng.next()<.25)emit(w,"RELATIONSHIP_BROKEN",a.id,{with:b.id});}
+function confidenceStep(w){                    // AI attitudes move only within reach
+  const K=w.K,live=K.C.filter(a=>!a.left);if(live.length<2)return;
+  const a=live[Math.floor(w.rng.next()*live.length)];
+  const ids=Object.keys(a.relationships);if(!ids.length)return;
+  const b=K.C.find(x=>x.id===ids[Math.floor(w.rng.next()*ids.length)]);if(!b)return;
+  const k=ATT[Math.floor(w.rng.next()*ATT.length)];
+  const d=b.aiAttitude[k]-a.aiAttitude[k];
+  if(Math.abs(d)<=a.confidenceRadius)
+    emit(w,"ATTITUDE_CHANGED",a.id,{who:a.id,key:k,value:a.aiAttitude[k]+d*.3});
+  else if(Math.abs(d)>1.4&&w.rng.next()<.15&&a.relationships[b.id])
+    emit(w,"RELATIONSHIP_BROKEN",a.id,{with:b.id});}
+function rewireStep(w){                        // a lonely person finds a like one
+  const K=w.K,live=K.C.filter(a=>!a.left);
+  const a=live[Math.floor(w.rng.next()*live.length)];if(!a)return;
+  if(Object.keys(a.relationships).length>=3)return;
+  const cand=live.filter(b=>b!==a&&!a.relationships[b.id])
+    .sort((p,q)=>similarity(a,q)-similarity(a,p))[0];
+  if(cand&&similarity(a,cand)>.55&&w.rng.next()<.5)
+    emit(w,"RELATIONSHIP_CREATED",a.id,{with:cand.id,kind:"influence"});}
+function cascadeStep(w){                       // enough neighbours prompting, and you try it
+  const K=w.K;if(K.A.generatorAt<0)return;
+  for(const a of K.C){if(a.left)continue;
+    const ids=Object.keys(a.relationships);if(!ids.length)continue;
+    const share=ids.filter(id=>{const b=K.C.find(x=>x.id===id);return b&&b.practiceQ.prompt>.4;}).length/ids.length;
+    if(share>=.5&&a.practiceQ.prompt<.3&&a.aiAttitude.toolUse>-.2&&w.rng.next()<.2)
+      a.practiceQ.prompt=clamp(a.practiceQ.prompt+.15,0,1);}}
+function incomeStep(w){const K=w.K;for(const a of K.C){if(a.left)continue;
+  a.wealth-=a.incomeNeed*.02;
+  if(K.R.rule==="RETURN"&&a.status>.5)a.wealth+=.01;
+  if(a.wealth<0&&w.rng.next()<.08&&!a.left)emit(w,"AGENT_EXITED",a.id,{why:"could not live"});}}
+function decayStep(w){for(const x of w.K.X)x.attention*=.985;}
+function communityStep(w){                     // slowly, clusters follow the ties
+  const K=w.K,live=K.C.filter(a=>!a.left);
+  const seen=new Set();let c=0;const groups=[];
+  for(const a of live){if(seen.has(a.id))continue;
+    const q=[a.id],mem=[];seen.add(a.id);
+    while(q.length&&mem.length<N_AGENTS){const id=q.pop();mem.push(id);
+      const n=K.C.find(x=>x.id===id);
+      for(const k in n.relationships)if(!seen.has(k)){seen.add(k);q.push(k);}}
+    groups.push(mem);c++;}
+  groups.forEach((mem,i)=>{const cur=K.C.find(x=>x.id===mem[0]).communityId;
+    if(mem.some(id=>K.C.find(x=>x.id===id).communityId!==cur))
+      emit(w,"COMMUNITY_FORKED",mem[0],{community:i,members:mem});});}
+function driftStep(w){                         // people go where their action is; idle, toward their ties
+  const K=w.K;
+  for(const a of K.C){if(a.left)continue;
+    const site=SITE_FOR(a.currentAction);
+    if(site){
+      /* toward the place, but not onto it: a spot of their own beside it */
+      const seat=a.seat||(a.seat=w.rng.next()*TAU);
+      const b=basis(site.at,upFor(site.at));
+      const goal=norm(add(site.at,add(mul(b.r,Math.cos(seat)*.28),mul(b.u,Math.sin(seat)*.28))));
+      const far=ang(a.at,goal);a.walking=far>5*D2R;
+      a.at=slerp(a.at,goal,Math.min(1,(4*D2R)/Math.max(far,1e-6)));continue;}
+    a.walking=false;
+    const ids=Object.keys(a.relationships);if(!ids.length)continue;
+    let c=[0,0,0];for(const id of ids){const b=K.C.find(x=>x.id===id);if(b)c=add(c,b.at);}
+    c=norm(c);a.at=norm(add(mul(a.at,.985),mul(c,.015)));}}
+/* ---------- encounters --------------------------------------------------
+   When two people come within reach on the ground, that is an event, and
+   an event is a line anyone can read. A pair is recorded once and released
+   only when they part, so passing someone is one beat, not forty. */
+const REACH=11*D2R;
+function encounterStep(w){
+  const K=w.K,live=K.C.filter(a=>!a.left);
+  w.contacts=w.contacts||{};
+  for(let i=0;i<live.length;i++)for(let j=i+1;j<live.length;j++){
+    const a=live[i],b=live[j],k=a.id+"|"+b.id,near=ang(a.at,b.at)<REACH;
+    if(near&&w.contacts[k]==null){
+      w.contacts[k]=w.tick;
+      const site=SITE_FOR(a.currentAction)||SITE_FOR(b.currentAction);
+      const where=site&&ang(site.at,a.at)<22*D2R?site.name.replace(/^THE /,"").toLowerCase():"the open ground";
+      const sim=similarity(a,b), att=1-Math.abs(a.aiAttitude.training-b.aiAttitude.training)/2;
+      let text,rel;
+      if(a.currentAction==="teach"||b.currentAction==="teach"){
+        const t=a.currentAction==="teach"?a:b,s=t===a?b:a;
+        text=t.name+" shows "+s.name+" how, at the "+where;rel="+ trust";}
+      else if(sim<.35&&att<.4){text=a.name+" and "+b.name+" fall out at the "+where;rel="− trust";}
+      else if(sim>.7){text=a.name+" and "+b.name+" find they are after the same thing";rel="+ trust";}
+      else text=a.name+" passes "+b.name+" at the "+where;
+      emit(w,"ENCOUNTER",a.id,{with:b.id,text,rel,where});
+      emit(w,"MEMORY",a.id,{of:null,text:"met "+b.name+" at the "+where});
+      emit(w,"MEMORY",b.id,{of:null,text:"met "+a.name+" at the "+where});
+      if(rel==="+ trust"&&!a.relationships[b.id])emit(w,"RELATIONSHIP_CREATED",a.id,{with:b.id,kind:"influence"});
+      if(rel==="− trust"&&a.relationships[b.id])emit(w,"RELATIONSHIP_BROKEN",a.id,{with:b.id});
+      w.beat={text,rel,at:norm(add(a.at,b.at)),pair:[a.id,b.id],tick:w.tick};
+      /* if there is a model, one of them says something about it */
+      if(AI.key&&AI.inflight<INFLIGHT_MAX&&w.rng.next()<.6)sayAbout(w,a,b,text,rel);}
+    else if(!near&&w.contacts[k]!=null&&w.tick-w.contacts[k]>3)delete w.contacts[k];}}
+/* the line one of them actually says: short, in their own voice */
+async function sayAbout(w,a,b,what,rel){
+  if(a.busy||a.fault)return;
+  try{
+    const t=await callModel(PROMPTS.ARGUMENT,JSON.stringify({
+      you:{name:a.name,traits:Object.fromEntries(TRAITS.map((k,i)=>[k,+a.cultureVector[i].toFixed(2)])),
+        aiAttitude:a.aiAttitude,doing:a.currentAction},
+      them:{name:b.name,traits:Object.fromEntries(TRAITS.map((k,i)=>[k,+b.cultureVector[i].toFixed(2)])),
+        aiAttitude:b.aiAttitude,doing:b.currentAction},
+      whatHappened:what,howItWent:rel||"neither way"}),90);
+    const line=t.trim().replace(/^["'“]|["'”]$/g,"").slice(0,90);
+    if(line)emit(w,"UTTERANCE",a.id,{text:line,to:b.id});
+  }catch(e){/* a line not said is not a fault: the meeting still happened */}}
+
+/* the last few beats, in plain words */
+function beats(w,n){return w.events.filter(e=>e.type==="ENCOUNTER").slice(-(n||3))
+  .map(e=>e.payload.text+(e.payload.rel?"  ·  "+e.payload.rel:""));}
+
+/* the scene: the nearest place to where the frame is looking, and who is there */
+function sceneAt(w,dir){
+  let best=null,bd=1;
+  for(const s of SITES){const d=ang(dir,s.at);if(d<bd){bd=d;best=s;}}
+  if(!best||bd>32*D2R)return null;
+  const there=w.K.C.filter(a=>!a.left&&ang(a.at,best.at)<20*D2R);
+  return {site:best,there};}
+
+/* ===================================================================
+   OBSERVATION → PROPOSAL → VALIDATOR
+   =================================================================== */
+const ACTIONS=["make","write","draw","prompt","generate","teach","learn","criticize",
+  "talk","collaborate","publish","withhold","leave","join","petition","rest"];
+function observe(w,a){
+  const K=w.K;
+  const ties=Object.keys(a.relationships).map(id=>{const b=K.C.find(x=>x.id===id);
+    return b?{name:b.name,id:b.id,kind:a.relationships[id],likeness:+similarity(a,b).toFixed(2)}:null;}).filter(Boolean);
+  const recent=K.X.slice(-6).map(x=>({id:x.id,by:K.C.find(c=>c.id===x.creatorId)?.name,
+    modality:x.modality,provenance:x.provenanceType}));
+  return {you:{name:a.name,skills:a.skills,practice:a.practiceQ,traits:Object.fromEntries(TRAITS.map((t,i)=>[t,+a.cultureVector[i].toFixed(2)])),
+      aiAttitude:a.aiAttitude,wealth:+a.wealth.toFixed(2),incomeNeed:a.incomeNeed,status:+a.status.toFixed(2)},
+    relationships:ties,recentWorks:recent,rule:K.R.rule,proposed:K.R.proposed,
+    generatorExists:K.A.generatorAt>=0,memories:a.memories.slice(-5).map(m=>m.text),
+    tick:w.tick};}
+/* the proposal is text; this decides whether it becomes an event at all */
+function validateProposal(text,a,K){
+  let j;try{j=JSON.parse(String(text).replace(/\x60\x60\x60json|\x60\x60\x60/g,"").trim());}
+  catch(e){return {error:"not json"};}
+  if(!j||typeof j!=="object")return {error:"not an object"};
+  const action=String(j.action||"").toLowerCase().trim();
+  if(ACTIONS.indexOf(action)<0)return {error:"unknown action "+action.slice(0,16)};
+  let target=j.target?String(j.target):null;
+  if(target){const t=K.C.find(x=>x.id===target||x.name.toLowerCase()===target.toLowerCase());
+    if(!t||t.id===a.id)target=null;else target=t.id;}
+  let practice=j.practice?String(j.practice).toLowerCase():null;
+  if(practice&&PRACTICES.indexOf(practice)<0)practice=null;
+  if((action==="prompt"||action==="generate")&&K.A.generatorAt<0&&a.practiceQ.prompt<.5)
+    return {error:"no generator to prompt"};
+  if(action==="teach"&&!target)return {error:"teach whom"};
+  return {action,target,practice,reason:String(j.reason||"").slice(0,160),
+    utterance:j.utterance?String(j.utterance).slice(0,120):null};}
+
+/* ===================================================================
+   MAKING · every artifact is a program the model wrote
+   =================================================================== */
+let XSEQ=0;
+function artifactContext(w,a,prov,parents){
+  const K=w.K;
+  const infl=Object.keys(a.relationships).map(id=>K.C.find(x=>x.id===id)).filter(Boolean);
+  return JSON.stringify({
+    creator:{name:a.name,traits:Object.fromEntries(TRAITS.map((t,i)=>[t,+a.cultureVector[i].toFixed(2)])),
+      practice:a.practiceQ,skills:a.skills},
+    influences:infl.map(b=>({name:b.name,traits:Object.fromEntries(TRAITS.map((t,i)=>[t,+b.cultureVector[i].toFixed(2)]))})),
+    sources:parents.map(id=>{const x=K.X.find(y=>y.id===id);return x?{id,modality:x.modality,provenance:x.provenanceType,
+      program:(x.program||x.text||"").slice(0,600)}:null;}).filter(Boolean),
+    memories:a.memories.slice(-4).map(m=>m.text),
+    provenance:prov,rule:K.R.rule,
+    model:prov!=="human"?K.M:undefined,
+    canvas:{width:PATCH_PX,height:PATCH_PX}});}
+function pickParents(w,a,n){
+  const K=w.K,pool=K.X.filter(x=>x.published!==false);
+  const scored=pool.map(x=>({x,s:(a.relationships[x.creatorId]?.5:0)+x.attention*.3+
+    (1-a.cultureVector.reduce((t,v,i)=>t+Math.abs(v-x.culturalVector[i]),0)/TRAITS.length)*.5+w.rng.next()*.2}))
+    .sort((p,q)=>q.s-p.s).slice(0,n);
+  return scored.map(s=>s.x.id);}
+function newArtifact(w,a,modality,prov,parents,program,text){
+  const K=w.K;
+  const cv=a.cultureVector.map((v,i)=>{const ps=parents.map(id=>K.X.find(x=>x.id===id)).filter(Boolean);
+    const avg=ps.length?ps.reduce((s,x)=>s+x.culturalVector[i],0)/ps.length:v;
+    return clamp(v*.7+avg*.3+(w.rng.next()-.5)*.08,0,1);});
+  const depth=parents.length?Math.max(...parents.map(id=>(K.X.find(x=>x.id===id)||{}).generationDepth||0))+1:0;
+  return {id:"x"+(XSEQ++),creatorId:a.id,tick:w.tick,modality,provenanceType:prov,
+    culturalVector:cv,parentArtifactIds:parents,influenceAgentIds:Object.keys(a.relationships),
+    program:program||null,text:text||null,renderedPreview:null,
+    trainingEligible:K.R.rule!=="CLOSE"&&!(K.R.rule==="ASK"&&a.aiAttitude.training<0),
+    attention:1,communityId:a.communityId,generationDepth:depth,published:true,trained:false,
+    practice:modality==="text"?"write":prov==="synthetic"?"generate":"draw",at:a.at.slice()};}
+/* render once, keep the pixels as a patch for the sphere */
+function renderArtifact(x){
+  const cv=document.createElement("canvas");cv.width=PATCH_PX;cv.height=PATCH_PX;
+  const g=cv.getContext("2d");
+  if(x.program){const p=parseProgram(x.program,PATCH_PX,PATCH_PX);
+    if(p.ops)renderProgram(p.ops,cv);}
+  else{g.fillStyle="#fff";g.fillRect(0,0,PATCH_PX,PATCH_PX);g.fillStyle="#000";
+    g.font="10px monospace";const words=(x.text||"").split(/\s+/);let line="",y=14;
+    for(const wd of words){if((line+" "+wd).length>15){g.fillText(line,4,y);y+=12;line=wd;if(y>PATCH_PX-4)break;}
+      else line=(line?line+" ":"")+wd;}
+    if(y<=PATCH_PX-4)g.fillText(line,4,y);}
+  x.renderedPreview=cv;
+  const d=g.getImageData(0,0,PATCH_PX,PATCH_PX).data;
+  x.rgb=new Uint8ClampedArray(PATCH_PX*PATCH_PX*3);
+  for(let i=0;i<PATCH_PX*PATCH_PX;i++){x.rgb[i*3]=d[i*4];x.rgb[i*3+1]=d[i*4+1];x.rgb[i*3+2]=d[i*4+2];}
+  return cv;}
+
+/* one person makes one thing, through the model, with the world watching */
+async function makeArtifact(w,a,modality,prov){
+  const K=w.K,parents=pickParents(w,a,prov==="human"?2:3);
+  a.busy=modality==="text"?"writing…":prov==="synthetic"?"prompting…":"drawing…";
+  paint();
+  try{
+    let program=null,text=null;
+    if(modality==="text"){
+      text=(await callModel(PROMPTS.WRITING,artifactContext(w,a,prov,parents),160)).trim().slice(0,TEXT_MAX);
+      if(!text)throw new Error("empty");}
+    else if(prov==="synthetic"){
+      /* the labour of prompting: idea → prompt → variants → a choice */
+      const idea=a.memories.length?a.memories[a.memories.length-1].text:"something in the manner of what is around";
+      a.busy="prompt: "+idea.slice(0,26)+"…";paint();
+      const variants=[];
+      for(let i=0;i<VARIANTS;i++){                 // bounded, sequential
+        if(!AI.key||a.fault)break;
+        a.busy="variant "+(i+1)+" of "+VARIANTS;paint();
+        const out=await callModel(PROMPTS.ART,artifactContext(w,a,prov,parents)+"\nIDEA: "+idea,900);
+        const p=parseProgram(out,PATCH_PX,PATCH_PX);
+        if(p.ops)variants.push(out);}
+      if(!variants.length)throw new Error("no usable variant");
+      /* chosen by likeness to the prompter's own taste, measured on the pixels */
+      let best=null,bs=-1;
+      for(const v of variants){const tmp={program:v};renderArtifact(tmp);
+        const dark=tmp.rgb.reduce((s,c,i)=>i%3?s:s+(255-c),0)/(PATCH_PX*PATCH_PX*255);
+        const s=1-Math.abs(dark-a.cultureVector[1]);if(s>bs){bs=s;best=v;}}
+      program=best;
+      emit(w,"MODEL_GENERATED",a.id,{variants:variants.length,chosen:1});}
+    else{
+      program=await callModel(PROMPTS.ART,artifactContext(w,a,prov,parents),900);
+      const p=parseProgram(program,PATCH_PX,PATCH_PX);
+      if(!p.ops)throw new Error(p.error);}
+    const x=newArtifact(w,a,modality,prov,parents,program,text);
+    renderArtifact(x);
+    emit(w,"ARTIFACT_CREATED",a.id,{artifact:x},parents);
+    emit(w,"ARTIFACT_PUBLISHED",a.id,{id:x.id});
+    emit(w,"MEMORY",a.id,{of:x.id,text:"I made "+(modality==="text"?"a text":"a drawing")+
+      (parents.length?" after "+parents.length+" others":"")});
+    a.fault=null;bakeSurface(w);
+  }catch(e){
+    if(e.message==="busy")return;
+    a.fault={what:"couldn't continue",retry:()=>makeArtifact(w,a,modality,prov)};
+    if(/http 401|http 403/.test(e.message))globalFault();
+    else if(/Failed to fetch|abort|network/i.test(e.message))globalFault();
+  }finally{a.busy=null;paint();}}
+
+/* ===================================================================
+   THE TICK · one bounded step of the world
+   =================================================================== */
+async function agentTurn(w,a){
+  if(a.left||a.busy||a.fault)return;
+  const K=w.K;
+  let proposal=null;
+  try{
+    a.busy="thinking…";paint();
+    const out=await callModel(PROMPTS.AGENT,JSON.stringify(observe(w,a)),200);
+    a.busy=null;
+    const v=validateProposal(out,a,K);
+    if(v.error){a.currentAction="rest";return;}
+    proposal=v;
+  }catch(e){a.busy=null;
+    if(e.message==="busy")return;
+    a.fault={what:"couldn't continue",retry:()=>agentTurn(w,a)};
+    if(/Failed to fetch|abort|network|http 401/i.test(e.message))globalFault();
+    paint();return;}
+  a.currentAction=proposal.action;
+  if(proposal.utterance)emit(w,"UTTERANCE",a.id,{text:proposal.utterance,to:proposal.target});
+  switch(proposal.action){
+    case "draw":case "make":await makeArtifact(w,a,"image","human");break;
+    case "write":await makeArtifact(w,a,"text","human");break;
+    case "prompt":case "generate":
+      if(K.A.generatorAt<0)emit(w,"GENERATOR_BUILT",a.id,{});
+      await makeArtifact(w,a,"image","synthetic");break;
+    case "teach":{const b=K.C.find(x=>x.id===proposal.target);
+      if(b){const skill=["drawing","writing","prompting","criticism"][Math.floor(w.rng.next()*4)];
+        emit(w,"TEACHING_OCCURRED",a.id,{student:b.id,skill,practice:proposal.practice||"draw"});
+        if(!a.relationships[b.id])emit(w,"RELATIONSHIP_CREATED",a.id,{with:b.id,kind:"teaching"});}break;}
+    case "collaborate":{const b=K.C.find(x=>x.id===proposal.target);
+      if(b&&!a.relationships[b.id])emit(w,"RELATIONSHIP_CREATED",a.id,{with:b.id,kind:"collaboration"});
+      await makeArtifact(w,a,"image","hybrid");break;}
+    case "criticize":{const b=K.C.find(x=>x.id===proposal.target);
+      if(b&&a.relationships[b.id]&&similarity(a,b)<.4&&w.rng.next()<.4)
+        emit(w,"RELATIONSHIP_BROKEN",a.id,{with:b.id});
+      else if(b&&!a.relationships[b.id]&&w.rng.next()<.3)
+        emit(w,"RELATIONSHIP_CREATED",a.id,{with:b.id,kind:"conflict"});break;}
+    case "leave":if(a.wealth<.5||a.belonging<.2)emit(w,"AGENT_EXITED",a.id,{why:proposal.reason});break;
+    case "petition":if(!K.R.proposed)emit(w,"POLICY_PROPOSED",a.id,{rule:RULES[Math.floor(w.rng.next()*RULES.length)]});break;
+    case "remix":case "learn":case "join":case "talk":case "publish":case "withhold":case "rest":default:break;}
+  paint();}
+
+function policyStep(w){                        // a proposal is judged by the people, in time
+  const K=w.K;if(!K.R.proposed)return;
+  const live=K.C.filter(a=>!a.left);
+  const yes=live.filter(a=>{const r=K.R.proposed;
+    if(r==="OPEN"||r==="OPEN MODEL")return a.aiAttitude.openWeights>0;
+    if(r==="PAY"||r==="RETURN")return a.aiAttitude.compensation>0;
+    if(r==="CLOSE")return a.aiAttitude.training<0;
+    return a.aiAttitude.toolUse>-.3;}).length;
+  if(w.rng.next()<.35)emit(w,yes>live.length/2?"POLICY_ADOPTED":"POLICY_REJECTED",null,{rule:K.R.proposed,yes,of:live.length});}
+
+let TIMER=null,TURN=0;
+function tickOnce(w){
+  if(w.paused)return;
+  for(const a of w.K.C){a.phase=a.phase||(w.rng.next());a.blinkAt=a.blinkAt||(w.rng.next()*140|0);}
+  w.tick++;
+  axelrodStep(w);confidenceStep(w);encounterStep(w);
+  if(w.tick%3===0)rewireStep(w);
+  if(w.tick%4===0)cascadeStep(w);
+  if(w.tick%2===0)incomeStep(w);
+  decayStep(w);driftStep(w);
+  if(w.tick%6===0)communityStep(w);
+  policyStep(w);
+  /* one person acts per tick, in turn, never more than the in-flight ceiling */
+  const live=w.K.C.filter(a=>!a.left);
+  if(live.length&&AI.inflight<INFLIGHT_MAX){
+    const a=live[TURN%live.length];TURN++;
+    if(AI.key)agentTurn(w,a);
+    else{                                          // no model: the wish is shown, not faked
+      for(const b of live)if(b.fault&&b.fault.nokey)b.fault=null;
+      a.currentAction="would make";
+      a.fault={what:"needs a key",nokey:true,retry:openDoor};}}
+  paint();}
+let ANIM=null;
+function startTicks(){stopTicks();
+  TIMER=setInterval(()=>tickOnce(WORLDS[CUR]),TICK_MS);
+  ANIM=setInterval(()=>{const w=WORLDS[CUR];if(!w||w.paused)return;
+    w.frameTick=(w.frameTick||0)+1;paint();},80);}
+function stopTicks(){if(TIMER){clearInterval(TIMER);TIMER=null;}
+  if(ANIM){clearInterval(ANIM);ANIM=null;}}
+
+/* ===================================================================
+   THE MODEL READS · nothing is removed, something changes
+   =================================================================== */
+function trainable(w){return w.K.X.filter(x=>x.trainingEligible&&!x.trained);}
+function trainModel(w){
+  const K=w.K,xs=trainable(w);if(!xs.length)return null;
+  const M=K.M,after=Object.assign({},M);delete after.trainedOn;
+  const n=xs.length,human=xs.filter(x=>x.provenanceType==="human").length;
+  const synth=xs.filter(x=>x.provenanceType==="synthetic").length;
+  const hybrid=n-human-synth;
+  /* coverage: how many of the eight traits the batch reaches at the extremes */
+  const rare=TRAITS.filter((t,i)=>xs.some(x=>x.culturalVector[i]<.15||x.culturalVector[i]>.85)).length/TRAITS.length;
+  const spread=TRAITS.reduce((s,t,i)=>{const vs=xs.map(x=>x.culturalVector[i]);
+    const m=vs.reduce((a,b)=>a+b,0)/vs.length;return s+Math.sqrt(vs.reduce((a,b)=>a+(b-m)*(b-m),0)/vs.length);},0)/TRAITS.length;
+  const img=xs.filter(x=>x.modality==="image").length,txt=n-img;
+  after.drawing=clamp(M.drawing+.06*Math.log1p(img),0,1);
+  after.writing=clamp(M.writing+.06*Math.log1p(txt),0,1);
+  after.prompting=clamp(M.prompting+.03*Math.log1p(n),0,1);
+  after.composition=clamp(M.composition+.04*Math.log1p(n)*(.5+spread),0,1);
+  after.stylisticCoverage=clamp(M.stylisticCoverage*.8+spread*.6,0,1);
+  after.rareTraitCoverage=clamp(M.rareTraitCoverage*.7+rare*.5-(synth/n)*.15,0,1);
+  after.hybridization=clamp(M.hybridization+.05*hybrid,0,1);
+  after.memorizationRisk=clamp(M.memorizationRisk+.03*(n<8?1:.3)+.02*(synth/n),0,1);
+  const e=emit(w,"MODEL_TRAINED",null,{ids:xs.map(x=>x.id),after,human,synthetic:synth,hybrid,rare,spread});
+  return {e,ids:xs.map(x=>x.id)};}
+/* the share of the pool by provenance, as a fact, not a score */
+function poolShares(w){const n=w.K.X.length||1;
+  const c=p=>w.K.X.filter(x=>x.provenanceType===p).length/n;
+  return {human:c("human"),synthetic:c("synthetic"),hybrid:c("hybrid")};}
+
+/* ===================================================================
+   FORK · the same world twice, one condition changed
+   =================================================================== */
+const WORLDS=[];let CUR=0;
+function cloneWorld(w){
+  const K=JSON.parse(JSON.stringify(w.K,(k,v)=>k==="renderedPreview"||k==="rgb"?undefined:v));
+  for(const x of K.X){const src=w.K.X.find(y=>y.id===x.id);if(src&&src.rgb)x.rgb=src.rgb;}
+  for(const a of K.C){a.busy=null;a.fault=null;}
+  return {K,events:w.events.slice(),tick:w.tick,rng:makeRng(w.rng.state),seed:w.seed,
+    id:w.id==="W0"?"W1":"W0",paused:false,surface:null};}
+function forkWorld(rule){
+  if(WORLDS.length>1)return;
+  const w=WORLDS[0],b=cloneWorld(w);b.id="W1";
+  WORLDS.push(b);
+  emit(b,"POLICY_ADOPTED",null,{rule,by:"fork"});
+  CUR=1;$("forkbar").classList.add("on");paintForkBar();bakeSurface(b);paint();}
+
+/* ===================================================================
+   THE SURFACE · artifacts baked onto the sphere where they were made
+   =================================================================== */
+/* ---------- the ground --------------------------------------------------
+   Land and water, from a few overlapping waves on the sphere. It is the
+   same for every world with the same seed, it costs one pass at start,
+   and it is read through the same grid the works are read through. */
+const LAND=new Uint8Array(GRID_W*GRID_H);
+function bakeLand(seed){
+  const r=makeRng(seed^0x9e37);const ph=[];for(let i=0;i<6;i++)ph.push(r.next()*TAU);
+  for(let i=0;i<GRID_W*GRID_H;i++){
+    const x=SURF_DIRS[i*3],y=SURF_DIRS[i*3+1],z=SURF_DIRS[i*3+2];
+    let v=0;
+    v+=Math.sin(3.1*x+ph[0])*Math.cos(2.7*y+ph[1]);
+    v+=0.7*Math.sin(5.3*z+ph[2])*Math.sin(4.1*x+ph[3]);
+    v+=0.5*Math.cos(7.9*y+ph[4]+3.3*z)*Math.cos(6.1*x+ph[5]);
+    v+=0.35*Math.sin(11*x*y+ph[1])*Math.cos(9*z+ph[4]);
+    LAND[i]=v>0.15?2:v>-0.25?1:0;}          // 2 high ground, 1 low ground, 0 water
+  /* the places stand on land, whatever the waves say */
+  for(const s of SITES){const i=surfIdx(s.at);
+    for(let dy=-3;dy<=3;dy++)for(let dx=-4;dx<=4;dx++){
+      const y=clamp((i/GRID_W|0)+dy,0,GRID_H-1),x=((i%GRID_W)+dx+GRID_W)%GRID_W;LAND[y*GRID_W+x]=Math.max(LAND[y*GRID_W+x],1);}}}
+/* trees and paths: dressing, placed once */
+const TREES=[];
+function plantTrees(seed){
+  TREES.length=0;const r=makeRng(seed^0x51ed);let guard=0;
+  while(TREES.length<70&&guard++<600){
+    const d=norm(dirLL(r.next()*TAU-PI,(r.next()-.5)*PI*.9));
+    if(LAND[surfIdx(d)]<1)continue;
+    if(SITES.some(s=>ang(s.at,d)<9*D2R))continue;
+    TREES.push({at:d,h:.5+r.next()*.7});}}
+const PATHS=[];
+function layPaths(){
+  PATHS.length=0;
+  const order=["archive","school","studios","commons","market","lab"];
+  for(let i=0;i<order.length;i++){
+    const a=SITES.find(s=>s.id===order[i]),b=SITES.find(s=>s.id===order[(i+1)%order.length]);
+    PATHS.push([a.at,b.at]);}
+  PATHS.push([SITES.find(s=>s.id==="studios").at,SITES.find(s=>s.id==="lab").at]);}
+/* the point a fraction of the way along a great circle */
+function slerp(a,b,t){const o=ang(a,b);if(o<1e-6)return a.slice();const s=Math.sin(o);
+  return norm(add(mul(a,Math.sin((1-t)*o)/s),mul(b,Math.sin(t*o)/s)));}
+const SURF_DIRS=new Float32Array(GRID_W*GRID_H*3);
+for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
+  const d=dirLL(((x+.5)/GRID_W)*TAU-PI,PI/2-((y+.5)/GRID_H)*PI),i=(y*GRID_W+x)*3;
+  SURF_DIRS[i]=d[0];SURF_DIRS[i+1]=d[1];SURF_DIRS[i+2]=d[2];}
+function bakeSurface(w){
+  const rgba=w.surface&&w.surface.length===GRID_W*GRID_H*4?w.surface:new Uint8Array(GRID_W*GRID_H*4);
+  rgba.fill(0);
+  const fov=22*D2R,ty=Math.tan(fov/2);
+  /* the places first, larger, then the works on top of them */
+  const layers=SITES.map(s=>({at:s.at,rgb:siteRGB(s),fov:34*D2R,trained:false}))
+    .concat(w.K.X.filter(x=>x.rgb).slice(-160));    // the newest sit on top
+  for(const x of layers){
+    const b=basis(x.at,upFor(x.at));const ty=Math.tan((x.fov||fov)/2);
+    for(let i=0;i<GRID_W*GRID_H;i++){
+      const d=[SURF_DIRS[i*3],SURF_DIRS[i*3+1],SURF_DIRS[i*3+2]];
+      const z=dot(d,b.f);if(z<=.6)continue;
+      const px=dot(d,b.r)/z/ty,py=dot(d,b.u)/z/ty;
+      if(Math.abs(px)>1||Math.abs(py)>1)continue;
+      const sx=clamp(((px+1)/2*PATCH_PX)|0,0,PATCH_PX-1),sy=clamp(((1-py)/2*PATCH_PX)|0,0,PATCH_PX-1);
+      const j=(sy*PATCH_PX+sx)*3,k=i*4;
+      const fade=x.trained?.55:1;
+      rgba[k]=x.rgb[j]*fade+255*(1-fade);rgba[k+1]=x.rgb[j+1]*fade+255*(1-fade);
+      rgba[k+2]=x.rgb[j+2]*fade+255*(1-fade);rgba[k+3]=255;}}
+  w.surface=rgba;}
+const surfIdx=d=>{const ll=llDir(d);
+  const x=((Math.round((ll[0]+PI)/TAU*GRID_W-.5)%GRID_W)+GRID_W)%GRID_W;
+  const y=clamp(Math.round((PI/2-ll[1])/PI*GRID_H-.5),0,GRID_H-1);return y*GRID_W+x;};
+
+/* ===================================================================
+   THE VIEW · the ball, the people on it, the thing beside the thing
+   =================================================================== */
+/* You stand inside the world and look at one place. What is happening
+   there fills the frame. Everyone else is a mark at the edge of the frame
+   in their direction, with their name and what they are doing — you can
+   see that something is happening and not what, until you turn to it. */
+const V={yaw:.4,pitch:.28,fov:82*D2R,selected:null,training:null,anim:0,
+  focus:null,userUntil:0,mode:"BALL",aimYaw:.4,aimPitch:.28,zoom:1,aimZoom:1};
+const ZOOM_SCENE=2.6;
+function camRot(){return rot(V.yaw,V.pitch);}
+/* where a point on the shell lands in the frame: [x,y in -1..1, in front] */
+function framePt(p,R,asp){const z=dot(p,R[2]);
+  const ty=Math.tan(V.fov/2),tx=ty*asp;
+  return [dot(p,R[0])/Math.max(z,1e-6)/tx,dot(p,R[1])/Math.max(z,1e-6)/ty,z>0.02];}
+function frameRay(x,y,R,asp){const ty=Math.tan(V.fov/2),tx=ty*asp;
+  return norm([R[0][0]*x*tx+R[1][0]*y*ty+R[2][0],R[0][1]*x*tx+R[1][1]*y*ty+R[2][1],
+               R[0][2]*x*tx+R[1][2]*y*ty+R[2][2]]);}
+function aimAt(d){V.aimYaw=Math.atan2(d[0],d[2]);V.aimPitch=-Math.asin(clamp(d[1],-1,1));}
+/* from outside, the ball is turned so the place faces you, and comes close */
+function aimBallAt(d){V.aimYaw=-Math.atan2(d[0],d[2]);V.aimPitch=Math.asin(clamp(d[1],-1,1));}
+const shortTurn=(a,b)=>{let d=b-a;while(d>PI)d-=TAU;while(d<-PI)d+=TAU;return d;};
+/* the place to look: whoever is doing something, most recently */
+function chooseFocus(w){
+  const K=w.K;
+  /* a meeting is the best thing in the world to be looking at */
+  if(w.beat&&w.tick-w.beat.tick<=4)return w.beat.pair[0];
+  const busy=K.C.find(a=>!a.left&&a.busy);if(busy)return busy.id;
+  for(let i=w.events.length-1,n=0;i>=0&&n<40;i--,n++){const e=w.events[i];
+    if(e.actorId&&e.tick>=w.tick-3){const a=K.C.find(x=>x.id===e.actorId);if(a&&!a.left)return a.id;}}
+  return V.focus||(K.C[0]&&K.C[0].id);}
+function easeCamera(w){
+  /* following someone beats everything, until you let them go */
+  if(V.follow){const a=w.K.C.find(x=>x.id===V.follow);
+    if(a&&!a.left){V.focus=a.id;
+      if(V.mode==="BALL"){aimBallAt(a.at);V.aimZoom=ZOOM_SCENE;}else aimAt(a.at);
+      V.yaw+=shortTurn(V.yaw,V.aimYaw)*.07;V.pitch+=(V.aimPitch-V.pitch)*.07;
+      V.zoom+=(V.aimZoom-V.zoom)*.07;return;}
+    V.follow=null;}
+  if(Date.now()>=V.userUntil){
+    const id=chooseFocus(w);
+    if(id!==V.focus){V.focus=id;const a=w.K.C.find(x=>x.id===id);
+      if(a){const site=SITE_FOR(a.currentAction);
+        const meeting=w.beat&&w.tick-w.beat.tick<=4&&w.beat.pair.indexOf(id)>=0;
+        const at=meeting?w.beat.at
+          :site&&ang(site.at,a.at)<24*D2R?norm(add(mul(site.at,.6),mul(a.at,.4))):a.at;
+        if(V.mode==="BALL"){aimBallAt(at);V.aimZoom=ZOOM_SCENE;}else aimAt(at);}}}
+  V.yaw+=shortTurn(V.yaw,V.aimYaw)*.07;V.pitch+=(V.aimPitch-V.pitch)*.07;
+  V.zoom+=(V.aimZoom-V.zoom)*.07;}
+const stage=$("stage"),cv=$("cv");
+function fit(){const dpr=Math.min(2,devicePixelRatio||1),r=stage.getBoundingClientRect();
+  const w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}cv.dpr=dpr;}
+let SG=null;
+function paint(){
+  if(!$("world").classList.contains("on"))return;
+  fit();
+  const w=WORLDS[CUR];if(!w)return;
+  if(V.mode==="FRAME"){paintFrame(w,cv,1);return;}
+  easeCamera(w);paintBall(w);}
+/* ---------- the frame: inside, looking at one place ---------- */
+function paintFrame(w,cv,alpha){
+  const g=cv.getContext("2d"),W=cv.width,H=cv.height,dpr=cv.dpr||1,asp=W/Math.max(1,H);
+  easeCamera(w);
+  const R=camRot(),K=w.K,S=w.surface;
+  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.fillStyle="#fff";g.fillRect(0,0,W,H);
+  g.globalAlpha=alpha;
+  const px=(q)=>[(q[0]+1)/2*W,(1-q[1])/2*H];
+  const step=2.6,cell=Math.min(W,H)*step*D2R/(2*Math.tan(V.fov/2));
+  /* the shell: paper where nothing is, the works where they were made */
+  for(let lat=-88;lat<=88;lat+=step)for(let lon=-180;lon<180;lon+=step){
+    const d=dirLL(lon*D2R,lat*D2R),q=framePt(d,R,asp);
+    if(!q[2]||Math.abs(q[0])>1.1||Math.abs(q[1])>1.1)continue;
+    let rad=cell*.08,col="rgba(0,0,0,.26)";
+    if(S){const i=surfIdx(d)*4;if(S[i+3]){const L=(S[i]*.299+S[i+1]*.587+S[i+2]*.114)/255;
+      rad=cell*(.2+.62*(1-L));col="rgb("+S[i]+","+S[i+1]+","+S[i+2]+")";}}
+    if(rad<.35)continue;const s=px(q);g.fillStyle=col;
+    if(rad<2.2)g.fillRect(s[0]-rad,s[1]-rad,rad*2,rad*2);
+    else{g.beginPath();g.arc(s[0],s[1],rad,0,TAU);g.fill();}}
+  /* ties that are in the frame */
+  g.lineWidth=Math.max(1,W/460);
+  for(const a of K.C){if(a.left)continue;
+    for(const id in a.relationships){if(id<a.id)continue;const b=K.C.find(x=>x.id===id);if(!b||b.left)continue;
+      const p=framePt(a.at,R,asp),q=framePt(b.at,R,asp);if(!p[2]||!q[2])continue;
+      const kind=a.relationships[id];
+      g.strokeStyle=kind==="conflict"?"rgba(255,46,46,.7)":kind==="teaching"?"rgba(59,130,246,.8)":"rgba(0,0,0,.4)";
+      g.setLineDash(kind==="collaboration"?[4,3]:[]);
+      const s=px(p),t=px(q);g.beginPath();g.moveTo(s[0],s[1]);g.lineTo(t[0],t[1]);g.stroke();}}
+  g.setLineDash([]);
+  /* the people in the frame, and the marks at the edge for those who are not */
+  g.font=(10*dpr)+"px 'IBM Plex Mono',monospace";g.textAlign="center";g.textBaseline="alphabetic";
+  const beside=$("beside");if(beside)beside.innerHTML="";
+  const edge=[];SG={R,asp,W,H,hits:[]};
+  for(const a of K.C){if(a.left)continue;
+    const q=framePt(a.at,R,asp);
+    const inside=q[2]&&Math.abs(q[0])<=1&&Math.abs(q[1])<=1;
+    if(!inside){edge.push({a,q});continue;}
+    const s=px(q);SG.hits.push({a,x:s[0],y:s[1]});
+    const focus=a.id===V.focus;
+    /* a figure, in the pose of what they are doing, sized by how near */
+    const pose=POSE_FOR[a.busy?"think":a.currentAction]||"stand";
+    const sz=Math.max(18,Math.min(W,H)*0.11*(0.6+0.4*q[2]))*(focus?1.15:1);
+    const sp=figureSprite(pose);
+    if(sp&&sp.width){g.drawImage(sp,s[0]-sz/2,s[1]-sz*0.92,sz,sz);}
+    if(focus){g.strokeStyle="#3b82f6";g.lineWidth=1.5*dpr;g.beginPath();
+      g.ellipse(s[0],s[1]+2*dpr,sz*0.36,sz*0.12,0,0,TAU);g.stroke();}
+    g.fillStyle="#000";
+    g.fillText(a.name.toUpperCase()+(a.currentAction?" · "+a.currentAction:""),s[0],s[1]-sz*0.98);
+    /* what they last said, if it was recent */
+    const said=w.events.slice(-60).reverse().find(e=>e.type==="UTTERANCE"&&e.actorId===a.id&&e.tick>=w.tick-4);
+    if(said&&beside&&(focus||V.selected===a.id)){const el=document.createElement("div");el.className="beside say";
+      el.style.left=(s[0]/dpr)+"px";el.style.top=(s[1]/dpr)+"px";el.textContent=said.payload.text;beside.appendChild(el);}
+    if(beside&&(a.busy||a.fault||V.selected===a.id)){
+      const el=document.createElement("div");el.className="beside";
+      el.style.left=(s[0]/dpr)+"px";el.style.top=(s[1]/dpr+(said?34:0))+"px";
+      if(a.fault){el.textContent=a.fault.what+" ";const b=document.createElement("button");
+        b.textContent=a.fault.nokey?"KEY":"RETRY";
+        b.onclick=e=>{e.stopPropagation();const f=a.fault;a.fault=null;f.retry();};el.appendChild(b);}
+      else if(a.busy){el.textContent=a.busy+" ";const b=document.createElement("button");
+        b.textContent="STOP";b.onclick=e=>{e.stopPropagation();stopAllCalls();};el.appendChild(b);}
+      else{el.textContent=a.name;const b=document.createElement("button");b.textContent="MORE";
+        b.onclick=e=>{e.stopPropagation();openAgent(a);};el.appendChild(b);}
+      beside.appendChild(el);}}
+  /* the edge: a mark in each person's direction, with their name and what they are at */
+  const inset=14*dpr;
+  for(const {a,q} of edge){
+    let dx=dot(a.at,R[0]),dy=dot(a.at,R[1]);const behind=dot(a.at,R[2])<=0;
+    if(behind){dx=-dx;dy=-dy;}                      // behind you: the mark points the long way
+    const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;
+    const hw=W/2-inset,hh=H/2-inset;
+    const t=Math.min(hw/Math.max(Math.abs(dx),1e-6),hh/Math.max(Math.abs(dy),1e-6));
+    const x=W/2+dx*t,y=H/2-dy*t;
+    SG.hits.push({a,x,y,edge:true});
+    const ang=Math.atan2(-dy,dx);
+    g.save();g.translate(x,y);g.rotate(ang);
+    g.fillStyle=a.busy?"#3b82f6":"#000";g.beginPath();
+    g.moveTo(6*dpr,0);g.lineTo(-4*dpr,-5*dpr);g.lineTo(-4*dpr,5*dpr);g.closePath();g.fill();
+    g.restore();
+    g.fillStyle="#000";g.textAlign=dx>0.4?"right":dx<-0.4?"left":"center";
+    const lx=x-dx*12*dpr,ly=y+dy*12*dpr+(Math.abs(dy)>Math.abs(dx)?(dy>0?12:-4)*dpr:4*dpr);
+    g.fillText(a.name.toUpperCase()+(a.busy?" · "+a.busy.replace(/…$/,""):a.currentAction?" · "+a.currentAction:""),lx,ly);}
+  g.textAlign="center";
+  /* the model, when it exists, as a mark at the top if it is not in frame */
+  if(K.M.trainedOn.length||K.A.generatorAt>=0){const m=framePt(dirLL(0,PI/2),R,asp);
+    if(m[2]&&Math.abs(m[0])<=1&&Math.abs(m[1])<=1){const s=px(m);
+      g.strokeStyle="#3b82f6";g.lineWidth=1.5*dpr;g.beginPath();g.arc(s[0],s[1],7*dpr,0,TAU);g.stroke();
+      g.fillStyle="#3b82f6";g.fillText("MODEL",s[0],s[1]-11*dpr);}}
+  /* training: lines from the works toward the pole */
+  if(V.training){const t=(Date.now()-V.training.t0)/1600;
+    const m=framePt(dirLL(0,PI/2),R,asp),ms=m[2]?px(m):[W/2,-20];
+    for(const id of V.training.ids){const x=K.X.find(y=>y.id===id);if(!x)continue;
+      const q=framePt(x.at,R,asp);if(!q[2])continue;const s=px(q);const k=clamp(t,0,1);
+      g.strokeStyle="rgba(59,130,246,"+(1-k*.6)+")";g.lineWidth=1.2;
+      g.beginPath();g.moveTo(s[0],s[1]);g.lineTo(s[0]+(ms[0]-s[0])*k,s[1]+(ms[1]-s[1])*k);g.stroke();}
+    if(t>1.4)V.training=null;}
+  g.globalAlpha=1;
+  /* the scene: the place the frame is looking at, and who is there */
+  const sc=sceneAt(w,frameRay(0,0,R,asp));
+  if(sc){g.fillStyle="#000";g.textAlign="left";g.font=(10*dpr)+"px 'IBM Plex Mono',monospace";
+    const who=sc.there.slice(0,4).map(a=>a.name.toUpperCase()+(a.currentAction?" "+a.currentAction:"")).join(" · ");
+    g.fillText(sc.site.name+(who?"  —  "+who:"  —  no one here"),inset+4*dpr,inset+12*dpr);
+    g.textAlign="center";}
+  /* the frame itself */
+  g.strokeStyle="rgba(0,0,0,.85)";g.lineWidth=Math.max(1,W/400);
+  g.strokeRect(inset*.5,inset*.5,W-inset,H-inset);
+  if(edge.length){g.fillStyle="#000";g.textAlign="right";g.font=(9*dpr)+"px 'IBM Plex Mono',monospace";
+    g.fillText(edge.length+" OFF FRAME",W-inset-4*dpr,H-inset-4*dpr);g.textAlign="center";}
+  if(alpha>=1)paintFoot(w);
+  if(V.training||Date.now()<V.userUntil||Math.abs(shortTurn(V.yaw,V.aimYaw))>.004)requestAnimationFrame(paint);}
+/* a balloon, with a tail, the way a cartoon says a thing */
+function balloon(g,x,y,text,dpr,flat){
+  const fs=Math.max(9,10*dpr);g.font=fs+"px 'IBM Plex Mono',monospace";
+  const words=String(text).split(/\s+/),lines=[];let line="";
+  const max=22;
+  for(const wd of words){if((line+" "+wd).trim().length>max){lines.push(line.trim());line=wd;}
+    else line=(line?line+" ":"")+wd;if(lines.length>=3)break;}
+  if(line&&lines.length<3)lines.push(line.trim());
+  const wpx=Math.max(...lines.map(l=>g.measureText(l).width))+fs*1.1;
+  const hpx=lines.length*fs*1.35+fs*.8;
+  const bx=x-wpx/2,by=y-hpx;
+  g.fillStyle="#fff";g.strokeStyle=flat?"#3b82f6":"#000";g.lineWidth=Math.max(1.2,dpr*1.2);
+  g.beginPath();
+  if(g.roundRect)g.roundRect(bx,by,wpx,hpx,fs*.5);else g.rect(bx,by,wpx,hpx);
+  g.fill();g.stroke();
+  g.beginPath();g.moveTo(x-fs*.4,by+hpx-1);g.lineTo(x,by+hpx+fs*.7);g.lineTo(x+fs*.4,by+hpx-1);
+  g.fillStyle="#fff";g.fill();
+  g.beginPath();g.moveTo(x-fs*.4,by+hpx);g.lineTo(x,by+hpx+fs*.7);g.lineTo(x+fs*.4,by+hpx);g.stroke();
+  g.fillStyle="#000";g.textAlign="center";g.textBaseline="alphabetic";
+  lines.forEach((l,i)=>g.fillText(l,x,by+fs*1.15+i*fs*1.35));}
+
+/* ---------- the ball: the whole world from outside, on request ---------- */
+function paintBall(w){
+  const g=cv.getContext("2d"),W=cv.width,H=cv.height,dpr=cv.dpr||1;
+  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.fillStyle="#fff";g.fillRect(0,0,W,H);
+  const zoom=V.zoom,Rd=Math.min(W,H)*.40*zoom,R=rot(V.yaw,V.pitch);
+  /* close in, the place you are looking at sits a little below centre so
+     what stands up off the ground has room */
+  const cx=W/2,cy=H/2+(zoom-1)*Rd*0.16;
+  const scr=d=>{const k=toScreen(d,R);return [cx+k[0]*Rd,cy-k[1]*Rd,k[2]];};
+  const onscreen=p=>p[0]>-40&&p[0]<W+40&&p[1]>-40&&p[1]<H+40;
+  /* the ground: finer dots the closer you are, land darker than water */
+  const step=clamp(3.4/Math.sqrt(zoom),1.6,3.4),cell=Rd*step*D2R,S=w.surface;
+  for(let lat=-88;lat<=88;lat+=step)for(let lon=-180;lon<180;lon+=step){
+    const d=dirLL(lon*D2R,lat*D2R),k=toScreen(d,R);if(k[2]<=.03)continue;
+    const x=cx+k[0]*Rd,y=cy-k[1]*Rd;if(x<-8||x>W+8||y<-8||y>H+8)continue;
+    const gi=surfIdx(d);const land=LAND[gi];
+    let rad=land===2?cell*.24:land===1?cell*.15:cell*.06;
+    let col=land===2?"rgba(0,0,0,.55)":land===1?"rgba(0,0,0,.30)":"rgba(0,0,0,.16)";
+    if(S){const i=gi*4;if(S[i+3]){const L=(S[i]*.299+S[i+1]*.587+S[i+2]*.114)/255;
+      rad=cell*(.2+.62*(1-L));col="rgb("+S[i]+","+S[i+1]+","+S[i+2]+")";}}
+    rad*=(.55+.45*k[2]);if(rad<.35)continue;
+    g.fillStyle=col;
+    if(rad<2.2)g.fillRect(x-rad,y-rad,rad*2,rad*2);
+    else{g.beginPath();g.arc(x,y,rad,0,TAU);g.fill();}}
+  /* the paths between the places: dotted great circles */
+  g.fillStyle="rgba(0,0,0,.7)";
+  for(const [a,b] of PATHS){const n=Math.max(8,Math.round(ang(a,b)/(3*D2R)));
+    for(let i=0;i<=n;i++){const p=scr(slerp(a,b,i/n));if(p[2]<=.05||!onscreen(p))continue;
+      const r=Math.max(.8,cell*.12*(.5+.5*p[2]));g.fillRect(p[0]-r,p[1]-r,r*2,r*2);}}
+  /* the trees: a stalk and a puff, standing up off the ground */
+  for(const t of TREES){const p=scr(t.at);if(p[2]<=.08||!onscreen(p))continue;
+    const L=Math.hypot(toScreen(t.at,R)[0],toScreen(t.at,R)[1])||1,k=toScreen(t.at,R);
+    const rise=Rd*0.05*t.h*(0.5+0.5*p[2]);
+    const tx=p[0]+k[0]/L*rise*0.3,ty=p[1]-k[1]/L*rise*0.3-rise*0.7;
+    g.strokeStyle="rgba(0,0,0,"+(0.7*p[2])+")";g.lineWidth=Math.max(1,W/520);
+    g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(tx,ty);g.stroke();
+    g.fillStyle="rgba(0,0,0,"+(0.5*p[2])+")";g.beginPath();g.arc(tx,ty,rise*0.5,0,TAU);g.fill();}
+  g.strokeStyle="rgba(0,0,0,.8)";g.lineWidth=Math.max(1,W/300);
+  g.beginPath();g.arc(cx,cy,Rd,0,TAU);g.stroke();
+  /* only the ties that matter now: drawn, and drawn breaking */
+  const K=w.K;
+  g.lineWidth=Math.max(1,W/460);
+  for(const a of K.C){if(a.left)continue;
+    for(const id in a.relationships){if(id<a.id)continue;const b=K.C.find(x=>x.id===id);
+      if(!b||b.left)continue;const p=scr(a.at),q=scr(b.at);if(p[2]<=0||q[2]<=0)continue;
+      const kind=a.relationships[id];
+      g.strokeStyle=kind==="conflict"?"rgba(255,46,46,.7)":kind==="teaching"?"rgba(59,130,246,.8)":"rgba(0,0,0,.45)";
+      g.setLineDash(kind==="collaboration"?[4,3]:[]);
+      g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1]);g.stroke();}}
+  g.setLineDash([]);
+  /* training: lines move toward the model; the works stay where they are */
+  if(V.training){const t=(Date.now()-V.training.t0)/1600;
+    const m=scr(dirLL(0,PI/2));const mx=m[2]>0?m[0]:cx,my=m[2]>0?m[1]:cy-Rd-10;
+    for(const id of V.training.ids){const x=K.X.find(y=>y.id===id);if(!x)continue;
+      const p=scr(x.at);if(p[2]<=0)continue;
+      const k=clamp(t,0,1);
+      g.strokeStyle="rgba(59,130,246,"+(1-k*.6)+")";g.lineWidth=1.2;
+      g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(p[0]+(mx-p[0])*k,p[1]+(my-p[1])*k);g.stroke();
+      g.strokeStyle="rgba(59,130,246,.9)";g.beginPath();g.arc(p[0],p[1],cell*1.6*(1+.3*Math.sin(t*9)),0,TAU);g.stroke();}
+    if(t>1.4)V.training=null;}
+  /* the people */
+  g.font=(10*dpr)+"px 'IBM Plex Mono',monospace";g.textAlign="center";
+  const beside=$("beside");beside.innerHTML="";
+  const r=stage.getBoundingClientRect();
+  const near=K.C.filter(a=>!a.left).map(a=>({a,p:scr(a.at)}))
+    .filter(o=>o.p[2]>0&&onscreen(o.p)).sort((x,y)=>x.p[2]-y.p[2]);
+  const balloons=[];
+  for(const {a,p} of near){
+    const sz=Math.max(15,Rd*0.13*(0.4+0.6*p[2]));
+    const walking=!!a.walking;
+    /* they face the way they are going, or the person they are with */
+    let look=0;
+    const meet=w.beat&&w.tick-w.beat.tick<=4&&w.beat.pair.indexOf(a.id)>=0;
+    if(meet){const o=K.C.find(x=>x.id===w.beat.pair.find(id=>id!==a.id));
+      if(o){const q=scr(o.at);look=clamp((q[0]-p[0])/(sz||1),-1,1);}}
+    drawPerson(g,p[0],p[1],sz,a,w.frameTick||0,{walking,look});
+    g.fillStyle="#000";g.textAlign="center";
+    g.fillText(a.name.toUpperCase()+(a.currentAction?" · "+a.currentAction:""),p[0],p[1]-sz*1.12);
+    /* what they said, if it was recent */
+    const said=w.events.slice(-40).reverse().find(e=>e.type==="UTTERANCE"&&e.actorId===a.id&&e.tick>=w.tick-3);
+    if(said&&zoom>1.2)balloons.push({x:p[0],y:p[1]-sz*1.3,text:said.payload.text});
+    else if(a.fault&&a.fault.nokey)balloons.push({x:p[0],y:p[1]-sz*1.3,text:"needs a key",flat:true});
+    /* the lever, beside the person it belongs to */
+    if(a.fault||V.selected===a.id){
+      const el=document.createElement("div");el.className="beside";
+      el.style.left=(p[0]/dpr)+"px";el.style.top=(p[1]/dpr)+"px";
+      if(a.fault){el.textContent=a.fault.what+" ";const bt=document.createElement("button");
+        bt.textContent=a.fault.nokey?"KEY":"RETRY";
+        bt.onclick=e=>{e.stopPropagation();const f=a.fault;a.fault=null;f.retry();};el.appendChild(bt);}
+      else{el.textContent=a.name;const bt=document.createElement("button");bt.textContent="MORE";
+        bt.onclick=e=>{e.stopPropagation();openAgent(a);};el.appendChild(bt);}
+      beside.appendChild(el);}}
+  /* balloons on top of everyone */
+  for(const b of balloons)balloon(g,b.x,b.y,b.text,dpr,b.flat);
+  /* the places stand up off the shell, taller the nearer, named */
+  g.font=(9*dpr)+"px 'IBM Plex Mono',monospace";
+  for(const s of SITES.slice().sort((a,b)=>toScreen(a.at,R)[2]-toScreen(b.at,R)[2])){
+    const k=toScreen(s.at,R);if(k[2]<=0.05)continue;
+    const x=cx+k[0]*Rd,y=cy-k[1]*Rd;const L=Math.hypot(k[0],k[1])||1;
+    if(!onscreen([x,y]))continue;
+    const rise=Rd*0.16*(0.5+0.5*k[2]);
+    const tx=x+k[0]/L*rise*0.3,ty=y-k[1]/L*rise*0.3-rise*0.7;
+    g.strokeStyle="rgba(0,0,0,"+(0.7*k[2])+")";g.lineWidth=Math.max(1,W/460);
+    g.beginPath();g.moveTo(x,y);g.lineTo(tx,ty);g.stroke();
+    const sp=siteSprite(s),sz=Rd*0.24*(0.6+0.4*k[2]);
+    if(sp&&sp.width){g.globalAlpha=Math.min(1,k[2]*1.5);g.drawImage(sp,tx-sz/2,ty-sz,sz,sz);g.globalAlpha=1;}
+    g.fillStyle="#000";g.fillText(s.name,tx,ty+10*dpr);}
+  g.font=(10*dpr)+"px 'IBM Plex Mono',monospace";
+  /* the model, at the pole, only once it exists */
+  if(K.M.trainedOn.length||K.A.generatorAt>=0){const m=scr(dirLL(0,PI/2));
+    if(m[2]>0){g.strokeStyle="#3b82f6";g.lineWidth=1.5*dpr;g.beginPath();g.arc(m[0],m[1],7*dpr,0,TAU);g.stroke();
+      g.fillStyle="#3b82f6";g.fillText("MODEL",m[0],m[1]-11*dpr);}}
+  SG={cx,cy,Rd,R,ball:true};
+  /* when close, the scene is named, and the people out of view are marks at the edge */
+  if(zoom>1.3){
+    const look=norm([R[2][0],R[2][1],R[2][2]]);   // the direction facing you
+    const sc=sceneAt(w,look);
+    const inset=14*dpr;
+    g.fillStyle="#000";g.textAlign="left";g.font=(10*dpr)+"px 'IBM Plex Mono',monospace";
+    if(sc){const who=sc.there.slice(0,4).map(a=>a.name.toUpperCase()+(a.currentAction?" "+a.currentAction:"")).join(" · ");
+      g.fillText(sc.site.name+(who?"  —  "+who:"  —  no one here"),inset+4*dpr,inset+12*dpr);}
+    let off=0;
+    for(const a of K.C){if(a.left)continue;const p=scr(a.at);
+      if(p[2]>0&&onscreen(p))continue;off++;
+      let dx=p[0]-cx,dy=p[1]-cy;if(p[2]<=0){dx=-dx;dy=-dy;}
+      const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;
+      const hw=W/2-inset,hh=H/2-inset;const t=Math.min(hw/Math.max(Math.abs(dx),1e-6),hh/Math.max(Math.abs(dy),1e-6));
+      const x=W/2+dx*t,y=H/2+dy*t;
+      g.save();g.translate(x,y);g.rotate(Math.atan2(dy,dx));
+      g.fillStyle=a.busy?"#3b82f6":"#000";g.beginPath();g.moveTo(6*dpr,0);g.lineTo(-4*dpr,-5*dpr);g.lineTo(-4*dpr,5*dpr);g.closePath();g.fill();g.restore();
+      g.fillStyle="#000";g.textAlign=dx>0.4?"right":dx<-0.4?"left":"center";
+      g.fillText(a.name.toUpperCase()+(a.busy?" · "+a.busy.replace(/…$/,""):a.currentAction?" · "+a.currentAction:""),x-dx*12*dpr,y-dy*12*dpr+4*dpr);
+      SG.hits=SG.hits||[];SG.hits.push({a,x,y,edge:true});}
+    if(off){g.textAlign="right";g.font=(9*dpr)+"px 'IBM Plex Mono',monospace";g.fillStyle="#000";
+      g.fillText(off+" OUT OF VIEW",W-inset-4*dpr,H-inset-4*dpr);}
+    g.textAlign="center";
+    g.strokeStyle="rgba(0,0,0,.85)";g.lineWidth=Math.max(1,W/400);g.strokeRect(inset*.5,inset*.5,W-inset,H-inset);}
+  paintFoot(w);
+  if(V.training||Math.abs(V.zoom-V.aimZoom)>.004||Math.abs(shortTurn(V.yaw,V.aimYaw))>.004||Date.now()<V.userUntil)
+    requestAnimationFrame(paint);}
+function paintFoot(w){
+  const K=w.K;
+  const mid=$("mid");
+  const tr=trainable(w).length;
+  if(tr>=6&&!V.training){mid.textContent="It can learn from the pool.";
+    $("act").hidden=false;$("act").textContent="LET IT READ";$("act").dataset.do="train";}
+  else if(w.tick>24&&!K.R.proposed){mid.textContent=K.R.rule;
+    $("act").hidden=false;$("act").textContent="INTERVENE";$("act").dataset.do="intervene";}
+  else{mid.textContent=!AI.key?"no key · people gather, no one can make":
+    K.R.proposed?"proposed: "+K.R.proposed:(w.tick?"day "+w.tick:"");$("act").hidden=true;}
+  $("fork").hidden=!(w.tick>12&&WORLDS.length<2);
+  $("pause").textContent=w.paused?"RESUME":"PAUSE";
+  const vb=$("viewb");
+  if(vb)vb.textContent=V.follow?"LET GO":V.mode==="FRAME"?"ALL":"FRAME";
+  const t=$("ticker");
+  if(t){const f=V.follow&&K.C.find(x=>x.id===V.follow);
+    const bs=beats(w,3);
+    const line=f?("with "+f.name+" · "+(f.currentAction||"idle")+
+      (f.memories.length?" · "+f.memories[f.memories.length-1].text:"")):(bs.length?bs[bs.length-1]:"");
+    t.textContent=line;t.classList.toggle("on",!!line);}}
+function paintForkBar(){for(const s of $("forkbar").querySelectorAll("span"))
+  s.setAttribute("aria-current",String(+s.dataset.w===CUR));}
+
+/* ===================================================================
+   THE POOL · actual works, and one work at a time
+   =================================================================== */
+function openPool(){
+  const w=WORLDS[CUR];$("world").classList.remove("on");$("pool").classList.add("on");
+  $("one").classList.remove("on");$("grid").style.display="grid";
+  const sh=poolShares(w);
+  $("poolcount").textContent=w.K.X.length+" works · "+Math.round(sh.human*100)+"% human · "+
+    Math.round(sh.synthetic*100)+"% synthetic · "+Math.round(sh.hybrid*100)+"% hybrid · rare "+
+    Math.round(w.K.M.rareTraitCoverage*100)+"%";
+  const grid=$("grid");grid.innerHTML="";
+  const xs=w.K.X.slice().reverse().slice(0,120);
+  for(const x of xs){
+    const el=document.createElement("button");el.className="work "+x.provenanceType[0];
+    if(x.rgb||x.program){const c=document.createElement("canvas");c.width=PATCH_PX;c.height=PATCH_PX;
+      if(!x.renderedPreview)renderArtifact(x);c.getContext("2d").drawImage(x.renderedPreview,0,0);el.appendChild(c);}
+    if(x.text){const t=document.createElement("div");t.className="t";t.textContent=x.text;el.appendChild(t);}
+    const m=document.createElement("div");m.className="m";
+    m.textContent=(w.K.C.find(c=>c.id===x.creatorId)||{}).name+" · "+x.provenanceType+(x.trained?" · read":"");
+    el.appendChild(m);el.onclick=()=>openOne(w,x);grid.appendChild(el);}}
+function openOne(w,x){
+  $("grid").style.display="none";$("one").classList.add("on");
+  const oc=$("onecv"),g=oc.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,256,256);
+  if(x.renderedPreview)g.drawImage(x.renderedPreview,0,0,256,256);
+  oc.hidden=!!x.text&&!x.program;
+  $("onet").hidden=!x.text;$("onet").textContent=x.text||"";
+  const by=w.K.C.find(c=>c.id===x.creatorId)||{name:"?"};
+  const parents=x.parentArtifactIds.map(id=>{const p=w.K.X.find(y=>y.id===id);
+    return p?(w.K.C.find(c=>c.id===p.creatorId)||{}).name+"/"+p.id:id;}).join(", ")||"none";
+  const kids=w.K.X.filter(y=>y.parentArtifactIds.indexOf(x.id)>=0).length;
+  $("onedl").innerHTML=[["creator",by.name],["origin","day "+x.tick],["parents",parents],
+    ["kind",x.provenanceType],["trained on?",x.trained?"yes":"no"],["descendants",String(kids)]]
+    .map(([k,v])=>"<dt>"+k+"</dt><dd>"+v+"</dd>").join("");}
+$("oneback").onclick=()=>{$("one").classList.remove("on");$("grid").style.display="grid";};
+$("poolx").onclick=()=>{$("pool").classList.remove("on");$("world").classList.add("on");paint();};
+$("poolb").onclick=openPool;
+
+/* ===================================================================
+   PEOPLE · tap one
+   =================================================================== */
+function openAgent(a){
+  const w=WORLDS[CUR];closeSheets();$("agent").classList.add("on");
+  $("agname").textContent=a.name.toUpperCase()+" · "+(a.currentAction||"idle");
+  const top=Object.entries(a.practiceQ).sort((p,q)=>q[1]-p[1]).slice(0,3).map(p=>p[0]).join(", ");
+  const ties=Object.keys(a.relationships).map(id=>(w.K.C.find(x=>x.id===id)||{}).name).filter(Boolean).join(", ")||"no one";
+  $("agbody").innerHTML="practice: "+top+"<br>with: "+ties+"<br>wealth "+a.wealth.toFixed(2)+
+    " · status "+a.status.toFixed(2)+"<br>"+(a.memories.slice(-3).map(m=>"· "+m.text).join("<br>")||"no memories yet")+
+    (a.reflections.length?"<br><i>"+a.reflections[a.reflections.length-1].text+"</i>":"");
+  const row=$("agrow");row.innerHTML="";
+  const mk=(t,f)=>{const b=document.createElement("button");b.textContent=t;b.onclick=f;row.appendChild(b);};
+  mk("REFLECT",async()=>{try{a.busy="remembering…";paint();
+      const ev=w.events.filter(e=>e.actorId===a.id).slice(-6);
+      const t=await callModel(PROMPTS.REFLECTION,JSON.stringify(ev.map(e=>({id:e.id,type:e.type,tick:e.tick}))),120);
+      const cites=(t.match(/\[e\d+\]/g)||[]).map(s=>s.slice(1,-1)).filter(id=>ev.some(e=>e.id===id));
+      emit(w,"REFLECTION",a.id,{text:t.trim().slice(0,240),cites});}
+    catch(e){a.fault={what:"couldn't continue",retry:()=>{}};}
+    finally{a.busy=null;openAgent(a);paint();}});
+  mk("CLOSE",closeSheets);}
+function closeSheets(){for(const s of document.querySelectorAll(".sheet"))s.classList.remove("on");V.selected=null;}
+
+/* ===================================================================
+   FAULT · beside the thing, or, when everything is gone, the world paused
+   =================================================================== */
+function globalFault(){const w=WORLDS[CUR];if(!w)return;w.paused=true;stopTicks();
+  closeSheets();$("fault").classList.add("on");paint();}
+$("fretry").onclick=async()=>{$("fault").classList.remove("on");
+  if(!AI.key){openDoor();return;}
+  try{await testConnection();AI.ok=true;WORLDS[CUR].paused=false;
+    for(const a of WORLDS[CUR].K.C)a.fault=null;startTicks();paint();}
+  catch(e){globalFault();}};
+$("fkey").onclick=()=>{AI.key="";AI.ok=false;$("fault").classList.remove("on");
+  $("world").classList.remove("on");$("rest").classList.add("on");$("key").value="";};
+$("fexit").onclick=()=>{AI.key="";AI.ok=false;stopTicks();location.reload();};
+
+/* ===================================================================
+   THE FOOT · pause, the one valid action, fork
+   =================================================================== */
+$("viewb").onclick=()=>{
+  if(V.follow){V.follow=null;V.aimZoom=1;V.userUntil=0;paint();return;}  // let them go, pull back
+  V.mode=V.mode==="FRAME"?"BALL":"FRAME";paint();};
+$("pause").onclick=()=>{const w=WORLDS[CUR];w.paused=!w.paused;
+  if(w.paused)stopTicks();else startTicks();paint();};
+$("act").onclick=()=>{
+  const w=WORLDS[CUR];
+  if($("act").dataset.do==="train"){
+    const r=trainModel(w);if(!r)return;
+    V.training={t0:Date.now(),ids:r.ids};bakeSurface(w);paint();return;}
+  closeSheets();$("intervene").classList.add("on");
+  const row=$("rules");row.innerHTML="";
+  for(const r of RULES){const b=document.createElement("button");b.textContent=r;
+    b.setAttribute("aria-pressed",String(w.K.R.rule===r));
+    b.onclick=()=>{if(!w.K.R.proposed)emit(w,"POLICY_PROPOSED",null,{rule:r,by:"player"});closeSheets();paint();};
+    row.appendChild(b);}};
+$("iclose").onclick=closeSheets;
+$("fork").onclick=()=>{closeSheets();$("forksheet").classList.add("on");
+  const row=$("forkrules");row.innerHTML="";
+  for(const r of RULES){const b=document.createElement("button");b.textContent=r;
+    b.onclick=()=>{closeSheets();forkWorld(r);};row.appendChild(b);}};
+$("fclose").onclick=closeSheets;
+for(const s of $("forkbar").querySelectorAll("span"))s.onclick=()=>{CUR=+s.dataset.w;paintForkBar();paint();};
+
+/* ---------- the AI, only when tapped ---------- */
+$("aitag").onclick=()=>{if(!AI.key){openDoor();return;}closeSheets();$("ai").classList.add("on");paintAI();};
+$("aiclose").onclick=closeSheets;
+$("aichange").onclick=()=>{$("fkey").onclick();};
+const PTABS=["AGENT","ART","WRITING","REFLECTION","ARGUMENT"];let PT="AGENT";
+$("aiprompts").onclick=()=>{closeSheets();$("prompts").classList.add("on");paintPrompts();};
+function paintPrompts(){const row=$("ptabs");row.innerHTML="";
+  for(const t of PTABS){const b=document.createElement("button");b.textContent=t;
+    b.setAttribute("aria-pressed",String(t===PT));b.onclick=()=>{PT=t;paintPrompts();};row.appendChild(b);}
+  $("ptext").value=PROMPTS[PT];}
+$("ptext").oninput=()=>{PROMPTS[PT]=$("ptext").value;};
+$("preset").onclick=()=>{PROMPTS[PT]=PROMPT_DEFAULT[PT];paintPrompts();};
+$("pclose").onclick=closeSheets;
+
+/* ---------- the stage: turn the ball, tap a person ---------- */
+let down=null;
+cv.addEventListener("pointerdown",e=>{down={x:e.clientX,y:e.clientY,moved:0};cv.setPointerCapture(e.pointerId);});
+cv.addEventListener("pointermove",e=>{if(!down)return;
+  const dx=e.clientX-down.x,dy=e.clientY-down.y;down.moved+=Math.abs(dx)+Math.abs(dy);
+  if(V.mode==="FRAME"){V.yaw-=dx*.006;V.pitch=clamp(V.pitch-dy*.006,-1.3,1.3);
+    V.aimYaw=V.yaw;V.aimPitch=V.pitch;V.userUntil=Date.now()+7000;}
+  else{V.yaw+=dx*.008;V.pitch=clamp(V.pitch+dy*.008,-1.4,1.4);}
+  down.x=e.clientX;down.y=e.clientY;paint();});
+cv.addEventListener("pointerup",e=>{
+  if(down&&down.moved<6&&SG){const r=stage.getBoundingClientRect(),dpr=cv.dpr||1;
+    const px=(e.clientX-r.left)*dpr,py=(e.clientY-r.top)*dpr;
+    const w=WORLDS[CUR];let best=null,bd=26*dpr;
+    if(SG.ball){for(const a of w.K.C){if(a.left)continue;const k=toScreen(a.at,SG.R);if(k[2]<=0)continue;
+        const d=Math.hypot(SG.cx+k[0]*SG.Rd-px,SG.cy-k[1]*SG.Rd-py);if(d<bd){bd=d;best={a};}}}
+    else for(const hgt of SG.hits){const d=Math.hypot(hgt.x-px,hgt.y-py);if(d<bd){bd=d;best=hgt;}}
+    if(best&&best.edge){                            // a mark at the edge: turn to them
+      V.focus=best.a.id;aimAt(best.a.at);V.userUntil=Date.now()+9000;V.selected=null;}
+    else if(best){
+      /* tap someone: go to them, and stay with them */
+      V.selected=best.a.id;V.focus=best.a.id;V.follow=best.a.id;
+      if(V.mode==="BALL"){aimBallAt(best.a.at);V.aimZoom=ZOOM_SCENE;}else aimAt(best.a.at);
+      V.userUntil=Date.now()+12000;}
+    else{V.selected=null;V.follow=null;}
+    paint();}
+  down=null;});
+addEventListener("resize",()=>paint());
+/* swipe between worlds after a fork */
+let sw=null;
+stage.addEventListener("touchstart",e=>{if(WORLDS.length>1&&e.touches.length===1)sw=e.touches[0].clientX;},{passive:true});
+stage.addEventListener("touchend",e=>{if(sw==null)return;const dx=e.changedTouches[0].clientX-sw;sw=null;
+  if(Math.abs(dx)>80){CUR=dx<0?1:0;paintForkBar();paint();}},{passive:true});
+
+/* ===================================================================
+   REST → WORLD
+   =================================================================== */
+/* Without a key the world is still a world: people stand, tie, drift,
+   part, and vote. What they cannot do is make anything, because a work
+   here is a program the model wrote and there is no model. So nothing is
+   substituted: when someone would make, the frame says so beside them and
+   the door is one tap away. */
+function lookWithoutKey(){
+  AI.key="";AI.ok=false;AI.model="none";
+  if(!WORLDS.length){WORLDS.push(newWorld((Date.now()%1e6)|0));bakeSurface(WORLDS[0]);}
+  if(PEEK){clearTimeout(PEEK);PEEK=null;}
+  INTRO.on=false;V.userUntil=0;
+  $("rest").classList.remove("on");$("world").classList.add("on");
+  paintAI();paint();startTicks();}
+function openDoor(){stopTicks();$("world").classList.remove("on");$("rest").classList.add("on");
+  $("rest").classList.add("shown");INTRO.on=false;
+  const w=WORLDS[CUR];if(w)w.paused=false;peek();}
+/* if anything throws after entry, the screen says so where the action
+   line is, and the world is paused rather than gone */
+addEventListener("error",e=>{
+  const w=WORLDS[CUR];const mid=$("mid");
+  if(mid)mid.textContent="stopped: "+String(e.message||e).slice(0,80);
+  if(w){w.paused=true;stopTicks();}
+  const pb=$("pause");if(pb)pb.textContent="RESUME";});
+addEventListener("unhandledrejection",e=>{
+  const mid=$("mid");
+  if(mid&&!/busy/.test(String(e.reason&&e.reason.message)))
+    mid.textContent="stopped: "+String(e.reason&&e.reason.message||e.reason).slice(0,80);});
+/* ---------- the title sequence ------------------------------------------
+   Whitney's rule: give every point the same motion at a rate proportional
+   to its index, and the field passes through order and disorder together,
+   resolving whenever the rates come back into ratio. Here two hundred dots
+   run that motion, then at the resolve they are the letters, then they let
+   go and fall onto the world. Six and a half seconds, and a tap ends it. */
+const INTRO_MS=11000,INTRO_N=1400;
+const INTRO={t0:0,on:false,targets:null,done:false,pts:null};
+function titleTargets(W,H){
+  const c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+  g.fillStyle="#fff";g.fillRect(0,0,W,H);
+  const size=Math.min(W*0.19,H*0.22);
+  g.fillStyle="#000";g.font="500 "+size+"px 'IBM Plex Mono',ui-monospace,monospace";
+  g.textAlign="center";g.textBaseline="middle";
+  const word="COMMON",gap=size*0.36;
+  const total=g.measureText(word).width+gap*(word.length-1);
+  let x=W/2-total/2;
+  for(const ch of word){const w=g.measureText(ch).width;g.fillText(ch,x+w/2,H/2);x+=w+gap;}
+  const d=g.getImageData(0,0,W,H).data,pts=[];
+  const stride=Math.max(2,Math.round(size/26));
+  for(let y=0;y<H;y+=stride)for(let xx=0;xx<W;xx+=stride)if(d[(y*W+xx)*4]<128)pts.push([xx,y]);
+  return pts;}
+const easeIO=t=>t<.5?2*t*t:1-2*(1-t)*(1-t);
+/* the dots of the ball, once: a lattice on the shell, each with its index */
+function introPoints(){
+  if(INTRO.pts)return INTRO.pts;
+  const pts=[];const step=4.2;
+  for(let lat=-86;lat<=86;lat+=step)for(let lon=-180;lon<180;lon+=step){
+    if(pts.length>=INTRO_N)break;pts.push({lon:lon*D2R,lat:lat*D2R,i:pts.length});}
+  INTRO.pts=pts;return pts;}
+/* four movements, one ball:
+     1  the harmonic field on the shell   every dot's longitude runs at a
+        rate proportional to its index, and the ball is turning
+     2  the resolve                       the rates come into ratio and the
+        dots are the lattice; the places stand up off the surface
+     3  the lift                          the dots leave the shell and are
+        the word
+     4  the fall                          the word lets go and the frame,
+        from inside, comes up through it */
+function paintIntro(cv,now){
+  const g=cv.getContext("2d"),W=cv.width,H=cv.height,dpr=cv.dpr||1;
+  const T=clamp((now-INTRO.t0)/INTRO_MS,0,1);
+  if(!INTRO.targets||INTRO.targets.W!==W){INTRO.targets=titleTargets(W,H);INTRO.targets.W=W;}
+  const tg=INTRO.targets,pts=introPoints(),n=pts.length;
+  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.fillStyle="#fff";g.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2*0.98,Rd=Math.min(W,H)*0.36;
+  const m1=clamp(T/.42,0,1), m2=clamp((T-.42)/.18,0,1), m3=clamp((T-.60)/.22,0,1), m4=clamp((T-.82)/.18,0,1);
+  const spin=T*0.9+0.35;
+  const R=rot(spin,0.28);
+  const cell=Rd*4.2*D2R;
+  /* the harmonic: how far each dot is out of its place, dying to zero at the resolve */
+  const wild=1-easeIO(m1);
+  const stalk=[];
+  for(let k=0;k<n;k++){
+    const p=pts[k];
+    const lon=p.lon+wild*(p.i*0.035)*TAU*0.5;        // rate ∝ index, integer-ish multiples
+    const lat=p.lat+wild*Math.sin(p.i*0.7)*0.35;
+    const d=dirLL(lon,lat),s=toScreen(d,R);
+    if(s[2]<=0.02&&m3<0.02)continue;
+    const bx=cx+s[0]*Rd,by=cy-s[1]*Rd;
+    let x=bx,y=by,rad=cell*(.16+.30*(1-Math.abs(lat)/1.6))*(.55+.45*Math.max(s[2],0));
+    /* the lift: this dot's letter, if it has one */
+    if(m3>0){const t=tg[(k*7)%Math.max(1,tg.length)]||[cx,cy];const e=easeIO(m3);
+      x=bx+(t[0]-bx)*e;y=by+(t[1]-by)*e;rad=rad*(1-e)+1.7*dpr*e;}
+    /* the fall: back to the shell, seen from inside */
+    if(m4>0){const R2=camRot(),asp=W/Math.max(1,H),q=framePt(d,R2,asp);
+      const wx=(q[0]+1)/2*W,wy=(1-q[1])/2*H,e=easeIO(m4);
+      x=x+(wx-x)*e;y=y+(wy-y)*e;rad=rad*(1-e)+cell*.12*e;
+      if(!q[2]&&e>.5)continue;}
+    if(rad<.4)continue;
+    g.fillStyle="#000";
+    if(rad<2.2)g.fillRect(x-rad,y-rad,rad*2,rad*2);
+    else{g.beginPath();g.arc(x,y,rad,0,TAU);g.fill();}}
+  /* the rim of the ball, present through the first two movements */
+  if(m3<1){g.globalAlpha=(1-m3)*(1-m4);g.strokeStyle="#000";g.lineWidth=Math.max(1,W/380);
+    g.beginPath();g.arc(cx,cy,Rd,0,TAU);g.stroke();g.globalAlpha=1;}
+  /* the places stand up off the shell as it resolves, and lie down as it lifts */
+  const up=easeIO(m2)*(1-easeIO(m3));
+  if(up>0){
+    for(const s of SITES){const k=toScreen(s.at,R);if(k[2]<=0.05)continue;
+      const x=cx+k[0]*Rd,y=cy-k[1]*Rd;
+      const rise=Rd*0.42*up*(0.5+0.5*k[2]);         // taller the nearer
+      const out=[k[0],k[1]];const L=Math.hypot(out[0],out[1])||1;
+      const tx=x+out[0]/L*rise*0.35,ty=y-out[1]/L*rise*0.35-rise*0.65;
+      g.strokeStyle="rgba(0,0,0,"+(0.85*up*k[2])+")";g.lineWidth=Math.max(1,W/460);
+      g.beginPath();g.moveTo(x,y);g.lineTo(tx,ty);g.stroke();
+      const x0={program:s.program};if(!SITE_RGB[s.id])siteRGB(s);
+      const sp=siteSprite(s);const sz=Rd*0.30*up*(0.6+0.4*k[2]);
+      if(sp&&sp.width){g.globalAlpha=up*Math.min(1,k[2]*1.4);g.drawImage(sp,tx-sz/2,ty-sz,sz,sz);g.globalAlpha=1;}
+      g.fillStyle="#000";g.font=(9*dpr)+"px 'IBM Plex Mono',monospace";g.textAlign="center";
+      g.globalAlpha=up*k[2];g.fillText(s.name,tx,ty+10*dpr);g.globalAlpha=1;}}
+  /* the line under the word, at the resolve of the lift */
+  if(m3>.5&&m4<.6){g.globalAlpha=clamp((m3-.5)/.3,0,1)*(1-clamp(m4/.5,0,1));
+    g.fillStyle="#000";g.font=(10*dpr)+"px 'IBM Plex Mono',monospace";g.textAlign="center";
+    g.fillText("THE CORPUS IS NOT THE COMMONS",cx,H/2+Math.min(W,H)*0.16);g.globalAlpha=1;}
+  return T>=1;}
+/* a place, drawn once, white made clear so it stands on the shell */
+const SITE_SPR={};
+function siteSprite(s){
+  if(SITE_SPR[s.id])return SITE_SPR[s.id];
+  const cv=document.createElement("canvas");cv.width=96;cv.height=96;
+  const p=parseProgram(s.program,96,96);
+  if(p.ops){renderProgram(p.ops,cv);
+    try{const g=cv.getContext("2d"),im=g.getImageData(0,0,96,96),d=im.data;
+      for(let i=0;i<d.length;i+=4)if(d[i]>200&&d[i+1]>200&&d[i+2]>200)d[i+3]=0;
+      g.putImageData(im,0,0);}catch(e){}}
+  SITE_SPR[s.id]=cv;return cv;}
+function skipIntro(){if(!INTRO.on)return;INTRO.on=false;INTRO.done=true;
+  $("rest").classList.add("shown");}
+
+/* the world exists before the door opens; nothing in it acts until then */
+let PEEK=null;
+function peek(){
+  if(!$("rest").classList.contains("on"))return;
+  if(!WORLDS.length){WORLDS.push(newWorld((Date.now()%1e6)|0));bakeSurface(WORLDS[0]);}
+  const pc=$("peek"),dpr=Math.min(2,devicePixelRatio||1),r=pc.getBoundingClientRect();
+  const w=Math.max(1,Math.round(r.width*dpr)),hh=Math.max(1,Math.round(r.height*dpr));
+  if(pc.width!==w||pc.height!==hh){pc.width=w;pc.height=hh;}pc.dpr=dpr;
+  V.userUntil=Date.now()+1e9;V.yaw+=.0025;V.aimYaw=V.yaw;  // it turns, slowly, on its own
+  if(INTRO.on){
+    if(!INTRO.t0)INTRO.t0=Date.now();
+    if(paintIntro(pc,Date.now()))skipIntro();
+    PEEK=setTimeout(peek,33);return;}
+  paintFrame(WORLDS[0],pc,.35);
+  PEEK=setTimeout(peek,90);}
+let connecting=false,KEYSEEN="";
+function fail(text){$("connecting").classList.remove("on");$("why").textContent=text;
+  $("failed").classList.add("on");$("enter").disabled=false;connecting=false;}
+/* when a key is pasted, ask what it can reach and offer that */
+async function refreshModels(){
+  const k=$("key").value.trim();
+  if(!k||k===KEYSEEN||k.length<20)return;
+  KEYSEEN=k;AI.key=k;
+  $("modelnote").textContent="asking what this key can reach…";
+  try{
+    const names=await listModels();
+    const sel=$("model"),want=sel.value;
+    const spec=["gpt-5.6-sol","gpt-5.6-terra","gpt-5.6-luna"];
+    const offer=names.length?names:spec;
+    sel.innerHTML="";
+    for(const n of offer){const o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o);}
+    /* keep the choice if the key can see it; otherwise the first it can */
+    sel.value=offer.indexOf(want)>=0?want:offer[0];
+    $("modelnote").textContent=names.length?names.length+" models this key can reach":"the key answered, but listed no models";
+  }catch(e){$("modelnote").textContent=explainFailure(e).split("\n")[0].toLowerCase();}}
+async function enter(){
+  AI.key=$("key").value.trim();AI.model=$("model").value;
+  if(!AI.key){fail("PASTE A KEY FIRST");return;}
+  if(!/^sk-/.test(AI.key)){fail("A KEY STARTS WITH sk-\nthis one does not");return;}
+  $("failed").classList.remove("on");$("connecting").classList.add("on");$("enter").disabled=true;connecting=true;
+  try{await testConnection();AI.ok=true;}
+  catch(e){AI.ok=false;fail(explainFailure(e));
+    if(/CANNOT SEE/.test(explainFailure(e)))refreshModels();return;}
+  $("connecting").classList.remove("on");$("enter").disabled=false;connecting=false;
+  if(!WORLDS.length){WORLDS.push(newWorld((Date.now()%1e6)|0));bakeSurface(WORLDS[0]);}
+  if(PEEK){clearTimeout(PEEK);PEEK=null;}
+  V.userUntil=0;
+  $("rest").classList.remove("on");$("world").classList.add("on");
+  paintAI();paint();startTicks();}
+$("enter").onclick=enter;
+$("retry").onclick=enter;
+$("stopc").onclick=()=>{stopAllCalls();$("connecting").classList.remove("on");$("enter").disabled=false;};
+$("changekey").onclick=()=>{$("failed").classList.remove("on");$("key").value="";KEYSEEN="";$("key").focus();};
+$("key").addEventListener("keydown",e=>{if(e.key==="Enter")enter();});
+$("skip").onclick=skipIntro;
+$("look").onclick=lookWithoutKey;
+$("rest").addEventListener("pointerdown",()=>{if(INTRO.on)skipIntro();});
+INTRO.on=true;peek();
+$("key").addEventListener("input",()=>{clearTimeout($("key").t);$("key").t=setTimeout(refreshModels,600);});
+$("key").addEventListener("paste",()=>{setTimeout(refreshModels,50);});
+</script>
+</body>
+</html>
